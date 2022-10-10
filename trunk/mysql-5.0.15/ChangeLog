@@ -1,0 +1,4303 @@
+ChangeSet
+  1.2067.1.1 05/10/17 05:14:03 petr@mysql.com +1 -0
+  Fix im tests on powermacg5: temporarily fix for problem with Darwin kernels. For more details see
+  bug 2030. Will push a proper fix later
+
+  server-tools/instance-manager/manager.cc
+    1.28 05/10/17 05:13:51 petr@mysql.com +4 -0
+    Fix im tests on powermacg5: temporarily fix for problem with Darwin kernels.
+
+ChangeSet
+  1.2068 05/10/16 20:51:19 kent@mysql.com +3 -0
+  mysql-test-run.pl:
+    Added --skip-im option handling
+    Don't terminate script if IM fails to create PID file
+  mtr_cases.pl:
+    Added --skip-im option handling
+  mtr_process.pl:
+    Kill left over 'mysqld' processes started by IM
+
+  mysql-test/mysql-test-run.pl
+    1.53 05/10/16 20:32:35 kent@mysql.com +25 -30
+    Added --skip-im option handling
+    Don't terminate script if IM fails to create PID file
+
+  mysql-test/lib/mtr_cases.pl
+    1.12 05/10/16 20:31:44 kent@mysql.com +4 -4
+    Added --skip-im option handling
+
+  mysql-test/lib/mtr_process.pl
+    1.24 05/10/16 20:30:22 kent@mysql.com +11 -0
+    Kill left over 'mysqld' processes started by IM
+
+ChangeSet
+  1.2019.9.1 05/10/16 19:30:10 petr@mysql.com +1 -0
+  portability fix: sh does not support "==". This resulted in IM tests failing on range of platforms.
+
+  mysql-test/t/kill_n_check.sh
+    1.2 05/10/16 19:28:54 petr@mysql.com +2 -2
+    portability fix: sh does not support "==". This resulted in IM tests failing on range of platforms.
+
+ChangeSet
+  1.2066 05/10/16 17:05:14 kent@mysql.com +1 -0
+  mysql-test-run.pl:
+    Put socket files into $opt_tmpdir, to avoid problems
+    with platforms that can't handle long socket paths.
+
+  mysql-test/mysql-test-run.pl
+    1.52 05/10/16 17:04:12 kent@mysql.com +4 -4
+    Put socket files into $opt_tmpdir, to avoid problems
+    with platforms that can't handle long socket paths.
+
+ChangeSet
+  1.2065 05/10/16 06:49:19 kent@mysql.com +4 -0
+  thread_registry.h, thread_registry.cc:
+    Add explicit Thread_info::Thread_info() and move both
+    initializers out of class definition, to solve link
+    problem on QNX
+  Makefile.am:
+    Preserve executable mode on scripts
+  make_binary_distribution.sh:
+    Copy *.imtest files
+
+  server-tools/instance-manager/thread_registry.h
+    1.5 05/10/16 06:42:19 kent@mysql.com +5 -4
+    Add explicit Thread_info::Thread_info() and move both
+    initializers out of class definition, to solve link
+    problem on QNX
+
+  server-tools/instance-manager/thread_registry.cc
+    1.9 05/10/16 06:41:07 kent@mysql.com +8 -0
+    Add explicit Thread_info::Thread_info() and move both
+    initializers out of class definition, to solve link
+    problem on QNX
+
+  mysql-test/Makefile.am
+    1.65 05/10/16 06:17:14 kent@mysql.com +3 -2
+    Preserve executable mode on scripts
+
+  scripts/make_binary_distribution.sh
+    1.100 05/10/16 05:56:26 kent@mysql.com +2 -1
+    Copy *.imtest files
+
+ChangeSet
+  1.2064 05/10/15 14:37:08 kent@mysql.com +1 -0
+  mysql.sln:
+    Missing yaSSL added to pro-gpl target
+
+  VC++Files/mysql.sln
+    1.5 05/10/15 14:36:30 kent@mysql.com +18 -0
+    Missing yaSSL added to pro-gpl target
+
+ChangeSet
+  1.2063 05/10/15 01:40:28 kent@mysql.com +1 -0
+  mysql.spec.sh:
+    Give mode arguments the same way in all places
+    Moved copy of mysqld.a to "standard" build, but
+    disabled it as we don't do embedded yet in 5.0
+
+  support-files/mysql.spec.sh
+    1.120 05/10/15 00:52:37 kent@mysql.com +34 -12
+    Give mode arguments the same way in all places
+    Moved copy of mysqld.a to "standard" build, but
+    disabled it as we don't do embedded yet in 5.0
+
+ChangeSet
+  1.2062 05/10/14 22:49:53 kent@mysql.com +1 -0
+  mysql.spec.sh:
+    For 5.x, always compile with --with-big-tables
+    Copy the config.log file to location outside
+    the build tree
+
+  support-files/mysql.spec.sh
+    1.119 05/10/14 22:44:28 kent@mysql.com +16 -2
+    For 5.x, always compile with --with-big-tables
+    Copy the config.log file to location outside
+    the build tree
+
+ChangeSet
+  1.2061 05/10/14 22:11:52 kent@mysql.com +1 -0
+  mysql.spec.sh:
+    Removed unneeded/obsolte configure options
+    Added archive engine to standard server
+    Removed the embedded server from experimental server
+    Changed suffix "-Max" => "-max"
+    Changed comment string "Max" => "Experimental"
+
+  support-files/mysql.spec.sh
+    1.118 05/10/14 22:08:02 kent@mysql.com +4 -11
+    Removed unneeded/obsolte configure options
+    Added archive engine to standard server
+    Removed the embedded server from experimental server
+    Changed suffix "-Max" => "-max"
+    Changed comment string "Max" => "Experimental"
+
+ChangeSet
+  1.2060 05/10/14 19:12:54 ramil@mysql.com +1 -0
+  Use Field_longlong::store(longlong nr, bool unsigned_val) for ulonglong values
+  instead of Field_longlong::store(double nr).
+
+  sql/sql_show.cc
+    1.292 05/10/14 19:12:40 ramil@mysql.com +5 -5
+    Use Field_longlong::store(longlong nr, bool unsigned_val) for ulonglong values
+    instead of Field_longlong::store(double nr).
+
+ChangeSet
+  1.2059 05/10/14 13:35:36 joerg@mysql.com +1 -0
+  Change the "Password" column type for the Perl suite running the tests. bug#14023
+
+  mysql-test/lib/init_db.sql
+    1.14 05/10/14 13:35:31 joerg@mysql.com +1 -1
+    Data type of the "Password" column has been changed in "mysql_create_system_tables",
+    this must be reflected here (until they are united). bug#14023
+
+ChangeSet
+  1.2058 05/10/14 11:11:19 lenz@mysql.com +1 -0
+  configure.in:
+    - reverted NDB version number, too
+
+  configure.in
+    1.357 05/10/14 11:09:17 lenz@mysql.com +1 -1
+    - reverted NDB version number, too
+
+ChangeSet
+  1.2057 05/10/14 11:03:40 lenz@mysql.com +1 -0
+  - revert version number in configure.in to 5.0.15
+
+  configure.in
+    1.356 05/10/14 11:01:11 lenz@mysql.com +1 -1
+    - revert version number to 5.0.15
+
+ChangeSet
+  1.2052.1.1 05/10/14 11:44:46 monty@mysql.com +3 -0
+  Fixed compile errors on windows
+
+  sql/log_event.cc
+    1.195 05/10/14 11:44:43 monty@mysql.com +3 -4
+    Removed compiler warning
+    Fixed compile error on windows
+
+  VC++Files/thr_test/thr_test.c
+    1.3 05/10/14 11:44:43 monty@mysql.com +1 -1
+    Fixed typo
+
+  VC++Files/test1/mysql_thr.c
+    1.4 05/10/14 11:44:42 monty@mysql.com +1 -1
+    Fixed typo
+
+ChangeSet
+  1.2054 05/10/14 13:24:21 bar@mysql.com +1 -0
+  ctype_utf8.result:
+    after merge fix
+    ,
+
+  mysql-test/r/ctype_utf8.result
+    1.79 05/10/14 13:23:59 bar@mysql.com +5 -5
+    after merge fix
+    ,
+
+ChangeSet
+  1.2053 05/10/14 12:07:13 bar@mysql.com +4 -0
+  Merge mysql.com:/usr/home/bar/mysql-4.1.b13751
+  into  mysql.com:/usr/home/bar/mysql-5.0.char1
+
+  sql/sql_update.cc
+    1.174 05/10/14 12:06:46 bar@mysql.com +0 -6
+    discarding this change in 5.0.
+
+  mysql-test/r/ctype_utf8.result
+    1.78 05/10/14 12:06:06 bar@mysql.com +5 -5
+    after merge fix.
+
+  sql/item_func.cc
+    1.259 05/10/14 12:04:23 bar@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/t/ctype_utf8.test
+    1.74 05/10/14 12:04:23 bar@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.2052 05/10/14 09:32:30 jani@a193-229-222-105.elisa-laajakaista.fi +1 -0
+  Had to revert change, because it breaks compilation for
+  Netware. Hartmut informed about this.
+
+  extra/Makefile.am
+    1.30 05/10/14 09:32:23 jani@a193-229-222-105.elisa-laajakaista.fi +1 -1
+    Had to revert change, because it breaks compilation for
+    Netware. Hartmut informed about this.
+
+ChangeSet
+  1.2049.1.1 05/10/14 08:45:41 jani@a193-229-222-105.elisa-laajakaista.fi +3 -0
+  Small fixes for Netware.
+
+  scripts/make_binary_distribution.sh
+    1.99 05/10/14 08:45:33 jani@a193-229-222-105.elisa-laajakaista.fi +1 -2
+    Fixed mistake in merge.
+
+  netware/pack_isam.def
+    1.7 05/10/14 08:45:32 jani@a193-229-222-105.elisa-laajakaista.fi +1 -0
+    Added screenname.
+
+  netware/mysql_test_run.c
+    1.15 05/10/14 08:45:32 jani@a193-229-222-105.elisa-laajakaista.fi +1 -1
+    Fixed typo.
+
+ChangeSet
+  1.2047.1.2 05/10/13 22:17:47 elliot@mysql.com +1 -0
+  Fix link failure on OS X
+
+  ndb/src/mgmsrv/Services.cpp
+    1.56 05/10/13 22:17:31 elliot@mysql.com +0 -1
+    Remove explicit instantiation to fix link failure on OS X
+
+ChangeSet
+  1.2047.1.1 05/10/14 03:19:22 kent@mysql.com +13 -0
+  .del-mysqlwatch.vcproj~91c7061bceb731ad:
+    Delete: VC++Files/mysqlwatch/mysqlwatch.vcproj
+  .del-mysqlshutdown.vcproj~b956e6769cf4fe76:
+    Delete: VC++Files/mysqlshutdown/mysqlshutdown.vcproj
+  .del-pack_isam_ia64.dsp~6172aec32da6de5d:
+    Delete: VC++Files/pack_isam/pack_isam_ia64.dsp
+  .del-pack_isam.vcproj~82b3c430c0c623f2:
+    Delete: VC++Files/pack_isam/pack_isam.vcproj
+  .del-pack_isam.dsp~1f236852e0bcc13d:
+    Delete: VC++Files/pack_isam/pack_isam.dsp
+  .del-isamchk_ia64.dsp~abb473e7d3025305:
+    Delete: VC++Files/isamchk/isamchk_ia64.dsp
+  .del-isamchk.vcproj~19838e6a73320284:
+    Delete: VC++Files/isamchk/isamchk.vcproj
+  .del-isamchk.dsp~6349525f4cf767a4:
+    Delete: VC++Files/isamchk/isamchk.dsp
+  .del-isam_ia64.dsp~e6dffc47e113891:
+    Delete: VC++Files/isam/isam_ia64.dsp
+  .del-isam.vcproj~53282403e12348c3:
+    Delete: VC++Files/isam/isam.vcproj
+  .del-isam.dsw~c64a212cb134161a:
+    Delete: VC++Files/isam/isam.dsw
+  .del-isam.dsp~9c26247a621084bf:
+    Delete: VC++Files/isam/isam.dsp
+  mysql.sln:
+    Removed isam from Visual Studio .Net project files, accidently merged over from 4.1
+
+  BitKeeper/deleted/.del-mysqlwatch.vcproj~91c7061bceb731ad
+    1.3 05/10/14 03:18:00 kent@mysql.com +0 -0
+    Delete: VC++Files/mysqlwatch/mysqlwatch.vcproj
+
+  BitKeeper/deleted/.del-mysqlshutdown.vcproj~b956e6769cf4fe76
+    1.2 05/10/14 03:17:31 kent@mysql.com +0 -0
+    Delete: VC++Files/mysqlshutdown/mysqlshutdown.vcproj
+
+  BitKeeper/deleted/.del-pack_isam_ia64.dsp~6172aec32da6de5d
+    1.3 05/10/14 03:15:20 kent@mysql.com +0 -0
+    Delete: VC++Files/pack_isam/pack_isam_ia64.dsp
+
+  BitKeeper/deleted/.del-pack_isam.vcproj~82b3c430c0c623f2
+    1.2 05/10/14 03:15:20 kent@mysql.com +0 -0
+    Delete: VC++Files/pack_isam/pack_isam.vcproj
+
+  BitKeeper/deleted/.del-pack_isam.dsp~1f236852e0bcc13d
+    1.12 05/10/14 03:15:20 kent@mysql.com +0 -0
+    Delete: VC++Files/pack_isam/pack_isam.dsp
+
+  BitKeeper/deleted/.del-isamchk_ia64.dsp~abb473e7d3025305
+    1.3 05/10/14 03:14:42 kent@mysql.com +0 -0
+    Delete: VC++Files/isamchk/isamchk_ia64.dsp
+
+  BitKeeper/deleted/.del-isamchk.vcproj~19838e6a73320284
+    1.2 05/10/14 03:14:42 kent@mysql.com +0 -0
+    Delete: VC++Files/isamchk/isamchk.vcproj
+
+  BitKeeper/deleted/.del-isamchk.dsp~6349525f4cf767a4
+    1.9 05/10/14 03:14:42 kent@mysql.com +0 -0
+    Delete: VC++Files/isamchk/isamchk.dsp
+
+  BitKeeper/deleted/.del-isam_ia64.dsp~e6dffc47e113891
+    1.2 05/10/14 03:12:36 kent@mysql.com +0 -0
+    Delete: VC++Files/isam/isam_ia64.dsp
+
+  BitKeeper/deleted/.del-isam.vcproj~53282403e12348c3
+    1.2 05/10/14 03:12:36 kent@mysql.com +0 -0
+    Delete: VC++Files/isam/isam.vcproj
+
+  BitKeeper/deleted/.del-isam.dsw~c64a212cb134161a
+    1.5 05/10/14 03:12:36 kent@mysql.com +0 -0
+    Delete: VC++Files/isam/isam.dsw
+
+  BitKeeper/deleted/.del-isam.dsp~9c26247a621084bf
+    1.7 05/10/14 03:12:36 kent@mysql.com +0 -0
+    Delete: VC++Files/isam/isam.dsp
+
+  VC++Files/mysql.sln
+    1.4 05/10/14 03:10:48 kent@mysql.com +0 -171
+    Removed isam from Visual Studio .Net project files, accidently merged over from 4.1
+
+ChangeSet
+  1.2048 05/10/14 01:54:01 kent@mysql.com +1 -0
+  Merge mysql.com:/Users/kent/mysql/bk/mysql-5.0-release
+  into mysql.com:/Users/kent/mysql/bk/mysql-5.0
+
+  configure.in
+    1.355 05/10/14 01:53:49 kent@mysql.com +0 -2
+
+ChangeSet
+  1.2046.2.1 05/10/14 01:46:26 kent@mysql.com +1 -0
+  configure.in:
+    New version 5.0.16
+
+ChangeSet
+  1.2047 05/10/14 00:03:30 kent@mysql.com +1 -0
+  configure.in:
+    rc => GA
+
+  configure.in
+    1.353.1.1 05/10/14 00:02:50 kent@mysql.com +2 -2
+    rc => GA
+
+  configure.in
+    1.354 05/10/13 23:44:20 kent@mysql.com +3 -3
+    New version 5.0.16
+
+ChangeSet
+  1.2046 05/10/14 00:29:33 monty@mysql.com +0 -0
+  Merge bk-internal.mysql.com:/home/bk/mysql-5.0
+  into  mysql.com:/home/my/mysql-5.0
+
+ChangeSet
+  1.2045 05/10/14 00:04:52 monty@mysql.com +10 -0
+  Move handling of suffix_length from strnxfrm_bin() to filesort to ensure proper sorting of all kind of binary objects
+  field::sort_key() now adds length last for varbinary/blob
+  VARBINARY/BLOB is now sorted by filesort so that shorter strings comes before longer ones
+  Fixed issues in test cases from last merge
+  
+
+  strings/ctype-bin.c
+    1.66 05/10/14 00:04:48 monty@mysql.com +3 -18
+    Don't let strnxfrm_bin store length last
+    Better to do it in MySQL field object to ensure it's done properly for all cases
+
+  sql/sql_select.cc
+    1.383 05/10/14 00:04:48 monty@mysql.com +1 -1
+    Use sort_length() instead of pack_lengths()
+
+  sql/sql_class.h
+    1.270 05/10/14 00:04:48 monty@mysql.com +1 -0
+    Added sort suffix length (to get varbinary/blob to sort correctly)
+
+  sql/filesort.cc
+    1.105 05/10/14 00:04:47 monty@mysql.com +72 -21
+    Use 'sort_length()' instead of 'pack_length()' to get length of field.
+    Store suffix_length last for varbinary (blob) objects.
+    The above ensures that BLOB/VARBINARY are correctly sorted (shorter strings before longer ones)
+
+  sql/field.h
+    1.167 05/10/14 00:04:47 monty@mysql.com +7 -0
+    Added method 'sort_length()' to allow one to have length bytes last for VARBINARY/BLOB to get these to sort properly
+
+  sql/field.cc
+    1.285 05/10/14 00:04:47 monty@mysql.com +43 -0
+    Store length last in VARBINARY() and BLOB() columns to get shorter strings sorted before longer onces
+
+  mysql-test/t/type_blob.test
+    1.31 05/10/14 00:04:47 monty@mysql.com +19 -0
+    Test BLOB and VARCHAR sorting
+
+  mysql-test/t/select.test
+    1.86 05/10/14 00:04:46 monty@mysql.com +16 -30
+    Change column name in test to get GROUP BY to use the alias
+    Drop used tables at start of test
+    Don't use table names 'a', 'b' or 'c'
+
+  mysql-test/r/type_blob.result
+    1.49 05/10/14 00:04:46 monty@mysql.com +70 -0
+    Test BLOB and VARCHAR sorting
+
+  mysql-test/r/select.result
+    1.105 05/10/14 00:04:45 monty@mysql.com +6 -7
+    Change column name in test to get GROUP BY to use the alias
+
+ChangeSet
+  1.1616.2352.1 05/10/14 00:02:38 bell@sanja.is.com.ua +3 -0
+  - set 'updating' in both tables list if we have two of them (because of subquery) (BUG#13236)
+  - fixed test
+
+  sql/sql_update.cc
+    1.83.2.62 05/10/14 00:02:36 bell@sanja.is.com.ua +6 -2
+    set 'updating' in both tables list if we have two of them (because of subquery)
+
+  mysql-test/t/rpl_multi_update2.test
+    1.6 05/10/14 00:02:36 bell@sanja.is.com.ua +27 -0
+    fixed setting/reseting environment
+    multi-update with subquery added
+
+  mysql-test/r/rpl_multi_update2.result
+    1.4 05/10/14 00:02:35 bell@sanja.is.com.ua +13 -0
+    fixed setting/reseting environment
+    multi-update with subquery added
+
+ChangeSet
+  1.2042.2.1 05/10/13 13:42:56 patg@krsna.patg.net +3 -0
+  BUG# 13146
+  
+  Re-application of patch to clean 5.0 tree. Fixed issue with ANSI quotes 
+  when dumping triggers
+
+  mysql-test/t/mysqldump.test
+    1.70 05/10/13 13:42:43 patg@krsna.patg.net +34 -0
+    BUG# 13146
+    
+    New test
+
+  mysql-test/r/mysqldump.result
+    1.76 05/10/13 13:42:43 patg@krsna.patg.net +65 -0
+    BUG# 13146
+    
+    New test results
+
+  client/mysqldump.c
+    1.207 05/10/13 13:42:43 patg@krsna.patg.net +28 -2
+    BUG# 13146
+    
+    Re-application of fix to clean 5.0 tree. 
+    
+    Added comments for quote_name, moved declarations into proper order, 
+    unset MASK_ANSI_QUOTES flag in opt_compatible_mode global when dumping
+    triggers
+
+ChangeSet
+  1.2042.1.1 05/10/13 22:16:24 lenz@mysql.com +1 -0
+  Merge mysql.com:/space/my/mysql-4.1 into mysql.com:/space/my/mysql-5.0
+
+  support-files/mysql.spec.sh
+    1.117 05/10/13 22:16:19 lenz@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.1616.2347.12 05/10/13 22:11:49 lenz@mysql.com +1 -0
+  Merge mysql.com:/space/my/mysql-4.0 into mysql.com:/space/my/mysql-4.1
+
+  support-files/mysql.spec.sh
+    1.83.1.24 05/10/13 22:11:46 lenz@mysql.com +0 -11
+    Auto merged
+
+ChangeSet
+  1.1346.858.1 05/10/13 22:10:54 lenz@mysql.com +1 -0
+   - added a usermod call in the postinstall section of the RPM spec file 
+     to assign a potential existing mysql user to the correct user group (BUG#12823) 
+
+  support-files/mysql.spec.sh
+    1.61.1.33 05/10/13 22:10:51 lenz@mysql.com +11 -4
+     - added a usermod call to assign a potential existing mysql user to the
+       correct user group (BUG#12823)
+
+ChangeSet
+  1.1616.2347.11 05/10/13 22:01:02 lenz@mysql.com +1 -0
+  RPM spec file fixes:
+  
+   - added a usermod call to assign a potential existing mysql user to the
+     correct user group (BUG#12823)
+   - Save the perror binary built during Max build so it supports the NDB
+     error codes (BUG#13740)
+   - added a separate macro "mysqld_group" to be able to define the
+     user group of the mysql user seperately, if desired.
+
+  support-files/mysql.spec.sh
+    1.83.1.23 05/10/13 22:00:55 lenz@mysql.com +22 -5
+     - added a usermod call to assign a potential existing mysql user to the
+       correct user group (BUG#12823)
+     - Save the perror binary built during Max build so it supports the NDB
+       error codes (BUG#13740)
+     - added a separate macro "mysqld_group" to be able to define the
+       user group of the mysql user seperately, if desired.
+
+ChangeSet
+  1.2044 05/10/13 19:54:32 monty@mysql.com +6 -0
+  Merge mysql.com:/home/my/mysql-4.1
+  into  mysql.com:/home/my/mysql-5.0
+
+ChangeSet
+  1.2043 05/10/13 19:45:04 monty@mysql.com +1 -0
+  Merge bk-internal.mysql.com:/home/bk/mysql-5.0
+  into  mysql.com:/home/my/mysql-5.0
+
+ChangeSet
+  1.2042 05/10/13 21:33:07 bar@mysql.com +5 -0
+  Merge abarkov@bk-internal:/home/bk/mysql-5.0
+  into  mysql.com:/usr/home/bar/mysql-5.0.b9278
+
+  mysql-test/r/select.result
+    1.104 05/10/13 19:54:29 monty@mysql.com +55 -63
+    Merge and change table names a,b,c to t1,t2.t3
+
+  vio/vio.c
+    1.25 05/10/13 19:49:41 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/sql_select.cc
+    1.382 05/10/13 19:49:41 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/slave.cc
+    1.264 05/10/13 19:49:40 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/item.cc
+    1.190 05/10/13 19:49:40 monty@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/t/select.test
+    1.85 05/10/13 19:49:40 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/item.cc
+    1.189 05/10/13 19:45:00 monty@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.2024.18.1 05/10/13 19:40:46 monty@mysql.com +4 -0
+  Fixes during review of new pushed code
+
+  sql/unireg.cc
+    1.73 05/10/13 19:40:43 monty@mysql.com +3 -3
+    Indentation changes
+
+  sql/table.cc
+    1.198 05/10/13 19:40:43 monty@mysql.com +5 -3
+    Indentation changes
+    Moved buff_end directly after 'buff' assignment to make code more clear
+
+  sql/item.cc
+    1.187.1.1 05/10/13 19:40:43 monty@mysql.com +2 -2
+    Remove not needed test of *ref (If ref is set it always points to a valid address)
+
+  sql/handler.cc
+    1.200 05/10/13 19:40:43 monty@mysql.com +7 -6
+    Indentation fixes
+
+ChangeSet
+  1.2038.2.2 05/10/13 19:34:15 jani@ua141d10.elisa.omakaista.fi +2 -0
+  Merged from 4.1.
+
+  mysql-test/r/select.result
+    1.103 05/10/13 21:32:59 bar@mysql.com +0 -10
+    Auto merged
+
+  mysql-test/r/cast.result
+    1.37 05/10/13 21:32:58 bar@mysql.com +0 -3
+    Auto merged
+
+  mysql-test/r/select.result
+    1.102 05/10/13 19:34:07 jani@ua141d10.elisa.omakaista.fi +20 -20
+    Merged from 4.1.
+
+  mysql-test/r/cast.result
+    1.34.1.2 05/10/13 19:34:07 jani@ua141d10.elisa.omakaista.fi +3 -3
+    Merged from 4.1.
+
+  strings/ctype-tis620.c
+    1.91 05/10/13 21:32:59 bar@mysql.com +0 -0
+    Auto merged
+
+  strings/ctype-big5.c
+    1.88 05/10/13 21:32:59 bar@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/t/cast.test
+    1.28 05/10/13 21:32:59 bar@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.2040 05/10/13 21:28:44 bar@mysql.com +5 -0
+  select.result, mysqldump-max.result:
+    after merge fix.
+  range.result:
+    fixing result accordingly
+    ,
+  cast.result:
+    after merge fix
+  range.test:
+    Avoid SELECT'ing of BINARY column not to output 0x00 bytes.
+
+  mysql-test/r/select.result
+    1.100.1.1 05/10/13 21:28:18 bar@mysql.com +10 -10
+    after merge fix.
+
+  mysql-test/r/range.result
+    1.44 05/10/13 21:28:06 bar@mysql.com +3 -3
+    fixing result accordingly
+    ,
+
+  mysql-test/r/mysqldump-max.result
+    1.2 05/10/13 21:27:59 bar@mysql.com +6 -0
+    after merge fix.
+
+  mysql-test/r/cast.result
+    1.36 05/10/13 21:27:46 bar@mysql.com +3 -3
+    after merge fix
+
+  mysql-test/t/range.test
+    1.37 05/10/13 21:27:06 bar@mysql.com +1 -1
+    Avoid SELECT'ing of BINARY column not to output 0x00 bytes.
+
+ChangeSet
+  1.1616.2143.126 05/10/13 19:24:01 monty@mysql.com +2 -0
+  Fixes during review of new code
+
+  vio/vio.c
+    1.19.1.5 05/10/13 19:23:58 monty@mysql.com +1 -1
+    Made code clearer (fcntl_mode is always 0 here)
+    
+
+  sql/slave.cc
+    1.188.1.90 05/10/13 19:23:58 monty@mysql.com +3 -2
+    Moved mutex_unlock to handle 'err' case properly
+
+ChangeSet
+  1.1616.2143.125 05/10/13 18:48:58 monty@mysql.com +1 -0
+  Use 4.1 code
+
+  sql/item.cc
+    1.58.1.168 05/10/13 18:48:56 monty@mysql.com +0 -2
+    Use 4.1 code
+
+ChangeSet
+  1.2038.2.1 05/10/13 18:23:53 jani@ua141d10.elisa.omakaista.fi +24 -0
+  Merge ua141d10.elisa.omakaista.fi:/home/my/bk/mysql-4.1-tmp
+  into  ua141d10.elisa.omakaista.fi:/home/my/bk/mysql-5.0
+
+  strings/my_strtoll10.c
+    1.13 05/10/13 18:23:47 jani@ua141d10.elisa.omakaista.fi +0 -6
+    Merged from 4.1.
+
+  sql/sql_show.cc
+    1.291 05/10/13 18:23:47 jani@ua141d10.elisa.omakaista.fi +0 -9
+    Merged from 4.1.
+
+  sql/mysqld.cc
+    1.513 05/10/13 18:23:47 jani@ua141d10.elisa.omakaista.fi +17 -0
+    Merged from 4.1.
+
+  scripts/make_binary_distribution.sh
+    1.98 05/10/13 18:23:47 jani@ua141d10.elisa.omakaista.fi +4 -1
+    Merged from 4.1.
+
+  netware/BUILD/mwenv
+    1.12 05/10/13 18:23:47 jani@ua141d10.elisa.omakaista.fi +2 -4
+    Merged from 4.1.
+
+  mysql-test/r/select.result
+    1.101 05/10/13 18:23:47 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Merged from 4.1.
+
+ChangeSet
+  1.1616.2351.2 05/10/13 19:51:07 hf@deer.(none) +2 -0
+  merging
+
+  mysql-test/t/select.test
+    1.28.4.7 05/10/13 19:51:03 hf@deer.(none) +0 -1
+    merging
+
+  mysql-test/r/select.result
+    1.34.3.31 05/10/13 19:51:03 hf@deer.(none) +0 -55
+    merging
+
+ChangeSet
+  1.1346.857.1 05/10/13 17:41:55 monty@mysql.com +1 -0
+  Review of new pushed code
+  - No need to check *ref when ref is checked (Simple optimization fix)
+
+  sql/item.cc
+    1.19.1.20 05/10/13 17:41:54 monty@mysql.com +2 -2
+    No need to check *ref
+
+ChangeSet
+  1.2033.2.1 05/10/13 16:38:38 tomas@poseidon.ndb.mysql.com +5 -0
+  Bug #13461  	Slave Cluster crashed on restart of two data nodes in seperate groups
+  - ensure in ndb_mgmd that the stop command is not issued if a node is restarting
+  - added some new error messages
+  - in ndbcntr on master check so that node does not shutdown id shutdoen in progress
+
+  ndb/src/mgmsrv/MgmtSrvr.hpp
+    1.39 05/10/13 16:38:30 tomas@poseidon.ndb.mysql.com +5 -3
+    Bug #13461  	Slave Cluster crashed on restart of two data nodes in seperate groups
+    - ensure in ndb_mgmd that the stop command is not issued if a node is restarting
+    - added some new error messages
+    - in ndbcntr on master check so that node does not shutdown id shutdoen in progress
+
+  ndb/src/mgmsrv/MgmtSrvr.cpp
+    1.91 05/10/13 16:38:30 tomas@poseidon.ndb.mysql.com +24 -14
+    Bug #13461  	Slave Cluster crashed on restart of two data nodes in seperate groups
+    - ensure in ndb_mgmd that the stop command is not issued if a node is restarting
+    - added some new error messages
+    - in ndbcntr on master check so that node does not shutdown id shutdoen in progress
+
+  ndb/src/kernel/error/ndbd_exit_codes.c
+    1.8 05/10/13 16:38:30 tomas@poseidon.ndb.mysql.com +3 -0
+    Bug #13461  	Slave Cluster crashed on restart of two data nodes in seperate groups
+    - ensure in ndb_mgmd that the stop command is not issued if a node is restarting
+    - added some new error messages
+    - in ndbcntr on master check so that node does not shutdown id shutdoen in progress
+
+  ndb/src/kernel/blocks/ndbcntr/NdbcntrMain.cpp
+    1.24 05/10/13 16:38:30 tomas@poseidon.ndb.mysql.com +8 -2
+    Bug #13461  	Slave Cluster crashed on restart of two data nodes in seperate groups
+    - ensure in ndb_mgmd that the stop command is not issued if a node is restarting
+    - added some new error messages
+    - in ndbcntr on master check so that node does not shutdown id shutdoen in progress
+
+  ndb/include/mgmapi/ndbd_exit_codes.h
+    1.8 05/10/13 16:38:30 tomas@poseidon.ndb.mysql.com +1 -0
+    Bug #13461  	Slave Cluster crashed on restart of two data nodes in seperate groups
+    - ensure in ndb_mgmd that the stop command is not issued if a node is restarting
+    - added some new error messages
+    - in ndbcntr on master check so that node does not shutdown id shutdoen in progress
+
+  vio/viosocket.c
+    1.36 05/10/13 17:36:42 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  vio/vio.c
+    1.24 05/10/13 17:36:42 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  strings/xml.c
+    1.8 05/10/13 17:36:42 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  strings/ctype-tis620.c
+    1.89.1.1 05/10/13 17:36:42 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  strings/ctype-big5.c
+    1.86.1.1 05/10/13 17:36:42 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  sql/item_cmpfunc.cc
+    1.182 05/10/13 17:36:42 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  sql/item.h
+    1.175 05/10/13 17:36:41 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  netware/pack_isam.def
+    1.6 05/10/13 17:36:41 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  mysys/thr_alarm.c
+    1.48 05/10/13 17:36:41 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  mysys/my_pthread.c
+    1.43 05/10/13 17:36:41 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  mysql-test/t/select.test
+    1.84 05/10/13 17:36:41 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  mysql-test/t/cast.test
+    1.26.1.1 05/10/13 17:36:41 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  mysql-test/r/cast.result
+    1.34.1.1 05/10/13 17:36:41 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  myisam/mi_search.c
+    1.59 05/10/13 17:36:41 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  include/my_pthread.h
+    1.87 05/10/13 17:36:40 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  include/m_string.h
+    1.37 05/10/13 17:36:40 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  include/config-win.h
+    1.68 05/10/13 17:36:40 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+  configure.in
+    1.353 05/10/13 17:36:40 jani@ua141d10.elisa.omakaista.fi +0 -0
+    Auto merged
+
+ChangeSet
+  1.1616.2351.1 05/10/13 19:31:09 hf@deer.(none) +3 -0
+  merging
+
+  mysql-test/t/select.test
+    1.28.4.6 05/10/13 19:31:06 hf@deer.(none) +9 -0
+    merging
+
+  mysql-test/r/select.result
+    1.34.3.30 05/10/13 19:31:06 hf@deer.(none) +100 -36
+    merging
+
+ChangeSet
+  1.2038.1.1 05/10/13 19:27:44 bar@mysql.com +1 -0
+  Merge abarkov@bk-internal:/home/bk/mysql-5.0
+  into  mysql.com:/usr/home/bar/mysql-5.0.char1
+
+  sql/sql_yacc.yy
+    1.434 05/10/13 19:27:29 bar@mysql.com +0 -0
+    Auto merged
+
+  sql/sql_select.cc
+    1.216.1.224 05/10/13 19:25:25 hf@deer.(none) +0 -0
+    Auto merged
+
+ChangeSet
+  1.2024.17.1 05/10/13 19:24:47 bar@mysql.com +4 -0
+  ctype_utf8.result, ctype_utf8.test:
+    New syntax: CHAR(x USING charset)
+    Adding test case.
+  sql_yacc.yy:
+    New syntax: CHAR(x USING charset)
+    Adding new parser rule.
+  item_strfunc.h:
+    New syntax: CHAR(x USING charset)
+    Adding a new constructor.
+
+  mysql-test/r/ctype_utf8.result
+    1.77 05/10/13 19:23:53 bar@mysql.com +41 -31
+    New syntax: CHAR(x USING charset)
+    Adding test case.
+
+ChangeSet
+  1.1346.1.817 05/10/13 19:23:52 hf@deer.(none) +3 -0
+  Fix for bug #3874 (Group by field is not considered)
+
+  sql/sql_select.cc
+    1.152.1.140 05/10/13 19:23:37 hf@deer.(none) +1 -1
+    do the same for nullable
+
+  mysql-test/t/select.test
+    1.12.1.17 05/10/13 19:23:37 hf@deer.(none) +21 -0
+    test case added
+
+  mysql-test/r/select.result
+    1.8.1.31 05/10/13 19:23:37 hf@deer.(none) +36 -0
+    test result fixed
+
+  mysql-test/t/ctype_utf8.test
+    1.73 05/10/13 19:23:13 bar@mysql.com +22 -12
+    New syntax: CHAR(x USING charset)
+    Adding test case.
+
+  sql/sql_yacc.yy
+    1.432.1.1 05/10/13 19:22:32 bar@mysql.com +2 -0
+    New syntax: CHAR(x USING charset)
+    Adding new parser rule.
+
+  sql/item_strfunc.h
+    1.98 05/10/13 19:21:46 bar@mysql.com +6 -3
+    New syntax: CHAR(x USING charset)
+    Adding a new constructor.
+
+ChangeSet
+  1.1616.2350.1 05/10/13 17:21:14 jani@ua141d10.elisa.omakaista.fi +4 -0
+  Some Netware related fixes and fixes for Metrowerks compiler.
+
+  strings/my_strtoll10.c
+    1.9.1.1 05/10/13 17:21:06 jani@ua141d10.elisa.omakaista.fi +9 -0
+    Fix for Metrowerks compiler.
+
+  scripts/make_binary_distribution.sh
+    1.55.1.32 05/10/13 17:21:06 jani@ua141d10.elisa.omakaista.fi +1 -2
+    Netware specific change for creating help tables.
+
+  netware/pack_isam.def
+    1.4.1.1 05/10/13 17:21:06 jani@ua141d10.elisa.omakaista.fi +1 -0
+    NetWare specific change, Added SCRENNAME for pack_isam.
+
+  netware/BUILD/mwenv
+    1.4.1.7 05/10/13 17:21:06 jani@ua141d10.elisa.omakaista.fi +2 -2
+    Removed -O3 for Metrowerks compiler.
+
+ChangeSet
+  1.2039 05/10/13 19:19:05 bar@mysql.com +6 -0
+  Merge abarkov@bk-internal:/home/bk/mysql-5.0
+  into  mysql.com:/usr/home/bar/mysql-5.0.b9278
+
+  mysql-test/t/federated.test
+    1.17 05/10/13 19:18:57 bar@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/t/cast.test
+    1.27 05/10/13 19:18:57 bar@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/t/alter_table.test
+    1.41 05/10/13 19:18:57 bar@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/r/federated.result
+    1.20 05/10/13 19:18:57 bar@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/r/cast.result
+    1.35 05/10/13 19:18:57 bar@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/r/alter_table.result
+    1.54 05/10/13 19:18:57 bar@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.2024.16.1 05/10/13 19:16:19 bar@mysql.com +47 -0
+  type_binary.result, type_binary.test:
+    new file
+  mysql_fix_privilege_tables.sql, mysql_create_system_tables.sh:
+    Adding true BINARY/VARBINARY: fixing "password" type, not to be 0x00-padding.
+  Many files:
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+  ctype-bin.c:
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+    New strnxfrm, with two trailing length bytes.
+  field.cc:
+    Adding true BINARY/VARBINARY.
+
+  mysql-test/r/type_binary.result
+    1.1 05/10/13 19:15:46 bar@mysql.com +113 -0
+
+  mysql-test/r/type_binary.result
+    1.0 05/10/13 19:15:46 bar@mysql.com +0 -0
+    BitKeeper file /usr/home/bar/mysql-5.0.b9278/mysql-test/r/type_binary.result
+
+  mysql-test/t/type_binary.test
+    1.1 05/10/13 19:15:41 bar@mysql.com +67 -0
+
+  mysql-test/t/type_binary.test
+    1.0 05/10/13 19:15:41 bar@mysql.com +0 -0
+    BitKeeper file /usr/home/bar/mysql-5.0.b9278/mysql-test/t/type_binary.test
+
+  scripts/mysql_fix_privilege_tables.sql
+    1.32 05/10/13 19:13:28 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing "password" type, not to be 0x00-padding.
+
+  scripts/mysql_create_system_tables.sh
+    1.28 05/10/13 19:13:02 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing "password" type, not to be 0x00-padding.
+
+  mysql-test/r/type_blob.result
+    1.48 05/10/13 19:12:39 bar@mysql.com +3 -3
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/r/system_mysql_db.result
+    1.29 05/10/13 19:12:37 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/r/sp.result
+    1.160 05/10/13 19:12:35 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/r/ndb_types.result
+    1.4 05/10/13 19:12:30 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/r/ndb_condition_pushdown.result
+    1.16 05/10/13 19:12:28 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/r/func_in.result
+    1.23 05/10/13 19:12:24 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/r/federated.result
+    1.17.1.1 05/10/13 19:12:22 bar@mysql.com +2 -2
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/r/ctype_many.result
+    1.12 05/10/13 19:12:20 bar@mysql.com +581 -575
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/r/ctype_cp1251.result
+    1.7 05/10/13 19:12:18 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/r/cast.result
+    1.33.1.1 05/10/13 19:12:16 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/r/binary.result
+    1.20 05/10/13 19:12:15 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/r/alter_table.result
+    1.52.1.1 05/10/13 19:12:12 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/t/type_blob.test
+    1.30 05/10/13 19:11:54 bar@mysql.com +2 -2
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/t/sp.test
+    1.156 05/10/13 19:11:52 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/t/ndb_types.test
+    1.6 05/10/13 19:11:45 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/t/ndb_condition_pushdown.test
+    1.15 05/10/13 19:11:43 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/t/func_in.test
+    1.18 05/10/13 19:11:39 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/t/federated.test
+    1.14.1.1 05/10/13 19:11:36 bar@mysql.com +2 -2
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/t/ctype_many.test
+    1.22 05/10/13 19:11:34 bar@mysql.com +2 -2
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/t/ctype_cp1251.test
+    1.8 05/10/13 19:11:32 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/t/cast.test
+    1.25.1.1 05/10/13 19:11:30 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/t/binary.test
+    1.15 05/10/13 19:11:28 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  mysql-test/t/alter_table.test
+    1.39.1.1 05/10/13 19:11:04 bar@mysql.com +1 -1
+    Adding true BINARY/VARBINARY: fixing tests not to output 0x00 bytes.
+
+  include/m_ctype.h
+    1.114 05/10/13 19:10:31 bar@mysql.com +1 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-win1250ch.c
+    1.53 05/10/13 19:10:16 bar@mysql.com +1 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-utf8.c
+    1.97 05/10/13 19:10:14 bar@mysql.com +3 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-ujis.c
+    1.69 05/10/13 19:10:13 bar@mysql.com +2 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-ucs2.c
+    1.56 05/10/13 19:10:11 bar@mysql.com +2 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-uca.c
+    1.39 05/10/13 19:10:09 bar@mysql.com +37 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-tis620.c
+    1.90 05/10/13 19:10:08 bar@mysql.com +2 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-sjis.c
+    1.88 05/10/13 19:10:06 bar@mysql.com +2 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-simple.c
+    1.74 05/10/13 19:10:05 bar@mysql.com +1 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-latin1.c
+    1.47 05/10/13 19:10:03 bar@mysql.com +3 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-gbk.c
+    1.78 05/10/13 19:10:01 bar@mysql.com +2 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-gb2312.c
+    1.61 05/10/13 19:10:00 bar@mysql.com +2 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-extra.c
+    1.20 05/10/13 19:09:59 bar@mysql.com +1 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-eucjpms.c
+    1.12 05/10/13 19:09:57 bar@mysql.com +2 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-euc_kr.c
+    1.64 05/10/13 19:09:55 bar@mysql.com +2 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-czech.c
+    1.61 05/10/13 19:09:53 bar@mysql.com +1 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-cp932.c
+    1.10 05/10/13 19:09:49 bar@mysql.com +2 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  strings/ctype-bin.c
+    1.65 05/10/13 19:09:11 bar@mysql.com +28 -4
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+    New strnxfrm, with two trailing length bytes.
+
+  strings/ctype-big5.c
+    1.87 05/10/13 19:08:40 bar@mysql.com +2 -0
+    Adding true BINARY/VARBINARY: new pad_char structure member.
+
+  sql/field.cc
+    1.284 05/10/13 19:08:04 bar@mysql.com +2 -1
+    Adding true BINARY/VARBINARY.
+
+ChangeSet
+  1.1616.2143.122 05/10/13 17:17:32 evgen@moonbone.local +2 -0
+  Merge epotemkin@bk-internal.mysql.com:/home/bk/mysql-4.1
+  into moonbone.local:/work/13535-bug-4.1-mysql
+
+  mysql-test/t/select.test
+    1.28.4.5 05/10/13 17:17:31 evgen@moonbone.local +0 -0
+    Auto merged
+
+  mysql-test/r/select.result
+    1.34.3.29 05/10/13 17:17:31 evgen@moonbone.local +0 -0
+    Auto merged
+
+ChangeSet
+  1.2036.1.1 05/10/13 14:35:53 kent@mysql.com +3 -0
+  Merge
+
+  mysql-test/Makefile.am
+    1.64 05/10/13 14:35:45 kent@mysql.com +0 -6
+
+  mysql-test/t/func_group.test
+    1.44 05/10/13 14:32:00 kent@mysql.com +0 -0
+    Auto merged
+
+  VC++Files/mysql.sln
+    1.3 05/10/13 14:31:59 kent@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.2037 05/10/13 16:00:26 evgen@moonbone.local +6 -0
+  Manual merge of bug fix #7672
+
+  sql/sql_select.cc
+    1.381 05/10/13 16:00:23 evgen@moonbone.local +1 -1
+    Manual merge of bug fix #7672
+
+  sql/sql_lex.cc
+    1.171 05/10/13 16:00:23 evgen@moonbone.local +0 -0
+    Manual merge of bug fix #7672
+
+  sql/item.cc
+    1.188 05/10/13 16:00:23 evgen@moonbone.local +16 -4
+    Manual merge of bug fix #7672
+
+  mysql-test/t/select.test
+    1.83 05/10/13 16:00:23 evgen@moonbone.local +44 -0
+    Manual merge of bug fix #7672
+
+  mysql-test/r/select.result
+    1.100 05/10/13 16:00:23 evgen@moonbone.local +10 -10
+    Manual merge of bug fix #7672
+
+  sql/sql_lex.h
+    1.201 05/10/13 15:44:33 evgen@moonbone.local +0 -0
+    Auto merged
+
+ChangeSet
+  1.2036 05/10/13 14:55:56 konstantin@mysql.com +1 -0
+  A post-review fix (Bug#12736)
+
+  sql/sql_select.cc
+    1.380 05/10/13 14:55:50 konstantin@mysql.com +1 -0
+    A post-review fix (Bug#12736)
+
+ChangeSet
+  1.2033.1.4 05/10/13 12:38:38 kent@mysql.com +1 -0
+  Merge mysql.com:/Users/kent/mysql/bk/mysql-4.1-tmp
+  into mysql.com:/Users/kent/mysql/bk/mysql-5.0
+
+  mysql-test/t/kill.test
+    1.17 05/10/13 12:38:29 kent@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.2033.1.3 05/10/13 12:23:50 kent@mysql.com +3 -0
+  Merge
+
+  mysql-test/r/cast.result
+    1.34 05/10/13 12:23:44 kent@mysql.com +3 -3
+
+  sql/item.h
+    1.174 05/10/13 12:21:06 kent@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/t/cast.test
+    1.26 05/10/13 12:21:06 kent@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.2033.1.2 05/10/13 12:09:39 kent@mysql.com +1 -0
+  Merge mysql.com:/Users/kent/mysql/bk/mysql-4.1-tmp
+  into mysql.com:/Users/kent/mysql/bk/mysql-5.0
+
+  sql/item_strfunc.cc
+    1.258 05/10/13 12:09:35 kent@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.2033.1.1 05/10/13 05:12:17 elliot@mysql.com +3 -0
+  BUG#13343 CREATE|etc TRIGGER|VIEW|USER don't commit the transaction (inconsistency)
+  Updated more DDL statements to cause implicit commit.
+
+  sql/sql_parse.cc
+    1.506 05/10/13 05:12:07 elliot@mysql.com +15 -0
+    added implicit commit for:
+    CREATE OR REPLACE VIEW
+    ALTER VIEW
+    DROP VIEW
+    CREATE TRIGGER
+    DROP TRIGGER
+    CREATE USER
+    RENAME USER
+    DROP USER
+
+  mysql-test/t/rpl_ddl.test
+    1.7 05/10/13 05:12:07 elliot@mysql.com +107 -0
+    updated results to test for implicit commit for:
+    CREATE OR REPLACE VIEW
+    ALTER VIEW
+    DROP VIEW
+    CREATE TRIGGER
+    DROP TRIGGER
+    CREATE USER
+    RENAME USER
+    DROP USER
+
+  mysql-test/r/rpl_ddl.result
+    1.8 05/10/13 05:12:07 elliot@mysql.com +434 -0
+    updated results to test for implicit commit for:
+    CREATE OR REPLACE VIEW
+    ALTER VIEW
+    DROP VIEW
+    CREATE TRIGGER
+    DROP TRIGGER
+    CREATE USER
+    RENAME USER
+    DROP USER
+
+ChangeSet
+  1.1616.2349.2 05/10/13 13:25:07 ramil@mysql.com +1 -0
+  memcpy_overlap() replaced with memmove() during the merging.
+
+  strings/ctype-tis620.c
+    1.78.1.5 05/10/13 13:25:00 ramil@mysql.com +1 -1
+    memcpy_overlap() replaced with memmove() during the merge.
+
+ChangeSet
+  1.2034 05/10/13 11:54:51 konstantin@mysql.com +1 -0
+  Merge bk-internal.mysql.com:/home/bk/mysql-5.0
+  into  mysql.com:/opt/local/work/mysql-5.0-12736
+
+  sql/sql_select.cc
+    1.379 05/10/13 11:54:42 konstantin@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.2019.8.1 05/10/13 11:53:00 konstantin@mysql.com +8 -0
+  A fix and a test case for Bug#12736 "Server crash during a select".
+  The bug was in JOIN::join_free which was wrongly determining that
+  all joins have been already executed and therefore all used tables
+  can be closed.
+
+  sql/sql_union.cc
+    1.130 05/10/13 11:52:53 konstantin@mysql.com +14 -0
+    - implement a helper method st_select_lex::cleanup_all_joins, which
+      recursively walks over a tree of joins and calls cleanup() for
+      each join.
+
+  sql/sql_select.h
+    1.100 05/10/13 11:52:53 konstantin@mysql.com +1 -1
+    - JOIN::join_free signature changed
+
+  sql/sql_select.cc
+    1.376.2.1 05/10/13 11:52:52 konstantin@mysql.com +66 -12
+    - remove an argument from JOIN::join_free, it's now not used
+    - reimplement JOIN::join_free to not unlock tables if there
+      is a subquery that has not yet been evaluated. Make sure that the
+      new implementation calls ha_index_or_rnd_end for every table in
+      the join and inner joins, because all table cursors must be closed
+      before mysql_unlock_tables.
+
+  sql/sql_lex.h
+    1.200 05/10/13 11:52:52 konstantin@mysql.com +6 -1
+    - declare st_select_lex::cleanup_all_joins
+
+  sql/item_subselect.h
+    1.75 05/10/13 11:52:52 konstantin@mysql.com +16 -0
+    - implement Item_subselect::is_evaluated. This function is used
+    to check whether we can clean up a non-correlated join of a subquery
+    when cleaning up the join of the outer query
+
+  sql/item_subselect.cc
+    1.120 05/10/13 11:52:52 konstantin@mysql.com +6 -0
+    - implement subselect_union_engine::is_executed
+
+  mysql-test/t/subselect_innodb.test
+    1.14 05/10/13 11:52:52 konstantin@mysql.com +22 -0
+    - a test case for Bug#12736 "Server crash during a select": test
+    that ha_index_or_rnd_end and mysql_unlock_tables are called
+    for all used tables in proper order.
+
+  mysql-test/r/subselect_innodb.result
+    1.11 05/10/13 11:52:52 konstantin@mysql.com +20 -0
+    - test results fixed (Bug#12736 "Server crash during a select
+
+ChangeSet
+  1.1616.2349.1 05/10/13 12:48:30 ramil@mysql.com +2 -0
+  Merge mysql.com:/usr/home/ram/work/mysql-4.0
+  into  mysql.com:/usr/home/ram/work/mysql-4.1
+
+  include/m_string.h
+    1.33.1.2 05/10/13 12:48:26 ramil@mysql.com +0 -0
+    SCCS merged
+
+  myisam/mi_search.c
+    1.49.1.5 05/10/13 12:47:24 ramil@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.1616.2347.8 05/10/13 11:25:08 bar@mysql.com +1 -0
+  Merge abarkov@bk-internal.mysql.com:/home/bk/mysql-4.1
+  into  mysql.com:/usr/home/bar/mysql-4.1.b12476
+
+  sql/item_cmpfunc.cc
+    1.111.1.92 05/10/13 11:25:02 bar@mysql.com +0 -1
+    Auto merged
+
+ChangeSet
+  1.2024.1.20 05/10/12 22:44:42 patg@krsna.patg.net +4 -0
+  BUG# 13052
+  
+  Clean application of patch - 
+  - Added --tz-utc to fix issue of dumping timestamp values between 
+  servers with different global time zone settings, particularly 
+  with regard to the day of DST changeover, which without this fix,
+   would dump duplicate timestamp values.
+
+  mysql-test/t/mysqldump.test
+    1.69 05/10/12 22:44:16 patg@krsna.patg.net +21 -0
+    BUG# 13052
+    
+    Added new test to test if the new option --tz-utc places 
+    'SET TIME_ZONE="+00:00" at the top of the file and that this fixes 
+    the problem of ending up with duplicate timestamp values that should
+     be unique on eve of DST
+
+  mysql-test/r/mysqldump.result
+    1.75 05/10/12 22:44:16 patg@krsna.patg.net +184 -0
+    BUG# 13052 New results
+
+  client/mysqldump.c
+    1.206 05/10/12 22:44:16 patg@krsna.patg.net +28 -1
+    BUG# 13052
+    
+    Clean application of patch http://lists.mysql.com/internals/30993
+    
+    - added new --tz-utc option
+    - added saving of TIME_ZONE in dump file
+    - set TIME_ZONE to "+00:00" in dump
+
+  client/client_priv.h
+    1.43 05/10/12 22:44:16 patg@krsna.patg.net +1 -1
+    BUG# 13052 - clean application of http://lists.mysql.com/internals/30993
+
+ChangeSet
+  1.2024.13.6 05/10/13 00:29:23 guilhem@mysql.com +5 -0
+  fixes after merge of 4.1.
+
+  sql/slave.cc
+    1.263 05/10/13 00:29:16 guilhem@mysql.com +6 -5
+    fixes to take into account 5.0 specificities in replication. ZERO_LEN is not needed.
+
+  sql/log_event.h
+    1.117 05/10/13 00:29:16 guilhem@mysql.com +0 -16
+    get_event_len() is not needed in 5.0, ZERO_LEN neither.
+
+  sql/log_event.cc
+    1.194 05/10/13 00:29:16 guilhem@mysql.com +1 -5
+    correcting bad manual merge. ZERO_LEN is not needed in 5.0, as ::exec_event() just tell()s the relay log instead
+    of using get_event_len().
+
+  mysql-test/t/subselect.test
+    1.111 05/10/13 00:29:15 guilhem@mysql.com +2 -3
+    correcting non-ascii chars hosed by automerge as usual
+
+  mysql-test/r/subselect.result
+    1.130 05/10/13 00:29:15 guilhem@mysql.com +2 -2
+    correcting non-ascii chars hosed by automerge as usual
+
+ChangeSet
+  1.2024.13.5 05/10/13 00:24:14 guilhem@mysql.com +2 -0
+  Building with compile-pentium-valgrind-max (without safemalloc) defines my_free() without flags,
+  so a typo on flags will go unnoticed; I put flags in this my_free() definition (as a no-op which
+  will still make the compiler check correctness of the flags). Applied: this caught a typo in my_realloc.c. Kindly approved by Konstantin and Mats.
+
+  mysys/my_realloc.c
+    1.8 05/10/13 00:24:10 guilhem@mysql.com +1 -1
+    typo found by the change in my_sys.h :)
+
+  include/my_sys.h
+    1.175 05/10/13 00:24:10 guilhem@mysql.com +2 -1
+    When we define my_free(PTR,FG) to be my_no_flags_free(PTR) we don't make the compiler check
+    correctness of FG, which can hurt if another person build with a different definition of my_free;
+    so I add FG in the expression.
+
+ChangeSet
+  1.2024.14.3 05/10/12 14:33:08 eric@mysql.com +2 -0
+  replace port number with string identifier so that it may have different ports and still run
+  (problem found by kent)
+
+  mysql-test/t/federated.test
+    1.16 05/10/12 14:32:58 eric@mysql.com +2 -1
+    add call to replace the resulting display of the port number with a string
+
+  mysql-test/r/federated.result
+    1.19 05/10/12 14:32:57 eric@mysql.com +1 -1
+    replace port number with a named identifier
+
+ChangeSet
+  1.1616.2348.2 05/10/13 01:14:58 evgen@moonbone.local +3 -0
+  Manual merged
+
+  mysql-test/t/select.test
+    1.28.5.2 05/10/13 01:14:57 evgen@moonbone.local +10 -9
+    Manual merged
+
+  mysql-test/r/select.result
+    1.34.7.2 05/10/13 01:14:57 evgen@moonbone.local +0 -0
+    Manual merged
+
+  sql/item.cc
+    1.58.1.167 05/10/13 01:13:18 evgen@moonbone.local +0 -0
+    Auto merged
+
+ChangeSet
+  1.1616.2345.2 05/10/13 00:58:59 evgen@moonbone.local +4 -0
+  select.test, sql_select.cc, sql_lex.cc, item.cc:
+    Bug #7672 after merge fix
+
+  mysql-test/t/select.test
+    1.28.6.2 05/10/13 00:52:58 evgen@moonbone.local +2 -1
+    Bug #7672 after merge fix
+
+  sql/sql_select.cc
+    1.216.1.223 05/10/13 00:51:48 evgen@moonbone.local +5 -0
+    Bug #7672 after merge fix
+
+  sql/sql_lex.cc
+    1.97.1.54 05/10/13 00:51:38 evgen@moonbone.local +2 -1
+    Bug #7672 after merge fix
+
+  sql/item.cc
+    1.58.74.2 05/10/13 00:51:02 evgen@moonbone.local +8 -3
+    Bug #7672 after merge fix
+
+ChangeSet
+  1.2024.15.1 05/10/12 22:49:33 kent@mysql.com +2 -0
+  make_binary_distribution.sh:
+    Copy *.cnf files in mysql-test/std_data/
+  Makefile.am:
+    Added std_data/*.cnf to copy ndb config
+
+  scripts/make_binary_distribution.sh
+    1.97 05/10/12 22:47:05 kent@mysql.com +1 -0
+    Copy *.cnf files in mysql-test/std_data/
+
+  mysql-test/Makefile.am
+    1.63 05/10/12 22:36:43 kent@mysql.com +2 -0
+    Added std_data/*.cnf to copy ndb config
+
+ChangeSet
+  1.1616.2348.1 05/10/12 22:29:36 guilhem@mysql.com +1 -0
+  To force a restart at the end of test, the option file must be non-empty, it's not enough if it exists and is empty.
+
+  mysql-test/t/rpl_dual_pos_advance-master.opt
+    1.2 05/10/12 22:29:33 guilhem@mysql.com +1 -0
+    the option file must be non-empty (because there's a -z test in mysql-test-run)
+
+ChangeSet
+  1.1616.2347.3 05/10/12 13:28:46 jimw@mysql.com +2 -0
+  Merge mysql.com:/home/jimw/my/mysql-4.1-8731b
+  into  mysql.com:/home/jimw/my/mysql-4.1-clean
+
+  sql/mysqld.cc
+    1.356.98.16 05/10/12 13:28:43 jimw@mysql.com +0 -0
+    Auto merged
+
+  configure.in
+    1.201.1.196 05/10/12 13:28:43 jimw@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.1616.2347.2 05/10/12 13:27:49 jimw@mysql.com +3 -0
+  Merge mysql.com:/home/jimw/my/mysql-4.1-13344
+  into  mysql.com:/home/jimw/my/mysql-4.1-clean
+
+  sql/item.h
+    1.56.1.136 05/10/12 13:27:47 jimw@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/t/cast.test
+    1.15.1.5 05/10/12 13:27:47 jimw@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/r/cast.result
+    1.20.1.4 05/10/12 13:27:46 jimw@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.1616.2143.121 05/10/13 00:16:33 evgen@moonbone.local +2 -0
+  Merge epotemkin@bk-internal.mysql.com:/home/bk/mysql-4.1
+  into moonbone.local:/work/13535-bug-4.1-mysql
+
+  mysql-test/t/select.test
+    1.28.4.4 05/10/13 00:16:32 evgen@moonbone.local +0 -0
+    Auto merged
+
+  mysql-test/r/select.result
+    1.34.3.28 05/10/13 00:16:31 evgen@moonbone.local +0 -0
+    Auto merged
+
+ChangeSet
+  1.2024.13.2 05/10/12 21:58:02 guilhem@mysql.com +11 -0
+  Merge mysql.com:/home/mysql_src/mysql-4.1
+  into  mysql.com:/home/mysql_src/mysql-5.0;
+  a very bad automerge (issues with non-ascii chars), plus some hard conflicts I'll fix by hand in a next cset
+
+  sql/sql_yacc.yy
+    1.433 05/10/12 21:57:58 guilhem@mysql.com +0 -4
+    manual merge
+
+  sql/slave.cc
+    1.262 05/10/12 21:57:58 guilhem@mysql.com +8 -9
+    manual merge
+
+  sql/log_event.h
+    1.116 05/10/12 21:57:58 guilhem@mysql.com +7 -1
+    manual merge
+
+  sql/log_event.cc
+    1.193 05/10/12 21:57:57 guilhem@mysql.com +2 -1
+    manual merge
+
+  mysql-test/t/subselect.test
+    1.110 05/10/12 21:57:57 guilhem@mysql.com +8 -8
+    manual merge
+
+  mysql-test/r/subselect.result
+    1.129 05/10/12 21:57:57 guilhem@mysql.com +3 -3
+    manual merge
+
+  client/mysqltest.c
+    1.171 05/10/12 21:57:57 guilhem@mysql.com +0 -7
+    manual merge
+
+ChangeSet
+  1.2024.14.1 05/10/12 23:45:14 dlenev@mysql.com +1 -0
+  Merge bk-internal.mysql.com:/home/bk/mysql-5.0
+  into  mysql.com:/home/dlenev/src/mysql-5.0-repl
+
+  sql/sp_head.cc
+    1.191 05/10/12 23:44:58 dlenev@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.2019.7.1 05/10/12 23:42:51 dlenev@mysql.com +3 -0
+  Temporary solution for bug #13969 "Routines which are replicated from master
+  can't be executed on slave". It will be possible to solve this problem
+  in more correct way when we will implement WL#2897 "Complete definer support
+  in the stored routines".
+
+  sql/sp_head.cc
+    1.188.3.1 05/10/12 23:42:40 dlenev@mysql.com +15 -0
+    sp_change_security_context():
+      Currently the slave replication thread creates all stored routines with
+      definer ''@'', ignoring the actual definer. When the slave replication
+      thread executes these routines, it ignores the definer, and so the routines
+      work. However, in case of a failover, the replica operates in a normal mysqld
+      mode and changes security context to the definer when executing a routine.
+      A proper fix for this issue is described in WL#2897 "Complete definer support
+      in the stored routines". Until this WL is implemented, we need this temporary
+      fix, which ignores errors when changing security context.
+
+  mysql-test/t/rpl_sp.test
+    1.7 05/10/12 23:42:40 dlenev@mysql.com +17 -0
+    Added test for bug #13969 "Routines which are replicated from master can't be
+    executed on slave".
+
+  mysql-test/r/rpl_sp.result
+    1.9 05/10/12 23:42:40 dlenev@mysql.com +8 -0
+    Added test for bug #13969 "Routines which are replicated from master can't be
+    executed on slave".
+
+  sql/slave.h
+    1.91 05/10/12 21:28:41 guilhem@mysql.com +0 -0
+    Auto merged
+
+  sql/log.cc
+    1.177 05/10/12 21:28:40 guilhem@mysql.com +0 -0
+    Auto merged
+
+  BitKeeper/etc/config
+    1.22 05/10/12 21:28:40 guilhem@mysql.com +0 -0
+    Auto merged
+
+  BitKeeper/deleted/.del-compile-pentium64-valgrind-max
+    1.3 05/10/12 21:28:40 guilhem@mysql.com +0 -0
+    Delete: BUILD/compile-pentium64-valgrind-max
+
+ChangeSet
+  1.2024.13.1 05/10/12 21:25:04 guilhem@mysql.com +1 -0
+  slave.cc:
+    SCCS merged
+
+  sql/slave.cc
+    1.261 05/10/12 21:24:56 guilhem@mysql.com +0 -0
+    SCCS merged
+
+ChangeSet
+  1.2024.1.17 05/10/12 19:31:24 lars@mysql.com +1 -0
+  Fix of incompatible types
+  len and packet_error needs to be of same type for (len == packet_error) to
+  check failures
+
+  client/mysqlbinlog.cc
+    1.116 05/10/12 19:30:52 lars@mysql.com +2 -1
+    Fix of incompatible types
+    len and packet_error needs to be of same type for (len == packet_error) to
+    check failures
+
+ChangeSet
+  1.1346.1.816 05/10/12 18:50:25 ramil@mysql.com +2 -0
+  memcpy_overlap() removed, as 
+    1. it's wrong to use memcpy() for overlapped areas;
+    2. we use it only once.
+  During merge to 4.1 will remove a memcpy_overlap() call 
+  from strings/ctype-tis620.c as well in order to fix 
+  bug #10836: ctype_tis620 test failure with ICC-compiled binaries on IA64.
+
+  myisam/mi_search.c
+    1.30.1.14 05/10/12 18:50:22 ramil@mysql.com +1 -1
+    use memmove() instead, as memcpy_overlap() is removed.
+
+  include/m_string.h
+    1.17.1.6 05/10/12 18:50:22 ramil@mysql.com +0 -10
+    memcpy_overlap() removed, as 
+      1. it's wrong to use memcpy() for overlapped areas;
+      2. we use it only once.
+    During merge to 4.1 will remove a memcpy_overlap() call 
+    from strings/ctype-tis620.c as well in order to fix 
+    bug #10836: ctype_tis620 test failure with ICC-compiled binaries on IA64.
+
+ChangeSet
+  1.2032 05/10/12 15:31:00 tomas@poseidon.ndb.mysql.com +1 -0
+  Merge tulin@bk-internal.mysql.com:/home/bk/mysql-5.0
+  into poseidon.ndb.mysql.com:/home/tomas/mysql-5.0
+
+  ndb/src/mgmsrv/InitConfigFileParser.cpp
+    1.26 05/10/12 15:30:57 tomas@poseidon.ndb.mysql.com +0 -6
+    Auto merged
+
+ChangeSet
+  1.2031 05/10/12 15:19:51 tomas@poseidon.ndb.mysql.com +3 -0
+  postt review fixes
+
+  ndb/tools/ndb_config.cpp
+    1.12 05/10/12 15:19:41 tomas@poseidon.ndb.mysql.com +3 -1
+    postt review fixes
+
+  ndb/src/mgmsrv/ConfigInfo.cpp
+    1.71 05/10/12 15:19:41 tomas@poseidon.ndb.mysql.com +2 -2
+    postt review fixes
+
+  mysql-test/r/ndb_config.result
+    1.6 05/10/12 15:19:41 tomas@poseidon.ndb.mysql.com +0 -1
+    postt review fixes
+
+ChangeSet
+  1.2024.12.1 05/10/12 16:43:55 sergefp@mysql.com +1 -0
+  Fix compile error on Windows: remove wrong typecast
+
+  sql/ha_innodb.cc
+    1.272 05/10/12 16:43:47 sergefp@mysql.com +1 -2
+    Fix compile error on Windows: remove wrong typecast
+
+ChangeSet
+  1.2030 05/10/12 14:17:39 tomas@poseidon.ndb.mysql.com +8 -0
+  Bug #13009  	No gaps allowed in node id number sequence
+  + some small bugfixes in ndb_config
+  + extending ndb_config to print connections and take shm option
+
+  ndb/tools/ndb_config.cpp
+    1.11 05/10/12 14:17:28 tomas@poseidon.ndb.mysql.com +84 -19
+    Bug #13009  	No gaps allowed in node id number sequence
+    + some small bugfixes in ndb_config
+    + extending ndb_config to print connections and take shm option
+
+  ndb/src/mgmsrv/InitConfigFileParser.cpp
+    1.25 05/10/12 14:17:28 tomas@poseidon.ndb.mysql.com +7 -4
+    Bug #13009  	No gaps allowed in node id number sequence
+    + some small bugfixes in ndb_config
+    + extending ndb_config to print connections and take shm option
+
+  ndb/src/mgmsrv/ConfigInfo.cpp
+    1.70 05/10/12 14:17:28 tomas@poseidon.ndb.mysql.com +103 -242
+    Bug #13009  	No gaps allowed in node id number sequence
+    + some small bugfixes in ndb_config
+    + extending ndb_config to print connections and take shm option
+
+  ndb/src/common/mgmcommon/IPCConfig.cpp
+    1.22 05/10/12 14:17:28 tomas@poseidon.ndb.mysql.com +10 -14
+    Bug #13009  	No gaps allowed in node id number sequence
+    + some small bugfixes in ndb_config
+    + extending ndb_config to print connections and take shm option
+
+  ndb/include/mgmapi/mgmapi_config_parameters.h
+    1.19 05/10/12 14:17:28 tomas@poseidon.ndb.mysql.com +1 -0
+    Bug #13009  	No gaps allowed in node id number sequence
+    + some small bugfixes in ndb_config
+    + extending ndb_config to print connections and take shm option
+
+  mysql-test/t/ndb_config.test
+    1.10 05/10/12 14:17:28 tomas@poseidon.ndb.mysql.com +5 -0
+    Bug #13009  	No gaps allowed in node id number sequence
+    + some small bugfixes in ndb_config
+    + extending ndb_config to print connections and take shm option
+
+  mysql-test/std_data/ndb_config_mycnf2.cnf
+    1.2 05/10/12 14:17:28 tomas@poseidon.ndb.mysql.com +2 -2
+    Bug #13009  	No gaps allowed in node id number sequence
+    + some small bugfixes in ndb_config
+    + extending ndb_config to print connections and take shm option
+
+  mysql-test/r/ndb_config.result
+    1.5 05/10/12 14:17:28 tomas@poseidon.ndb.mysql.com +5 -0
+    Bug #13009  	No gaps allowed in node id number sequence
+    + some small bugfixes in ndb_config
+    + extending ndb_config to print connections and take shm option
+
+ChangeSet
+  1.1616.2143.119 05/10/12 13:29:55 guilhem@mysql.com +8 -0
+  Fix for BUG#13023: "SQL Thread is up but doesn't move forward". Details in slave.cc;
+  in short we now record whenever the slave I/O thread ignores a master's event because of its server id,
+  and use this info in the slave SQL thread to advance Exec_master_log_pos. Because if we
+  do not, this variable stays at the position of the last executed event, i.e. the last *non-ignored*
+  executed one, which may not be the last of the master's binlog (and so the slave *looks* behind
+  the master though it's data-wise it's not).
+
+  mysql-test/t/rpl_dual_pos_advance.test
+    1.1 05/10/12 13:29:51 guilhem@mysql.com +108 -0
+    Test for BUG#13023 (with a part, disabled, to test BUG#13861 when I fix it).
+    Before the fix, this test used to hang.
+
+  mysql-test/r/rpl_dual_pos_advance.result
+    1.1 05/10/12 13:29:51 guilhem@mysql.com +22 -0
+    New BitKeeper file ``mysql-test/r/rpl_dual_pos_advance.result''
+
+  sql/slave.h
+    1.71.1.17 05/10/12 13:29:51 guilhem@mysql.com +11 -0
+    A couple of coordinates in RELAY_LOG_INFO to keep track of the last ignored events received
+    by the slave I/O thread (ignored because of the server id).
+
+  sql/slave.cc
+    1.188.1.89 05/10/12 13:29:51 guilhem@mysql.com +109 -19
+    A comment for BUG#13861 (to be fixed). llstr() instead of %ld as the number is ulonglong.
+    mi->rli becomes rli in some places.
+    Fix for BUG#13023:
+    - in the slave I/O thread, whenever we ignore an event because of its server id we update
+    a couple of coordinates in memory
+    - in the slave SQL thread, whenever we bump into the end of the latest relay log, we check
+    this couple of coordinates to see if we should advance our Exec_master_log_pos.
+    - when the slave I/O thread terminates it saves these in-memory coordinates into a Rotate event
+    in the relay log, so that they are durable.
+
+  sql/log_event.h
+    1.90.1.9 05/10/12 13:29:51 guilhem@mysql.com +18 -10
+    We now have a case where a Rotate_log_event is executed by the slave SQL thread while
+    not being in the relay log, so it needs to pretend its length is 0: a ZERO_LEN flag for that;
+    a flag DUP_NAME (replaces "bool alloced") to be able to choose if we want the constructor
+    to duplicate the string argument or not.
+
+  sql/log_event.cc
+    1.113.1.73 05/10/12 13:29:51 guilhem@mysql.com +33 -9
+    Moving one Rotate_log_event constructor from log_event.h. Support for on-demand choice of
+    duplicating the string argument of the constructor or not (because there now are needs for both
+    alternatives, see slave.cc).
+
+  mysql-test/t/rpl_dual_pos_advance.test
+    1.0 05/10/12 13:29:51 guilhem@mysql.com +0 -0
+    BitKeeper file /home/mysql_src/mysql-4.1/mysql-test/t/rpl_dual_pos_advance.test
+
+  mysql-test/r/rpl_dual_pos_advance.result
+    1.0 05/10/12 13:29:51 guilhem@mysql.com +0 -0
+    BitKeeper file /home/mysql_src/mysql-4.1/mysql-test/r/rpl_dual_pos_advance.result
+
+  sql/log.cc
+    1.108.1.56 05/10/12 13:29:50 guilhem@mysql.com +3 -3
+    No more default arguments for Rotate_log_event constructor.
+    MYSQL_LOG::appendv() is now called without mutex.
+
+  mysql-test/std_data/ndb_config_mycnf2.cnf
+    1.1 05/10/12 12:27:22 tomas@poseidon.ndb.mysql.com +31 -0
+
+  mysql-test/std_data/ndb_config_mycnf2.cnf
+    1.0 05/10/12 12:27:22 tomas@poseidon.ndb.mysql.com +0 -0
+    BitKeeper file /home/tomas/mysql-5.0/mysql-test/std_data/ndb_config_mycnf2.cnf
+
+ChangeSet
+  1.2024.1.14 05/10/12 11:52:37 pem@mysql.com +1 -0
+  Merge mysql.com:/usr/local/bk/mysql-5.0
+  into  mysql.com:/usr/home/pem/bug13616/mysql-5.0
+
+  sql/sp_head.cc
+    1.190 05/10/12 11:52:28 pem@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.2024.1.12 05/10/12 13:18:46 gluh@eagle.intranet.mysql.r18.ru +3 -0
+  after merge fix
+
+  sql/sql_parse.cc
+    1.505 05/10/12 13:17:29 gluh@mysql.com +24 -24
+    after merge fix
+
+  sql/mysqld.cc
+    1.512 05/10/12 13:17:29 gluh@mysql.com +18 -16
+    added HAVE_YASSL define
+
+  config/ac-macros/yassl.m4
+    1.7 05/10/12 13:17:29 gluh@mysql.com +1 -1
+    added HAVE_YASSL variable
+
+ChangeSet
+  1.1616.2346.1 05/10/12 09:47:59 grog@mysql.com +3 -0
+  sql_yacc.yy:
+    Bug #10308: Parse 'purge master logs' with subselect correctly.
+  subselect.test:
+    Bug #10308: Test for 'purge master logs' with subselect.
+  subselect.result:
+    Bug #10308: Test result for 'purge master logs' with subselect.
+
+  sql/sql_yacc.yy
+    1.203.1.192 05/10/12 09:44:20 grog@mysql.com +4 -1
+    Bug #10308: Parse 'purge master logs' with subselect correctly.
+
+  mysql-test/t/subselect.test
+    1.58.1.95 05/10/12 09:43:10 grog@mysql.com +6 -0
+    Bug #10308: Test for 'purge master logs' with subselect.
+
+  mysql-test/r/subselect.result
+    1.67.1.106 05/10/12 09:39:59 grog@mysql.com +1 -0
+    Bug #10308: Test result for 'purge master logs' with subselect.
+
+ChangeSet
+  1.2024.1.11 05/10/12 11:54:12 gluh@mysql.com +2 -0
+  4.1->5.0 merge
+
+  sql/sql_parse.cc
+    1.504 05/10/12 11:54:07 gluh@mysql.com +0 -2
+    manual merge
+
+  sql/mysqld.cc
+    1.511 05/10/12 11:46:13 gluh@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.1616.2345.1 05/10/12 03:32:14 evgen@moonbone.local +6 -0
+  Manual merge, fix for bug #7672
+
+  sql/sql_select.cc
+    1.216.1.222 05/10/12 03:32:13 evgen@moonbone.local +0 -6
+    Manual merge
+
+  sql/sql_lex.h
+    1.102.1.85 05/10/12 03:32:13 evgen@moonbone.local +1 -1
+    Manual merge
+
+  sql/sql_lex.cc
+    1.97.1.53 05/10/12 03:32:13 evgen@moonbone.local +0 -0
+    Manual merge
+
+  sql/item.cc
+    1.58.74.1 05/10/12 03:32:13 evgen@moonbone.local +6 -7
+    Manual merge
+
+  mysql-test/t/select.test
+    1.28.6.1 05/10/12 03:32:13 evgen@moonbone.local +1 -1
+    Manual merge
+
+  mysql-test/r/select.result
+    1.34.8.1 05/10/12 03:32:13 evgen@moonbone.local +10 -10
+    Manual merge
+
+ChangeSet
+  1.1616.2344.1 05/10/11 15:23:34 jimw@mysql.com +1 -0
+  Fix read past allocated buffer when parsing charsets file. (Bug #6413)
+
+  strings/xml.c
+    1.4.1.1 05/10/11 15:23:32 jimw@mysql.com +1 -1
+    Don't look for comment past end of buffer.
+
+ChangeSet
+  1.2024.1.10 05/10/12 00:59:52 monty@mysql.com +15 -0
+  Merge bk-internal.mysql.com:/home/bk/mysql-5.0
+  into  mysql.com:/home/my/mysql-5.0
+
+  sql/unireg.cc
+    1.72 05/10/12 00:59:48 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/table.cc
+    1.197 05/10/12 00:59:48 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/sql_show.cc
+    1.290 05/10/12 00:59:48 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/sql_select.cc
+    1.378 05/10/12 00:59:48 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/sql_parse.cc
+    1.503 05/10/12 00:59:47 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/sql_manager.cc
+    1.6 05/10/12 00:59:47 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/sql_insert.cc
+    1.177 05/10/12 00:59:47 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/sp_head.cc
+    1.188.1.2 05/10/12 00:59:47 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/slave.cc
+    1.259.1.1 05/10/12 00:59:47 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/item.cc
+    1.187 05/10/12 00:59:47 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/handler.cc
+    1.199 05/10/12 00:59:47 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/ha_ndbcluster.cc
+    1.215 05/10/12 00:59:47 monty@mysql.com +0 -0
+    Auto merged
+
+  server-tools/instance-manager/instance.cc
+    1.28 05/10/12 00:59:47 monty@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/t/view.test
+    1.116 05/10/12 00:59:47 monty@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/r/view.result
+    1.124 05/10/12 00:59:46 monty@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.2019.3.8 05/10/12 00:58:22 monty@mysql.com +39 -0
+  Reviewing new pushed code
+  - CHAR() now returns binary string as default
+  - CHAR(X*65536+Y*256+Z) is now equal to CHAR(X,Y,Z) independent of the character set for CHAR()
+  - Test for both ETIMEDOUT and ETIME from pthread_cond_timedwait()
+    (Some old systems returns ETIME and it's safer to test for both values
+     than to try to write a wrapper for each old system)
+  - Fixed new introduced bug in NOT BETWEEN X and X
+  - Ensure we call commit_by_xid or rollback_by_xid for all engines, even if one engine has failed
+  - Use octet2hex() for all conversion of string to hex
+  - Simplify and optimize code
+
+  sql/unireg.cc
+    1.69.1.1 05/10/12 00:58:19 monty@mysql.com +1 -7
+    Use octet2hex()
+
+  sql/sql_view.cc
+    1.70 05/10/12 00:58:19 monty@mysql.com +1 -1
+    Simplify code
+
+  sql/sql_table.cc
+    1.279 05/10/12 00:58:19 monty@mysql.com +3 -4
+    Indentation fixed
+    Removed DBUG_PRINT that is obvious from context
+
+  sql/sql_show.cc
+    1.288.1.1 05/10/12 00:58:18 monty@mysql.com +0 -3
+    Removed not used variable
+
+  sql/sql_select.cc
+    1.376.1.1 05/10/12 00:58:18 monty@mysql.com +4 -4
+    Fixed new bug for NOT BETWEEN X and X
+
+  sql/sql_prepare.cc
+    1.159 05/10/12 00:58:18 monty@mysql.com +1 -1
+    Fixed wrong merge
+
+  sql/sql_parse.cc
+    1.502 05/10/12 00:58:18 monty@mysql.com +8 -3
+    Don't check thd->db when checking for function privileges
+
+  sql/sql_manager.cc
+    1.4.1.1 05/10/12 00:58:18 monty@mysql.com +7 -5
+    Test for both ETIMEDOUT and ETIME from pthread_cond_timedwait()
+
+  sql/sql_insert.cc
+    1.175.1.1 05/10/12 00:58:18 monty@mysql.com +1 -1
+    Test for both ETIMEDOUT and ETIME from pthread_cond_timedwait()
+
+  sql/sql_base.cc
+    1.310 05/10/12 00:58:18 monty@mysql.com +2 -2
+    Indentation fixes
+
+  sql/slave.cc
+    1.258.1.1 05/10/12 00:58:18 monty@mysql.com +1 -1
+    Test for both ETIMEDOUT and ETIME from pthread_cond_timedwait()
+
+  sql/password.c
+    1.38 05/10/12 00:58:18 monty@mysql.com +8 -5
+    Make octet2hex() more generally usable by returning pointer to end 0
+
+  sql/parse_file.cc
+    1.16 05/10/12 00:58:18 monty@mysql.com +4 -3
+    Indentation fixes
+    Use for() instead of while()
+
+  sql/log_event.cc
+    1.192 05/10/12 00:58:18 monty@mysql.com +6 -12
+    Use octet2hex()
+    Simplify code
+
+  sql/item_strfunc.h
+    1.97 05/10/12 00:58:18 monty@mysql.com +1 -1
+    CHAR() now returns a binary string
+
+  sql/item_strfunc.cc
+    1.257 05/10/12 00:58:18 monty@mysql.com +15 -27
+    Changed CHAR() to return result in binary collation
+    CHAR(X*65536+Y*256+Z) is now equal to CHAR(X,Y,Z) independent of the character set for CHAR()
+    
+    Bar will shortly add the following syntax:
+    CHAR(.... USING character_set)
+    and ensure that
+    CONVERT(CHAR(....) USING utf8) cuts not legal utf8 strings
+    Use ocet2hex()
+
+  sql/item_func.cc
+    1.258 05/10/12 00:58:18 monty@mysql.com +65 -38
+    Test for both ETIMEDOUT and ETIME from pthread_cond_timedwait()
+    Simplify code
+    More comments
+    Require that last argument to find_and_check_access() is given
+    (Made code shorter and faster)
+    
+
+  sql/item.h
+    1.173 05/10/12 00:58:18 monty@mysql.com +1 -1
+    Remove not needed test for *ref.  (If ref is set, it should never point at 0)
+    
+
+  sql/handler.cc
+    1.197.1.1 05/10/12 00:58:18 monty@mysql.com +15 -12
+    Simplify code
+    Use *NONE* instead of 'none' for not existing storage engine
+    Ensure we call commit_by_xid or rollback_by_xid for all engines, even if one engine has failed
+
+  sql/ha_ndbcluster.cc
+    1.213.1.1 05/10/12 00:58:18 monty@mysql.com +3 -4
+    Removed not used variable
+
+  sql/ha_federated.cc
+    1.51 05/10/12 00:58:17 monty@mysql.com +2 -7
+    Use octet2hex()
+
+  server-tools/instance-manager/thread_registry.cc
+    1.8 05/10/12 00:58:17 monty@mysql.com +9 -4
+    Test for both ETIMEDOUT and ETIME from pthread_cond_timedwait()
+
+  server-tools/instance-manager/instance.cc
+    1.26.1.1 05/10/12 00:58:17 monty@mysql.com +1 -1
+    Test for both ETIMEDOUT and ETIME from pthread_cond_timedwait()
+
+  mysys/thr_mutex.c
+    1.27 05/10/12 00:58:17 monty@mysql.com +1 -1
+    Test for both ETIMEDOUT and ETIME from pthread_cond_timedwait()
+
+  mysys/thr_lock.c
+    1.49 05/10/12 00:58:17 monty@mysql.com +5 -4
+    Test for both ETIMEDOUT and ETIME from pthread_cond_timedwait()
+
+  mysys/my_os2cond.c
+    1.5 05/10/12 00:58:17 monty@mysql.com +63 -88
+    Fix to MySQL coding style
+    Optimized functions
+
+  mysys/mf_keycache.c
+    1.55 05/10/12 00:58:17 monty@mysql.com +9 -8
+    Indentation changes
+    Test for both ETIMEDOUT and ETIME from pthread_cond_timedwait()
+
+  mysql-test/t/view.test
+    1.114.1.1 05/10/12 00:58:17 monty@mysql.com +7 -4
+    More tests of view rename
+
+  mysql-test/t/range.test
+    1.36 05/10/12 00:58:17 monty@mysql.com +5 -0
+    Added test to verify new introduced bug in NOT BETWEEN X and X
+
+  mysql-test/t/func_str.test
+    1.83 05/10/12 00:58:17 monty@mysql.com +1 -0
+    CHAR() now returns binary string as default
+
+  mysql-test/t/ctype_utf8.test
+    1.72 05/10/12 00:58:17 monty@mysql.com +5 -1
+    CHAR() now returns binary string as default
+
+  mysql-test/r/view.result
+    1.122.1.1 05/10/12 00:58:17 monty@mysql.com +8 -5
+    More tests of view rename
+
+  mysql-test/r/user_var-binlog.result
+    1.5 05/10/12 00:58:17 monty@mysql.com +2 -2
+    CHAR() now returns binary string as default
+
+  mysql-test/r/range.result
+    1.43 05/10/12 00:58:17 monty@mysql.com +7 -0
+    Added test to verify new introduced bug in NOT BETWEEN X and X
+
+  mysql-test/r/func_str.result
+    1.109 05/10/12 00:58:17 monty@mysql.com +5 -2
+    CHAR() now returns binary string as default
+
+  mysql-test/r/ctype_utf8.result
+    1.76 05/10/12 00:58:17 monty@mysql.com +18 -16
+    CHAR() now returns binary string as default
+
+  include/mysql_com.h
+    1.102 05/10/12 00:58:17 monty@mysql.com +1 -1
+    Made octec2hex() more usable
+
+  client/mysqltest.c
+    1.170 05/10/12 00:58:17 monty@mysql.com +2 -6
+    Removed not needed variable
+
+  client/mysqldump.c
+    1.205 05/10/12 00:58:17 monty@mysql.com +38 -33
+    Simple optimizations of new code
+    Indentation fixes
+
+ChangeSet
+  1.1616.2340.6 05/10/11 22:34:40 kent@mysql.com +2 -0
+  mysqlwatch.vcproj:
+    Removed Debug target not used
+  mysql.sln:
+    Added pro-gpl target
+    Build mysqlwatch and mysqlshutdown for classic as well
+
+ChangeSet
+  1.2024.9.1 05/10/11 21:54:23 lenz@mysql.com +1 -0
+  Merge mysql.com:/space/my/mysql-4.1-build
+  into mysql.com:/space/my/mysql-5.0-build
+
+  scripts/make_win_src_distribution.sh
+    1.42 05/10/11 21:54:21 lenz@mysql.com +0 -0
+    Auto merged
+
+  VC++Files/mysqlwatch/mysqlwatch.vcproj
+    1.2 05/10/11 21:53:56 kent@mysql.com +0 -16
+    Removed Debug target not used
+
+  VC++Files/mysql.sln
+    1.1.1.3 05/10/11 21:53:06 kent@mysql.com +258 -26
+    Added pro-gpl target
+
+ChangeSet
+  1.1616.2343.1 05/10/11 21:24:01 lenz@mysql.com +1 -0
+  Merge mysql.com:/space/my/mysql-4.0-build
+  into mysql.com:/space/my/mysql-4.1-build
+
+  scripts/make_win_src_distribution.sh
+    1.27.2.7 05/10/11 21:24:00 lenz@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.1346.856.1 05/10/11 21:16:08 lenz@mysql.com +1 -0
+  - added Docs/manual.chm to the windows source distribution (BUG#13899)
+
+  scripts/make_win_src_distribution.sh
+    1.7.2.5 05/10/11 21:16:06 lenz@mysql.com +1 -1
+    - added Docs/manual.chm to the windows source distribution (BUG#13899). The file
+      is placed in there by the Bootstrap script, which pulls it from the mysqldoc
+      repository
+
+ChangeSet
+  1.1616.2342.1 05/10/11 09:12:12 jimw@mysql.com +11 -0
+  Fix wait_timeout (and kill) handling on Mac OS X by cleaning up how
+  signal handlers are set up, the blocking flags for sockets are set,
+  and which thread-related functions are used. (Bug #8731)
+
+  mysql-test/t/wait_timeout.test
+    1.1 05/10/11 09:12:10 jimw@mysql.com +11 -0
+    New BitKeeper file ``mysql-test/t/wait_timeout.test''
+
+  mysql-test/t/wait_timeout-master.opt
+    1.1 05/10/11 09:12:10 jimw@mysql.com +1 -0
+    New BitKeeper file ``mysql-test/t/wait_timeout-master.opt''
+
+  mysql-test/r/wait_timeout.result
+    1.1 05/10/11 09:12:10 jimw@mysql.com +8 -0
+    New BitKeeper file ``mysql-test/r/wait_timeout.result''
+
+  vio/viosocket.c
+    1.25.1.10 05/10/11 09:12:10 jimw@mysql.com +8 -1
+    If fcntl() fails in vio_blocking(), restore the flags stored in the
+    vio struct.
+
+  vio/vio.c
+    1.19.1.4 05/10/11 09:12:10 jimw@mysql.com +12 -4
+    Always call fcntl() to initialize flags of socket in initialization to
+    avoid problems on systems that don't report the flags on a socket
+    correctly right after it has been returned from accept(), such as
+    FreeBSD, Mac OS X, and possibly other BSD-derived systems.
+
+  mysql-test/t/wait_timeout.test
+    1.0 05/10/11 09:12:10 jimw@mysql.com +0 -0
+    BitKeeper file /home/jimw/my/mysql-4.1-8731b/mysql-test/t/wait_timeout.test
+
+  mysql-test/t/wait_timeout-master.opt
+    1.0 05/10/11 09:12:10 jimw@mysql.com +0 -0
+    BitKeeper file /home/jimw/my/mysql-4.1-8731b/mysql-test/t/wait_timeout-master.opt
+
+  mysql-test/r/wait_timeout.result
+    1.0 05/10/11 09:12:10 jimw@mysql.com +0 -0
+    BitKeeper file /home/jimw/my/mysql-4.1-8731b/mysql-test/r/wait_timeout.result
+
+  sql/mysqld.cc
+    1.356.104.1 05/10/11 09:12:09 jimw@mysql.com +5 -32
+    Use my_sigset() instead of signal() and sigset(), remove unnecessary
+    definition of sigset on __amiga__. Remove unused THREAD_SPECIFIC_SIGPIPE
+    code.
+    
+    A future improvement would be to re-assess the use of sigaction() here
+    and convert its usage to use my_sigset().
+
+  mysys/thr_alarm.c
+    1.44.2.2 05/10/11 09:12:09 jimw@mysql.com +7 -17
+    Use my_sigset() instead of sigset().
+
+  mysys/my_pthread.c
+    1.37.1.6 05/10/11 09:12:09 jimw@mysql.com +0 -17
+    Remove pthread_signal(), which is identical to the new my_sigset() macro.
+
+  include/my_pthread.h
+    1.65.1.16 05/10/11 09:12:09 jimw@mysql.com +21 -14
+    Define my_sigset() instead of trying to monkey with sigset(), and favor
+    an implementation based on sigaction().
+
+  include/config-win.h
+    1.48.1.7 05/10/11 09:12:09 jimw@mysql.com +1 -1
+    Define my_sigset() instead of sigset().
+
+  configure.in
+    1.201.60.1 05/10/11 09:12:09 jimw@mysql.com +3 -13
+    Fix flags for Darwin 6 and later. Simplify Darwin 7-9 blocks to simply
+    be a catch-all for *darwin* so that future Darwin releases get the
+    latest flags.
+
+ChangeSet
+  1.2029 05/10/11 15:59:13 tomas@poseidon.ndb.mysql.com +1 -0
+  minor fix in ndb using a define
+
+  ndb/src/kernel/vm/TransporterCallback.cpp
+    1.12 05/10/11 15:59:06 tomas@poseidon.ndb.mysql.com +1 -1
+    minor fix in ndb using a define
+
+ChangeSet
+  1.2028 05/10/11 15:51:39 tomas@poseidon.ndb.mysql.com +1 -0
+  corrected typo
+
+  ndb/src/kernel/vm/TransporterCallback.cpp
+    1.11 05/10/11 15:51:18 tomas@poseidon.ndb.mysql.com +1 -1
+    corrected typo
+
+ChangeSet
+  1.2027 05/10/11 15:48:07 tomas@poseidon.ndb.mysql.com +15 -0
+  Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+
+  ndb/src/ndbapi/TransporterFacade.cpp
+    1.41 05/10/11 15:47:58 tomas@poseidon.ndb.mysql.com +8 -5
+    Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+    - minor syntax changes
+
+  ndb/src/mgmsrv/ConfigInfo.cpp
+    1.69 05/10/11 15:47:58 tomas@poseidon.ndb.mysql.com +3 -2
+    Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+    - enable usage of SHM default section
+
+  ndb/src/kernel/vm/VMSignal.hpp
+    1.6 05/10/11 15:47:57 tomas@poseidon.ndb.mysql.com +10 -0
+    Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+    - added struct to allocate smaller Signal
+
+  ndb/src/kernel/vm/TransporterCallback.cpp
+    1.10 05/10/11 15:47:57 tomas@poseidon.ndb.mysql.com +72 -18
+    Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+    - added error info
+    - corrected stak overflow issues
+
+  ndb/src/kernel/vm/FastScheduler.cpp
+    1.8 05/10/11 15:47:57 tomas@poseidon.ndb.mysql.com +8 -7
+    Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+    - corrected stack overflow issues
+
+  ndb/src/kernel/error/ndbd_exit_codes.c
+    1.7 05/10/11 15:47:57 tomas@poseidon.ndb.mysql.com +1 -0
+    Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+    - new exit code
+
+  ndb/src/kernel/blocks/qmgr/QmgrMain.cpp
+    1.22 05/10/11 15:47:57 tomas@poseidon.ndb.mysql.com +10 -0
+    Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+    - added error reporting on connect failure
+
+  ndb/src/common/transporter/TransporterRegistry.cpp
+    1.60 05/10/11 15:47:57 tomas@poseidon.ndb.mysql.com +2 -2
+    Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+
+  ndb/src/common/transporter/Transporter.hpp
+    1.13 05/10/11 15:47:57 tomas@poseidon.ndb.mysql.com +2 -1
+    Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+    - added more info to report error
+
+  ndb/src/common/transporter/SHM_Transporter.win32.cpp
+    1.4 05/10/11 15:47:57 tomas@poseidon.ndb.mysql.com +6 -0
+    Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+
+  ndb/src/common/transporter/SHM_Transporter.unix.cpp
+    1.6 05/10/11 15:47:57 tomas@poseidon.ndb.mysql.com +27 -1
+    Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+    - added more error info to errors
+
+  ndb/src/common/transporter/SHM_Transporter.hpp
+    1.9 05/10/11 15:47:57 tomas@poseidon.ndb.mysql.com +2 -0
+    Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+
+  ndb/src/common/transporter/SHM_Transporter.cpp
+    1.16 05/10/11 15:47:57 tomas@poseidon.ndb.mysql.com +13 -9
+    Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+    - added error info to errors
+
+  ndb/include/transporter/TransporterCallback.hpp
+    1.3 05/10/11 15:47:57 tomas@poseidon.ndb.mysql.com +41 -31
+    Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+    - corrected transporter callback error codes to have consistant usage of 0x8000 flag for flagging call to do disconnect
+
+  ndb/include/mgmapi/ndbd_exit_codes.h
+    1.7 05/10/11 15:47:57 tomas@poseidon.ndb.mysql.com +1 -0
+    Bug #9249  	NDBD crashes when mapping SHM segment w/o correct permission
+    - added new exit code for connection setup failure
+
+ChangeSet
+  1.2024.8.1 05/10/11 15:01:38 pem@mysql.com +4 -0
+  Fixed BUG#13510: Setting password local variable changes current password
+    Disallow conflicting use of variables named "password" and "names". If such
+    a variable is declared, and "SET ... = ..." is used for them, an error is
+    returned; the user must resolve the conflict by either using `var` (indicating
+    that the local variable is set) or by renaming the variable.
+    This is necessary since setting "password" and "names" are treated as special
+    cases by the parser.
+
+  sql/sql_yacc.yy
+    1.432 05/10/11 15:01:31 pem@mysql.com +23 -0
+    Check if "names" or "password" are used as local variable/parameter, in which
+    case "set names" or "set password" will be parsed the wrong way. Give an error
+    message instead.
+
+  sql/share/errmsg.txt
+    1.50 05/10/11 15:01:31 pem@mysql.com +2 -0
+    New error message for when certain variable names are use which would be
+    parsed the wrong way. (E.g. "password" and "names")
+
+  mysql-test/t/sp-error.test
+    1.90 05/10/11 15:01:31 pem@mysql.com +53 -0
+    New test cases for BUG#13510
+
+  mysql-test/r/sp-error.result
+    1.86 05/10/11 15:01:31 pem@mysql.com +38 -0
+    New test cases for BUG#13510
+
+ChangeSet
+  1.2024.7.1 05/10/11 15:01:24 guilhem@mysql.com +1 -0
+  To help people avoid BUG#2122 "changing hostname confuses master or slave" until it's fixed,
+  we now issue a warning (at slave's server startup only) when a relay log is named
+  using the implicit hostname-relay-bin naming. Like we already do for binlogs.
+
+  sql/slave.cc
+    1.260 05/10/11 15:01:20 guilhem@mysql.com +18 -1
+    To help people avoid BUG#2122 "changing hostname confuses master or slave" until it's fixed,
+    we now issue a warning (at slave's server startup only) when a relay log is named
+    using the implicit hostname-relay-bin naming. Like I had already added a similar startup warning
+    when a binlog is named using the implicit hostname-bin naming.
+    name_warning_sent is so that at most one warning per startup is sent.
+
+ChangeSet
+  1.2024.6.1 05/10/11 16:56:42 bar@mysql.com +1 -0
+  complete.c:
+    Fixed compilation problem on FreeBSD,
+    after discussion with Jani.
+    Doesn't FreeBSD follow the standard?
+    
+
+  cmd-line-utils/readline/complete.c
+    1.16 05/10/11 16:52:20 bar@mysql.com +1 -1
+    Fixed 
+
+ChangeSet
+  1.2024.5.2 05/10/11 16:39:35 hf@deer.(none) +1 -0
+  Merging
+
+  mysql-test/r/type_float.result
+    1.42 05/10/11 16:38:16 hf@deer.(none) +4 -4
+    merging
+
+ChangeSet
+  1.1616.2339.9 05/10/11 16:26:00 gluh@eagle.intranet.mysql.r18.ru +1 -0
+  Fix for bug#9270 multiple SSL race conditions (for 5.0 tree)
+    The fix is needed to perform locking on shared data structures
+    This is modification of patch proposed by Leandro Santi
+    (see http://webs.sinectis.com.ar/lesanti/misc/mysql-4.0.23a-openssl_locking.patch)
+
+  sql/mysqld.cc
+    1.356.98.15 05/10/11 16:25:15 gluh@mysql.com +97 -0
+    Fix for bug#9270 multiple SSL race conditions (for 5.0 tree)
+      The fix is needed to perform locking on shared data structures
+
+ChangeSet
+  1.2024.5.1 05/10/11 14:58:25 hf@deer.(none) +6 -0
+  Merging
+
+  sql/item.cc
+    1.185.1.2 05/10/11 14:58:20 hf@deer.(none) +1 -1
+    merging
+
+  mysql-test/t/type_decimal.test
+    1.28 05/10/11 14:58:20 hf@deer.(none) +0 -13
+    merging
+
+  mysql-test/r/union.result
+    1.78 05/10/11 14:58:20 hf@deer.(none) +0 -1
+    merging
+
+  mysql-test/r/type_float.result
+    1.41 05/10/11 14:58:20 hf@deer.(none) +4 -4
+    merging
+
+  mysql-test/r/type_decimal.result
+    1.38 05/10/11 14:58:20 hf@deer.(none) +0 -16
+    merging
+
+  VC++Files/mysql.sln
+    1.1.1.2 05/10/11 11:57:15 kent@mysql.com +5 -7
+    Build mysqlwatch and mysqlshutdown for classic as well
+
+  mysql-test/t/type_float.test
+    1.27 05/10/11 14:43:51 hf@deer.(none) +0 -0
+    Auto merged
+
+ChangeSet
+  1.2024.1.7 05/10/10 17:41:36 eric@mysql.com +3 -0
+  BUG#13724 conditionally added CONNECTION='connect string' for SHOW CREATE TABLE
+
+  sql/sql_show.cc
+    1.289 05/10/10 17:41:07 eric@mysql.com +5 -0
+    added connect_string for SHOW CREATE TABLE
+
+  mysql-test/t/federated.test
+    1.15 05/10/10 17:41:07 eric@mysql.com +2 -0
+    added test for SHOW CREATE TABLE
+
+  mysql-test/r/federated.result
+    1.18 05/10/10 17:41:06 eric@mysql.com +6 -0
+    test results for SHOW CREATE TABLE
+
+ChangeSet
+  1.1616.2340.5 05/10/11 01:07:50 kent@mysql.com +6 -0
+  Many files:
+    Added Visual Studio .Net targets and 'vcproj' files for "isam",
+    "isamchk", "mysqlshutdown", "mysqlwatch" and "pack_isam"
+
+  VC++Files/pack_isam/pack_isam.vcproj
+    1.1 05/10/10 23:57:40 kent@mysql.com +244 -0
+    Added isam, isamchk, mysqlshutdown, mysqlwatch and pack_isam
+
+  VC++Files/mysqlwatch/mysqlwatch.vcproj
+    1.1 05/10/10 23:57:40 kent@mysql.com +109 -0
+    Added isam, isamchk, mysqlshutdown, mysqlwatch and pack_isam
+
+  VC++Files/mysqlshutdown/mysqlshutdown.vcproj
+    1.1 05/10/10 23:57:40 kent@mysql.com +162 -0
+    Added isam, isamchk, mysqlshutdown, mysqlwatch and pack_isam
+
+  VC++Files/isamchk/isamchk.vcproj
+    1.1 05/10/10 23:57:40 kent@mysql.com +272 -0
+    Added isam, isamchk, mysqlshutdown, mysqlwatch and pack_isam
+
+  VC++Files/pack_isam/pack_isam.vcproj
+    1.0 05/10/10 23:57:40 kent@mysql.com +0 -0
+    BitKeeper file /Users/kent/mysql/bk/mysql-4.1-release/VC++Files/pack_isam/pack_isam.vcproj
+
+  VC++Files/mysqlwatch/mysqlwatch.vcproj
+    1.0 05/10/10 23:57:40 kent@mysql.com +0 -0
+    BitKeeper file /Users/kent/mysql/bk/mysql-4.1-release/VC++Files/mysqlwatch/mysqlwatch.vcproj
+
+  VC++Files/mysqlshutdown/mysqlshutdown.vcproj
+    1.0 05/10/10 23:57:40 kent@mysql.com +0 -0
+    BitKeeper file /Users/kent/mysql/bk/mysql-4.1-release/VC++Files/mysqlshutdown/mysqlshutdown.vcproj
+
+  VC++Files/isamchk/isamchk.vcproj
+    1.0 05/10/10 23:57:40 kent@mysql.com +0 -0
+    BitKeeper file /Users/kent/mysql/bk/mysql-4.1-release/VC++Files/isamchk/isamchk.vcproj
+
+  VC++Files/isam/isam.vcproj
+    1.1 05/10/10 23:57:39 kent@mysql.com +1283 -0
+    Added isam, isamchk, mysqlshutdown, mysqlwatch and pack_isam
+
+  VC++Files/isam/isam.vcproj
+    1.0 05/10/10 23:57:38 kent@mysql.com +0 -0
+    BitKeeper file /Users/kent/mysql/bk/mysql-4.1-release/VC++Files/isam/isam.vcproj
+
+  VC++Files/mysql.sln
+    1.1.1.1 05/10/10 23:56:58 kent@mysql.com +142 -0
+    Added isam, isamchk, mysqlshutdown, mysqlwatch and pack_isam
+
+  mysql-test/t/rpl_dual_pos_advance-master.opt
+    1.1 05/10/10 23:09:11 guilhem@mysql.com +0 -0
+    empty; its goal is just to trigger a server restart after running the test,
+    so that the master forgets that it was a slave (otherwise it affects the following tests).
+
+  mysql-test/t/rpl_dual_pos_advance-master.opt
+    1.0 05/10/10 23:09:11 guilhem@mysql.com +0 -0
+    BitKeeper file /home/mysql_src/mysql-4.1/mysql-test/t/rpl_dual_pos_advance-master.opt
+
+ChangeSet
+  1.2024.4.1 05/10/10 21:42:14 lars@mysql.com +1 -0
+  Added missing HAVE_REPLICATION define
+
+  sql/sql_parse.cc
+    1.500.1.4 05/10/10 21:41:50 lars@mysql.com +2 -0
+    Added missing HAVE_REPLICATION define
+
+ChangeSet
+  1.2024.3.2 05/10/10 23:53:53 svoj@mysql.com +2 -0
+  Always save/restore connect string.
+
+  sql/unireg.cc
+    1.71 05/10/10 23:53:46 svoj@mysql.com +6 -9
+    Always save connect string.
+
+  sql/table.cc
+    1.195.1.2 05/10/10 23:53:46 svoj@mysql.com +6 -9
+    If extra block present always restore connect string.
+
+ChangeSet
+  1.2024.3.1 05/10/10 23:01:45 svoj@mysql.com +4 -0
+  Store and read engine type string in extra block of .frm.
+
+  sql/unireg.cc
+    1.70 05/10/10 23:01:37 svoj@mysql.com +18 -4
+    Store and read engine type string in extra block of .frm.
+
+  sql/table.cc
+    1.195.1.1 05/10/10 23:01:37 svoj@mysql.com +42 -24
+    Store and read engine type string in extra block of .frm.
+
+  sql/handler.h
+    1.161 05/10/10 23:01:36 svoj@mysql.com +1 -0
+    extra block size added to HA_CREATE_INFO.
+
+  sql/handler.cc
+    1.198 05/10/10 23:01:36 svoj@mysql.com +11 -5
+    Use my_strnncoll instead of my_strcasecmp (it is possible to
+    compare non-asciiz strings now).
+
+ChangeSet
+  1.2024.1.4 05/10/10 19:38:58 lars@mysql.com +3 -0
+  After merge fixes
+
+  sql/sql_parse.cc
+    1.500.1.3 05/10/10 19:38:26 lars@mysql.com +1 -1
+    After merge fixes
+
+  mysql-test/r/subselect2.result
+    1.12 05/10/10 19:38:26 lars@mysql.com +2 -0
+    After merge fixes
+
+  mysql-test/r/select.result
+    1.99 05/10/10 19:38:25 lars@mysql.com +7 -0
+    After merge fixes
+
+ChangeSet
+  1.1616.2339.8 05/10/10 19:23:13 lars@mysql.com +1 -0
+  Added missing HAVE_REPLICATION define
+
+  sql/sql_parse.cc
+    1.271.1.200 05/10/10 19:22:50 lars@mysql.com +3 -1
+    Added missing HAVE_REPLICATION define
+
+ChangeSet
+  1.1616.2339.7 05/10/10 21:09:34 hf@deer.(none) +1 -0
+  Merge bk@192.168.21.1:/usr/home/bk/mysql-4.1
+  into deer.(none):/home/hf/work/mysql-4.1.13372
+
+  sql/item.cc
+    1.58.1.166 05/10/10 21:09:30 hf@deer.(none) +0 -0
+    Auto merged
+
+ChangeSet
+  1.2024.2.1 05/10/10 17:50:19 lars@mysql.com +11 -0
+  Merge mysql.com:/users/lthalmann/bkroot/mysql-4.1
+  into  mysql.com:/users/lthalmann/bk/mysql-5.0
+
+  sql/sql_update.cc
+    1.173 05/10/10 17:50:12 lars@mysql.com +2 -3
+    After merge fixes
+
+  sql/sql_parse.cc
+    1.500.1.2 05/10/10 17:50:12 lars@mysql.com +11 -14
+    After merge fixes
+
+  sql/item.cc
+    1.185.1.1 05/10/10 17:50:12 lars@mysql.com +0 -0
+    After merge fixes
+
+  mysql-test/r/select.result
+    1.98 05/10/10 17:50:12 lars@mysql.com +0 -7
+    After merge fixes
+
+  myisam/mi_search.c
+    1.58 05/10/10 17:50:12 lars@mysql.com +0 -0
+    After merge fixes
+
+  configure.in
+    1.352 05/10/10 17:50:12 lars@mysql.com +0 -2
+    After merge fixes
+
+  scripts/make_binary_distribution.sh
+    1.96 05/10/10 17:12:23 lars@mysql.com +0 -3
+    Auto merged
+
+  ndb/src/mgmsrv/InitConfigFileParser.cpp
+    1.23.1.1 05/10/10 17:12:23 lars@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/t/select.test
+    1.82 05/10/10 17:12:23 lars@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/r/subselect2.result
+    1.11 05/10/10 17:12:22 lars@mysql.com +0 -0
+    Auto merged
+
+  myisam/mi_rkey.c
+    1.20 05/10/10 17:12:22 lars@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.2024.1.2 05/10/10 17:09:27 tulin@dl145b.mysql.com +4 -0
+  fixed init of variables in ndb block constructors
+
+  ndb/src/kernel/blocks/ndbfs/Ndbfs.cpp
+    1.19 05/10/10 17:04:55 ndbdev@dl145b.mysql.com +4 -1
+    fixed init of variables in ndb block constructors
+
+  ndb/src/kernel/blocks/dbtup/DbtupGen.cpp
+    1.19 05/10/10 17:04:55 ndbdev@dl145b.mysql.com +16 -0
+    fixed init of variables in ndb block constructors
+
+  ndb/src/kernel/blocks/dbtc/DbtcInit.cpp
+    1.11 05/10/10 17:04:55 ndbdev@dl145b.mysql.com +13 -0
+    fixed init of variables in ndb block constructors
+
+  ndb/src/kernel/blocks/dbdih/DbdihInit.cpp
+    1.9 05/10/10 17:04:55 ndbdev@dl145b.mysql.com +12 -0
+    fixed init of variables in ndb block constructors
+
+ChangeSet
+  1.2019.6.3 05/10/10 18:53:57 evgen@moonbone.local +3 -0
+  Fix bug#13327 check_equality() wasn't checking view's fields
+  
+  check_equality() finds equalities among field items. It checks input items
+  to be Item_fields thus skipping view's fields, which are represented by
+  Item_direct_view_ref. Because of this index wasn't applied in all cases
+  it can be.
+  
+  To fix this problem check_equality() now takes real item of
+  Item_direct_view_ref, except outer view refs (with depended_from set).
+
+  mysql-test/t/view.test
+    1.115 05/10/10 18:51:04 evgen@moonbone.local +20 -0
+    Test case for bug#13327 VIEW performs index scan
+
+  mysql-test/r/view.result
+    1.123 05/10/10 18:50:36 evgen@moonbone.local +22 -0
+    Test case for bug#13327 VIEW performs index scan
+
+  sql/sql_select.cc
+    1.377 05/10/10 18:50:03 evgen@moonbone.local +15 -0
+    Fix bug #13327 VIEW performs index scan
+     For proper views fields handling check_equality() now takes real item from Item_direct_view_ref, with exception of outer view refs.
+
+ChangeSet
+  1.1616.2339.6 05/10/10 15:10:14 lars@mysql.com +4 -0
+  BUG#12618: Removing fake locking
+
+  sql/sql_update.cc
+    1.83.2.61 05/10/10 15:09:44 lars@mysql.com +0 -3
+    Moved call to sql_parse.cc
+
+  sql/sql_parse.cc
+    1.271.1.199 05/10/10 15:09:44 lars@mysql.com +20 -82
+    Removed fake locking
+    Changed so that filtering is done later for multi-update
+    Removed redundant code
+
+  mysql-test/t/rpl_multi_update3.test
+    1.5 05/10/10 15:09:44 lars@mysql.com +59 -0
+    New test case
+
+  mysql-test/r/rpl_multi_update3.result
+    1.4 05/10/10 15:09:43 lars@mysql.com +72 -0
+    New test case
+
+ChangeSet
+  1.2024.1.1 05/10/10 13:00:41 lenz@mysql.com +1 -0
+  - typo fix: rott->root in the file attributes for mysql_client_test of the RPM spec file
+
+  support-files/mysql.spec.sh
+    1.116 05/10/10 13:00:29 lenz@mysql.com +1 -1
+    - typo fix: rott->root in the file attributes for mysql_client_test
+
+ChangeSet
+  1.1616.2339.5 05/10/10 12:27:48 tomas@poseidon.ndb.mysql.com +1 -0
+    Bug #13611  	 double [TCP DEFAULT] in config.ini crashes ndb_mgmd
+    - Added error printout and nice exit for duplicate default sections
+
+  ndb/src/mgmsrv/InitConfigFileParser.cpp
+    1.16.1.4 05/10/10 12:27:42 tomas@poseidon.ndb.mysql.com +6 -2
+      Bug #13611  	 double [TCP DEFAULT] in config.ini crashes ndb_mgmd
+      - Added error printout and nice exit for duplicate default sections
+
+ChangeSet
+  1.2025 05/10/10 12:25:29 tomas@poseidon.ndb.mysql.com +1 -0
+  Bug #13611  	 double [TCP DEFAULT] in config.ini crashes ndb_mgmd
+  - Added error printout and nice exit for duplicate default sections
+
+  ndb/src/mgmsrv/InitConfigFileParser.cpp
+    1.24 05/10/10 12:25:22 tomas@poseidon.ndb.mysql.com +6 -2
+    Bug #13611  	 double [TCP DEFAULT] in config.ini crashes ndb_mgmd
+    - Added error printout and nice exit for duplicate default sections
+
+ChangeSet
+  1.2024 05/10/10 09:38:18 tomas@poseidon.ndb.mysql.com +1 -0
+  Merge tulin@bk-internal.mysql.com:/home/bk/mysql-5.0
+  into poseidon.ndb.mysql.com:/home/tomas/mysql-5.0
+
+  ndb/src/mgmsrv/Services.cpp
+    1.55 05/10/10 09:38:15 tomas@poseidon.ndb.mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.1616.2340.4 05/10/10 00:21:10 kent@mysql.com +1 -0
+  Makefile.am:
+    Copy "disabled.def"
+
+  mysql-test/Makefile.am
+    1.39.1.10 05/10/10 00:19:52 kent@mysql.com +6 -1
+    Copy "disabled.def"
+
+ChangeSet
+  1.1346.855.1 05/10/09 23:05:44 evgen@moonbone.local +6 -0
+  Fix bug#7672 Unknown column error in order clause
+  
+  When fixing Item_func_plus in ORDER BY clause field c is searched in all
+  opened tables, but because c is an alias it wasn't found there.
+  
+  This patch adds a flag to select_lex which allows Item_field::fix_fields() 
+  to look up in select's item_list to find aliased fields.
+
+  mysql-test/r/select.result
+    1.8.1.30 05/10/09 23:04:20 evgen@moonbone.local +10 -0
+    Test case for bug#7672 Unknown column error in order clause
+
+  mysql-test/t/select.test
+    1.12.1.16 05/10/09 23:03:15 evgen@moonbone.local +9 -0
+    Test case for bug#7672 Unknown column error in order clause
+
+  sql/sql_select.cc
+    1.152.1.139 05/10/09 23:01:31 evgen@moonbone.local +6 -0
+    Fix bug#7672 Unknown column error in order clause
+
+  sql/sql_lex.h
+    1.66.1.16 05/10/09 23:01:01 evgen@moonbone.local +1 -1
+    Fix bug#7672 Unknown column error in order clause
+    Added flag to select_lex allowing Item_field::fix_fields to look up items in select's item list.
+
+  sql/sql_lex.cc
+    1.32.1.10 05/10/09 23:00:49 evgen@moonbone.local +1 -0
+     Fix bug#7672 Unknown column error in order clause
+
+  sql/item.cc
+    1.19.1.19 05/10/09 23:00:25 evgen@moonbone.local +11 -0
+    Fix bug#7672 Unknown column error in order clause
+    When fixing fields in ORDER BY clause allow Item_field::fix_fields() to look up items in select's item list to find aliased fields.
+
+ChangeSet
+  1.2019.6.2 05/10/09 14:45:08 konstantin@mysql.com +4 -0
+  Remove protocol_cursor.cpp (no longer used) from sources
+  Fix a compile failure
+
+  sql/mysqld.cc
+    1.510 05/10/09 14:44:57 konstantin@mysql.com +1 -1
+    Fix a compile failure
+
+  VC++Files/sql/mysqld.dsp
+    1.39 05/10/09 14:44:57 konstantin@mysql.com +0 -4
+    Remove protocol_cursor.cpp (no longer used) from sources
+
+  VC++Files/libmysqld/libmysqld.dsp
+    1.28 05/10/09 14:44:57 konstantin@mysql.com +0 -4
+    Remove protocol_cursor.cpp (no longer used) from sources
+
+  BitKeeper/deleted/.del-protocol_cursor.cc~2a1ab8e023a166a4
+    1.17 05/10/09 14:09:58 konstantin@mysql.com +0 -0
+    Delete: sql/protocol_cursor.cc
+
+ChangeSet
+  1.1616.2340.3 05/10/09 01:32:09 kent@mysql.com +1 -0
+  func_group.test:
+    Test requires innodb
+
+  mysql-test/t/func_group.test
+    1.24.1.8 05/10/09 01:30:23 kent@mysql.com +2 -0
+    Test requires innodb
+
+ChangeSet
+  1.2019.6.1 05/10/08 16:59:41 serg@serg.mylan +2 -0
+  Merge bk-internal.mysql.com:/home/bk/mysql-5.0
+  into serg.mylan:/usr/home/serg/Abk/mysql-5.0
+
+  sql/sql_parse.cc
+    1.500.1.1 05/10/08 16:59:13 serg@serg.mylan +0 -0
+    Auto merged
+
+  server-tools/instance-manager/mysql_connection.cc
+    1.14 05/10/08 16:59:12 serg@serg.mylan +0 -0
+    Auto merged
+
+ChangeSet
+  1.2019.5.2 05/10/08 16:56:10 serg@serg.mylan +3 -0
+  Merge serg.mylan:/usr/home/serg/Abk/mysql-4.1
+  into serg.mylan:/usr/home/serg/Abk/mysql-5.0
+
+  sql/sql_parse.cc
+    1.499.1.2 05/10/08 16:55:55 serg@serg.mylan +0 -0
+    Auto merged
+
+  mysql-test/t/rpl_flush_tables.test
+    1.11 05/10/08 16:55:54 serg@serg.mylan +0 -0
+    Auto merged
+
+  mysql-test/r/rpl_flush_tables.result
+    1.12 05/10/08 16:55:54 serg@serg.mylan +0 -0
+    Auto merged
+
+ChangeSet
+  1.2019.5.1 05/10/08 16:39:55 serg@serg.mylan +27 -0
+  pthread_handler_decl() changed to be ctags-friendly
+  (and contain extern "C" when necessary)
+
+  tools/mysqlmanager.c
+    1.47 05/10/08 16:39:41 serg@serg.mylan +4 -5
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  sql/sql_parse.cc
+    1.499.1.1 05/10/08 16:39:41 serg@serg.mylan +2 -2
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  sql/sql_manager.cc
+    1.5 05/10/08 16:39:41 serg@serg.mylan +1 -1
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  sql/sql_insert.cc
+    1.176 05/10/08 16:39:41 serg@serg.mylan +2 -2
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  sql/sql_class.h
+    1.269 05/10/08 16:39:41 serg@serg.mylan +2 -2
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  sql/slave.h
+    1.90 05/10/08 16:39:41 serg@serg.mylan +2 -2
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  sql/slave.cc
+    1.259 05/10/08 16:39:40 serg@serg.mylan +5 -5
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  sql/repl_failsafe.h
+    1.12 05/10/08 16:39:40 serg@serg.mylan +1 -1
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  sql/repl_failsafe.cc
+    1.57 05/10/08 16:39:40 serg@serg.mylan +1 -1
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  sql/mysqld.cc
+    1.509 05/10/08 16:39:40 serg@serg.mylan +14 -16
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  sql/mysql_priv.h
+    1.360 05/10/08 16:39:40 serg@serg.mylan +3 -3
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  sql/ha_ndbcluster.cc
+    1.214 05/10/08 16:39:39 serg@serg.mylan +2 -3
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  server-tools/instance-manager/mysql_connection.h
+    1.4 05/10/08 16:39:39 serg@serg.mylan +1 -6
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  server-tools/instance-manager/mysql_connection.cc
+    1.12.1.1 05/10/08 16:39:39 serg@serg.mylan +1 -6
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  server-tools/instance-manager/listener.h
+    1.5 05/10/08 16:39:39 serg@serg.mylan +1 -5
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  server-tools/instance-manager/listener.cc
+    1.21 05/10/08 16:39:39 serg@serg.mylan +1 -7
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  server-tools/instance-manager/instance.cc
+    1.27 05/10/08 16:39:39 serg@serg.mylan +1 -6
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  server-tools/instance-manager/guardian.h
+    1.12 05/10/08 16:39:39 serg@serg.mylan +1 -5
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  server-tools/instance-manager/guardian.cc
+    1.19 05/10/08 16:39:39 serg@serg.mylan +1 -6
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  ndb/src/ndbapi/ndb_cluster_connection.cpp
+    1.31 05/10/08 16:39:39 serg@serg.mylan +1 -1
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  mysys/my_winthread.c
+    1.12 05/10/08 16:39:38 serg@serg.mylan +1 -1
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  mysys/my_os2thread.c
+    1.5 05/10/08 16:39:38 serg@serg.mylan +1 -1
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  myisam/sort.c
+    1.48 05/10/08 16:39:38 serg@serg.mylan +1 -1
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  myisam/myisamdef.h
+    1.82 05/10/08 16:39:38 serg@serg.mylan +1 -1
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  include/my_pthread.h
+    1.86 05/10/08 16:39:38 serg@serg.mylan +7 -4
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  VC++Files/thr_test/thr_test.c
+    1.2 05/10/08 16:39:38 serg@serg.mylan +2 -2
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+  VC++Files/test1/mysql_thr.c
+    1.3 05/10/08 16:39:38 serg@serg.mylan +2 -2
+    pthread_handler_decl() changed to be ctags-friendly
+    (and contain extern "C" when necessary)
+
+ChangeSet
+  1.1616.2341.1 05/10/08 14:46:04 serg@serg.mylan +3 -0
+  Bug #10942 "deadlock with FLUSH TABLES WITH READ LOCK + STOP SLAVE"
+  don't allow STOP SLAVE if global read lock is in taken
+
+  sql/sql_parse.cc
+    1.271.1.198 05/10/08 14:45:49 serg@serg.mylan +1 -1
+    Bug #10942 "deadlock with FLUSH TABLES WITH READ LOCK + STOP SLAVE"
+    don't allow STOP SLAVE if global read lock is in taken
+
+  mysql-test/t/rpl_flush_tables.test
+    1.5.1.3 05/10/08 14:45:49 serg@serg.mylan +10 -0
+    Bug #10942 "deadlock with FLUSH TABLES WITH READ LOCK + STOP SLAVE"
+    don't allow STOP SLAVE if global read lock is in taken
+
+  mysql-test/r/rpl_flush_tables.result
+    1.4.1.2 05/10/08 14:45:49 serg@serg.mylan +6 -0
+    Bug #10942 "deadlock with FLUSH TABLES WITH READ LOCK + STOP SLAVE"
+    don't allow STOP SLAVE if global read lock is in taken
+
+ChangeSet
+  1.2019.3.7 05/10/08 03:37:23 monty@mysql.com +31 -0
+  Merge bk-internal.mysql.com:/home/bk/mysql-5.0
+  into  mysql.com:/home/my/mysql-5.0
+
+  sql/table.cc
+    1.196 05/10/08 03:37:18 monty@mysql.com +11 -7
+    manual merge
+
+  sql/sql_prepare.cc
+    1.158 05/10/08 03:37:17 monty@mysql.com +9 -13
+    manual merge
+
+  sql/sql_parse.cc
+    1.501 05/10/08 03:37:17 monty@mysql.com +13 -9
+    manual merge
+
+  strings/decimal.c
+    1.63 05/10/08 02:48:58 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/table.h
+    1.117 05/10/08 02:48:58 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/structs.h
+    1.50 05/10/08 02:48:58 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/sql_table.cc
+    1.278 05/10/08 02:48:58 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/sql_class.cc
+    1.215 05/10/08 02:48:57 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/sp_head.cc
+    1.188.2.1 05/10/08 02:48:57 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/opt_range.cc
+    1.191 05/10/08 02:48:57 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/item_func.cc
+    1.257 05/10/08 02:48:56 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/item.h
+    1.172 05/10/08 02:48:56 monty@mysql.com +0 -1
+    Auto merged
+
+  sql/item.cc
+    1.186 05/10/08 02:48:56 monty@mysql.com +0 -0
+    Auto merged
+
+  sql/ha_federated.cc
+    1.50 05/10/08 02:48:56 monty@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/t/temp_table.test
+    1.13 05/10/08 02:48:56 monty@mysql.com +0 -13
+    Auto merged
+
+  mysql-test/t/mysql.test
+    1.4 05/10/08 02:48:56 monty@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/t/multi_statement.test
+    1.7 05/10/08 02:48:55 monty@mysql.com +0 -4
+    Auto merged
+
+  mysql-test/t/information_schema_inno.test
+    1.5 05/10/08 02:48:55 monty@mysql.com +0 -1
+    Auto merged
+
+  mysql-test/t/information_schema.test
+    1.59 05/10/08 02:48:55 monty@mysql.com +0 -6
+    Auto merged
+
+  mysql-test/t/func_str.test
+    1.82 05/10/08 02:48:55 monty@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/r/temp_table.result
+    1.20 05/10/08 02:48:55 monty@mysql.com +0 -15
+    Auto merged
+
+  mysql-test/r/mysqldump.result
+    1.74 05/10/08 02:48:55 monty@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/r/multi_statement.result
+    1.5 05/10/08 02:48:54 monty@mysql.com +0 -1
+    Auto merged
+
+  mysql-test/r/information_schema_inno.result
+    1.8 05/10/08 02:48:54 monty@mysql.com +0 -1
+    Auto merged
+
+  mysql-test/r/information_schema.result
+    1.84 05/10/08 02:48:54 monty@mysql.com +0 -12
+    Auto merged
+
+  mysql-test/r/func_str.result
+    1.108 05/10/08 02:48:54 monty@mysql.com +0 -0
+    Auto merged
+
+  include/my_sys.h
+    1.174 05/10/08 02:48:54 monty@mysql.com +0 -0
+    Auto merged
+
+  client/mysqltest.c
+    1.169 05/10/08 02:48:54 monty@mysql.com +0 -0
+    Auto merged
+
+  client/mysqldump.c
+    1.204 05/10/08 02:48:54 monty@mysql.com +0 -0
+    Auto merged
+
+  client/mysql.cc
+    1.184 05/10/08 02:48:54 monty@mysql.com +0 -0
+    Auto merged
+
+  BUILD/SETUP.sh
+    1.54 05/10/08 02:48:54 monty@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.1958.10.2 05/10/08 00:57:40 monty@mysql.com +3 -0
+  Simple changes during review of code
+  Added back flag that I accidently removed in last patch
+
+  sql/sql_table.cc
+    1.273.1.1 05/10/08 00:57:33 monty@mysql.com +9 -9
+    Simplify code by having error block last
+
+  sql/sql_prepare.cc
+    1.154.2.2 05/10/08 00:57:33 monty@mysql.com +2 -0
+    Added back flag that I accidently removed in last patch
+
+  sql/ha_federated.cc
+    1.42.2.2 05/10/08 00:57:33 monty@mysql.com +26 -52
+    Indentation cleanups
+    Simple optimization using min() and strmake()
+    Much simpler create()
+
+ChangeSet
+  1.2019.4.1 05/10/07 20:25:51 petr@mysql.com +2 -0
+  fix compile failure (which shows up in cygwin environment)
+
+  server-tools/instance-manager/user_map.cc
+    1.15 05/10/07 20:25:34 petr@mysql.com +1 -1
+    fix pragma statement
+
+  server-tools/instance-manager/mysql_connection.cc
+    1.13 05/10/07 20:25:34 petr@mysql.com +1 -1
+    fix pragma statement
+
+ChangeSet
+  1.2023 05/10/07 17:43:59 tomas@poseidon.ndb.mysql.com +2 -0
+  added missing signal to VoidFs
+
+  ndb/src/kernel/blocks/ndbfs/VoidFs.cpp
+    1.4 05/10/07 17:43:52 tomas@poseidon.ndb.mysql.com +16 -0
+    added missing signal to VoidFs
+
+  ndb/src/kernel/blocks/ndbfs/Ndbfs.hpp
+    1.4 05/10/07 17:43:52 tomas@poseidon.ndb.mysql.com +1 -0
+    added missing signal to VoidFs
+
+ChangeSet
+  1.1616.2339.3 05/10/07 20:34:40 ramil@mysql.com +1 -0
+  Merge mysqldev@production.mysql.com:my/mysql-4.1-release
+  into  mysql.com:/usr/home/ram/work/mysql-4.1
+
+  scripts/make_binary_distribution.sh
+    1.55.1.31 05/10/07 20:34:34 ramil@mysql.com +0 -4
+    Auto merged
+
+ChangeSet
+  1.1616.2340.2 05/10/07 20:14:34 ramil@mysql.com +2 -0
+  Populate t1 in order to get more predictable explain results.
+
+  mysql-test/t/subselect2.test
+    1.5 05/10/07 20:13:58 ramil@mysql.com +2 -0
+    Populate t1 in order to get more predictable explain results.
+
+  mysql-test/r/subselect2.result
+    1.5.1.3 05/10/07 20:13:58 ramil@mysql.com +1 -0
+    Populate t1 in order to get more predictable explain results.
+
+ChangeSet
+  1.1616.2340.1 05/10/07 16:37:53 joerg@mysql.com +1 -0
+  Copy zlib.a and valgrind.supp if exists.
+  Copy disabled.def
+  (Backport of Kent's change from the main tree to the 4.1.15 build clone.
+  Original changeset:  2005/10/07 13:08:07+02:00 kent@mysql.com )
+
+  scripts/make_binary_distribution.sh
+    1.55.4.1 05/10/07 16:37:47 joerg@mysql.com +4 -1
+    Copy zlib.a and valgrind.supp if exists.
+    Copy disabled.def
+    (Backport of Kent's change from the main tree to the 4.1.15 build clone.)
+
+ChangeSet
+  1.1616.2339.2 05/10/07 13:08:07 kent@mysql.com +1 -0
+  make_binary_distribution.sh:
+    Copy zlib.a and valgrind.supp if exists
+    Copy disabled.def
+
+  scripts/make_binary_distribution.sh
+    1.55.1.30 05/10/07 13:06:23 kent@mysql.com +3 -1
+    Copy zlib.a and valgrind.supp if exists
+
+ChangeSet
+  1.2019.3.5 05/10/07 12:55:00 kent@mysql.com +2 -0
+  Merge
+
+  scripts/make_binary_distribution.sh
+    1.95 05/10/07 12:54:49 kent@mysql.com +21 -35
+
+ChangeSet
+  1.1616.2339.1 05/10/07 12:50:29 joerg@mysql.com +1 -0
+  Increase the version number.
+
+  configure.in
+    1.201.1.195 05/10/07 12:32:21 joerg@mysql.com +2 -2
+    Increase the version number.
+
+  ndb/src/mgmsrv/Services.cpp
+    1.53.1.1 05/10/07 12:26:03 kent@mysql.com +0 -1
+    Auto merged
+
+ChangeSet
+  1.2019.3.4 05/10/07 15:09:44 gluh@eagle.intranet.mysql.r18.ru +1 -0
+  after merge fix
+
+  mysql-test/r/rpl_openssl.result
+    1.11 05/10/07 15:09:38 gluh@mysql.com +2 -3
+    after merge fix
+
+ChangeSet
+  1.2019.3.3 05/10/07 14:26:32 gluh@mysql.com +3 -0
+  4.1 -> 5.0 merge
+
+  mysql-test/r/rpl_openssl.result
+    1.10 05/10/07 14:26:27 gluh@mysql.com +3 -5
+    manual merge
+
+  mysql-test/t/rpl_openssl.test
+    1.10 05/10/07 14:19:41 gluh@mysql.com +0 -1
+    Auto merged
+
+  client/mysql.cc
+    1.183 05/10/07 14:19:41 gluh@mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.2019.3.2 05/10/07 14:16:44 gluh@eagle.intranet.mysql.r18.ru +2 -0
+  Fix for bug#13202 SELECT * INTO OUTFILE ... FROM information_schema.schemata now fails
+    allow select into outfile from I_S tables
+    it is enough to add FILE_ACL for I_S tables only to 'check_table_access' function
+    as we use 'any_db' for 'check_access' function in places where FILE_ACL is required
+
+  sql/sql_parse.cc
+    1.500 05/10/07 14:15:31 gluh@mysql.com +1 -1
+    Fix for bug#13202 SELECT * INTO OUTFILE ... FROM information_schema.schemata now fails
+      allow select into outfile from I_S tables
+      it is enough to add FILE_ACL for I_S tables only to 'check_table_access' function
+      as we use 'any_db' for 'check_access' function in places where FILE_ACL is required
+
+  mysql-test/t/outfile.test
+    1.12 05/10/07 14:15:31 gluh@mysql.com +18 -0
+    Fix for bug#13202 SELECT * INTO OUTFILE ... FROM information_schema.schemata now fails
+      test case
+
+  scripts/make_binary_distribution.sh
+    1.55.1.29 05/10/07 10:43:30 kent@mysql.com +1 -0
+    Copy disabled.def
+
+ChangeSet
+  1.2019.3.1 05/10/07 11:14:40 sergefp@mysql.com +4 -0
+  Merge spetrunia@bk-internal.mysql.com:/home/bk/mysql-5.0
+  into mysql.com:/home/psergey/mysql-5.0-bug13484
+
+  mysql-test/t/index_merge_innodb.test
+    1.10 05/10/07 11:14:38 sergefp@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/r/rowid_order_innodb.result
+    1.8 05/10/07 11:14:38 sergefp@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/r/index_merge_innodb.result
+    1.13 05/10/07 11:14:38 sergefp@mysql.com +0 -0
+    Auto merged
+
+  sql/ha_innodb.cc
+    1.271 05/10/07 11:14:38 sergefp@mysql.com +0 -0
+    Auto merged
+
+  mysql-test/t/index_merge_innodb.test
+    1.9 05/10/07 11:14:38 sergefp@mysql.com +0 -0
+    Turn off EOLN_NATIVE flag
+
+  mysql-test/r/rowid_order_innodb.result
+    1.7 05/10/07 11:14:38 sergefp@mysql.com +0 -0
+    Turn off EOLN_NATIVE flag
+
+  mysql-test/r/index_merge_innodb.result
+    1.12 05/10/07 11:14:38 sergefp@mysql.com +0 -0
+    Turn off EOLN_NATIVE flag
+
+ChangeSet
+  1.1616.2335.10 05/10/07 09:52:15 bar@mysql.com +3 -0
+  ctype_utf8.result, ctype_utf8.test:
+    Adding test case.
+  item_func.cc:
+    Bug#13751 find_in_set: Illegal mix of collations.
+    Character set conversion was forgotten in find_in_set.
+
+  mysql-test/r/ctype_utf8.result
+    1.45.1.21 05/10/07 09:51:55 bar@mysql.com +5 -0
+    Adding test case.
+
+  mysql-test/t/ctype_utf8.test
+    1.57.1.11 05/10/07 09:51:46 bar@mysql.com +8 -0
+    Adding test case.
+
+  sql/item_func.cc
+    1.124.42.3 05/10/07 09:50:32 bar@mysql.com +1 -1
+    Bug#13751 find_in_set: Illegal mix of collations.
+    Character set conversion was forgotten in find_in_set.
+
+ChangeSet
+  1.1616.2335.9 05/10/07 04:02:53 monty@mysql.com +0 -0
+  Merge bk-internal.mysql.com:/home/bk/mysql-4.1
+  into  mysql.com:/home/my/mysql-4.1
+
+ChangeSet
+  1.2019.1.5 05/10/06 17:37:24 jimw@mysql.com +3 -0
+  Fix use of "%*s" *printf() specifiers that were really meant to be
+  "%.*s". (Bug #13650)
+
+  sql/sp_head.cc
+    1.188.1.1 05/10/06 17:37:20 jimw@mysql.com +2 -2
+    Fix print specifiers for strings. %*s sets the minimum width of the
+    string from a variable, %.*s sets the maximum width.
+
+  sql/sp_cache.cc
+    1.15 05/10/06 17:37:20 jimw@mysql.com +1 -1
+    Fix print specifiers for strings. %*s sets the minimum width of the
+    string from a variable, %.*s sets the maximum width.
+
+  sql/sp.cc
+    1.96 05/10/06 17:37:20 jimw@mysql.com +16 -15
+    Fix print specifiers for strings. %*s sets the minimum width of the
+    string from a variable, %.*s sets the maximum width.
+
+ChangeSet
+  1.1616.2338.1 05/10/07 03:12:15 monty@mysql.com +5 -0
+  Review of new code since last pull
+  - Use %lx instead of %p as %p is not portable
+  - Don't replace ROW item with Item_null
+
+  sql/item.cc
+    1.58.73.2 05/10/07 03:12:13 monty@mysql.com +11 -22
+    We can't replace a ROW item with Item_null because:
+    - Arg_comparator is still using the orignal row items and it's not good to have args[0] different from what is actually compared
+    - If we are using the <=> comparator, NULL can still be compared as true
+    - We would break things if we would ever use resolve_const_item() for operators like >, < etc.
+
+  mysql-test/t/select.test
+    1.28.5.1 05/10/07 03:12:13 monty@mysql.com +4 -0
+    More test for ROW comparison
+
+  mysql-test/r/select.result
+    1.34.7.1 05/10/07 03:12:13 monty@mysql.com +7 -0
+    More test for ROW comparison
+
+  myisam/mi_search.c
+    1.49.1.4 05/10/07 03:12:13 monty@mysql.com +25 -20
+    Use %lx instead of %p as %p is not portable
+
+  myisam/mi_rkey.c
+    1.16.1.2 05/10/07 03:12:13 monty@mysql.com +2 -2
+    Use %lx instead of %p as %p is not portable
+
+ChangeSet
+  1.1616.2335.8 05/10/07 01:56:11 kent@mysql.com +2 -0
+  make_binary_distribution.sh:
+    Corrected platform name output
+  Services.cpp:
+    Dont print null address (back port from 5.0)
+
+  scripts/make_binary_distribution.sh
+    1.55.1.28 05/10/07 01:55:07 kent@mysql.com +2 -2
+    Corrected platform name output
+
+  ndb/src/mgmsrv/Services.cpp
+    1.31.1.8 05/10/07 01:37:57 kent@mysql.com +1 -1
+    Dont print null address (back port from 5.0)
+
+ChangeSet
+  1.1616.2337.1 05/10/06 16:15:53 jimw@mysql.com +3 -0
+  Handle errors returned by system crypt() in ENCRYPT(). (Bug #13619)
+
+  sql/item_strfunc.cc
+    1.196.6.4 05/10/06 16:15:50 jimw@mysql.com +7 -1
+    Handle NULL result from call to crypt().
+
+  mysql-test/t/func_crypt.test
+    1.16 05/10/06 16:15:50 jimw@mysql.com +6 -0
+    Add new regression test
+
+  mysql-test/r/func_crypt.result
+    1.18 05/10/06 16:15:50 jimw@mysql.com +3 -0
+    Add new results
+
+ChangeSet
+  1.1616.2335.7 05/10/06 22:57:13 kent@mysql.com +1 -0
+  make_binary_distribution.sh:
+    Reintroduced --machine
+    Better sh compatibility, "for i ; do" is not portable
+
+  scripts/make_binary_distribution.sh
+    1.55.1.27 05/10/06 22:50:46 kent@mysql.com +20 -11
+    Reintroduced --machine
+    Better sh compatibility, "for i ; do" is not portable
+
+ChangeSet
+  1.2021 05/10/06 22:23:35 tomas@poseidon.ndb.mysql.com +1 -0
+  ndbd exit code update after review
+
+  ndb/src/kernel/error/ndbd_exit_codes.c
+    1.6 05/10/06 22:23:14 tomas@poseidon.ndb.mysql.com +15 -16
+    ndbd exit code update after review
+
+ChangeSet
+  1.2019.2.1 05/10/06 22:09:15 jani@ua141d10.elisa.omakaista.fi +1 -0
+  Fixed a bug in argument sending to get_one_option.
+  Fixed documentation for findopt().
+  Cleaned code a bit.
+
+  mysys/my_getopt.c
+    1.54 05/10/06 22:09:05 jani@ua141d10.elisa.omakaista.fi +33 -12
+    Fixed a bug in argument sending to get_one_option.
+    Fixed documentation for findopt().
+    Cleaned code a bit.
+
+ChangeSet
+  1.2019.1.2 05/10/06 19:05:34 serg@serg.mylan +1 -0
+  don't "init" binlog if opt_bin_log is not set
+  (bug#13791 - mysqld crashes at startup in TC_LOG_MMAP::open)
+
+  sql/log.cc
+    1.176 05/10/06 19:05:21 serg@serg.mylan +2 -2
+    don't "init" binlog if opt_bin_log is not set
+    (bug#13791 - mysqld crashes at startup in TC_LOG_MMAP::open)
+
+ChangeSet
+  1.1616.2335.5 05/10/06 18:00:23 kent@mysql.com +1 -0
+  make_binary_distribution.sh:
+    Replaced --machine with --platform
+    General code cleanup
+
+  scripts/make_binary_distribution.sh
+    1.55.1.26 05/10/06 17:58:02 kent@mysql.com +102 -118
+    Replaced --machine with --platform
+    General code cleanup
+
+ChangeSet
+  1.1958.10.1 05/10/06 17:54:43 monty@mysql.com +40 -0
+  Review of code pushed since last 5.0 pull:
+  Ensure that ccache is also used for C programs
+  mysql: Ensure that 'delimiter' works the same way in batch mode as in normal mode
+  mysqldump: Change to use ;; (instead of //) as a stored procedure/trigger delimiter
+  Fixed test cases by adding missing DROP's and rename views to be of type 'v#'
+  Removed MY_UNIX_PATH from fn_format()
+  Removed current_db_used from TABLE_LIST
+  Removed usage of 'current_thd' in Item_splocal
+  Removed some compiler warnings
+  A bit faster longlong2str code
+  
+
+  strings/my_strtoll10.c
+    1.12 05/10/06 17:54:25 monty@mysql.com +2 -2
+    Simplify code for MetroWerks compiler
+
+  strings/longlong2str-x86.s
+    1.12 05/10/06 17:54:25 monty@mysql.com +67 -74
+    A bit faster longlong2str.
+    (Took some ideas from Peter Gulutzan's code)
+
+  strings/decimal.c
+    1.61.1.1 05/10/06 17:54:25 monty@mysql.com +1 -1
+    Simplify code
+
+  sql/table.h
+    1.114.1.1 05/10/06 17:54:25 monty@mysql.com +0 -2
+    Remove not needed current_db_used
+
+  sql/table.cc
+    1.189.2.1 05/10/06 17:54:25 monty@mysql.com +2 -1
+    Fixed indentation
+
+  sql/structs.h
+    1.48.1.1 05/10/06 17:54:25 monty@mysql.com +1 -1
+    Remove compiler warnings when using STRING_WITH_LEN() with constant strings.
+
+  sql/sql_prepare.cc
+    1.154.2.1 05/10/06 17:54:25 monty@mysql.com +47 -53
+    Use enum instead of const int, to avoid ugly code for VC++
+
+  sql/sql_parse.cc
+    1.488.3.1 05/10/06 17:54:24 monty@mysql.com +7 -11
+    Remove 'current_db_used' as we can trivially check if db table qualifier was used without this.
+    Simplify code
+
+  sql/sql_class.cc
+    1.210.2.1 05/10/06 17:54:24 monty@mysql.com +9 -5
+    Return error if Statement::insert() fails in either hash_insert()
+
+  sql/sp_head.cc
+    1.184.2.1 05/10/06 17:54:24 monty@mysql.com +1 -0
+    Ensure that Item_splocal has thd set before we call '->this_item()'
+
+  sql/opt_range.cc
+    1.187.1.1 05/10/06 17:54:24 monty@mysql.com +3 -7
+    Simplify code
+
+  sql/log_event.cc
+    1.191 05/10/06 17:54:24 monty@mysql.com +3 -2
+    Move 'to_unix_path()' out of fn_format()
+
+  sql/item_func.cc
+    1.251.2.1 05/10/06 17:54:24 monty@mysql.com +11 -14
+    Optimize new code
+
+  sql/item.h
+    1.168.2.1 05/10/06 17:54:24 monty@mysql.com +5 -10
+    Add THD as a class variable to Item_splocal
+    Use 'str_value' instead of 'str_value_ptr' to hold temp result
+    Fixed bug in Item_hex when used in CAST()
+
+  sql/item.cc
+    1.178.1.1 05/10/06 17:54:24 monty@mysql.com +20 -26
+    Use 'str_value' instead of 'str_value_ptr' to hold result for Item_splocal
+    Remove some calls to 'thd' in Item_splocal by making 'thd' a class variable
+    One doesn't have to set 'null_value' when calling 'is_null()'
+
+  sql/ha_federated.cc
+    1.42.2.1 05/10/06 17:54:24 monty@mysql.com +0 -1
+    Removed extra empty line
+
+  mysys/mf_format.c
+    1.21 05/10/06 17:54:24 monty@mysql.com +7 -9
+    Remove not needed MY_UNIX_PATH parameter
+    (This goes against how fn_format() is supposed to work and also conflicts with other options like MY_RETURN_REAL_PATH)
+
+  mysql-test/t/temp_table.test
+    1.11.1.1 05/10/06 17:54:24 monty@mysql.com +13 -12
+    Drop used views
+    Rename views to v#
+
+  mysql-test/t/mysqlshow.test
+    1.3 05/10/06 17:54:24 monty@mysql.com +4 -0
+    Drop used tables
+
+  mysql-test/t/mysql.test
+    1.2.1.1 05/10/06 17:54:24 monty@mysql.com +1 -1
+    Add error messages to result
+
+  mysql-test/t/multi_statement.test
+    1.5.1.1 05/10/06 17:54:24 monty@mysql.com +4 -0
+    Drop used tables
+
+  mysql-test/t/information_schema_inno.test
+    1.3.1.1 05/10/06 17:54:24 monty@mysql.com +1 -1
+    Drop all used tables
+
+  mysql-test/t/information_schema.test
+    1.57.1.1 05/10/06 17:54:24 monty@mysql.com +6 -5
+    Drop all used tables and views
+    Rename view tables to 'v#' to ensure that if this test fails, not a lot of other test fails
+
+  mysql-test/t/func_str.test
+    1.80.1.1 05/10/06 17:54:24 monty@mysql.com +1 -0
+    More testing of CONV() (to ensure that longlong2str() works correctly)
+
+  mysql-test/t/alter_table.test
+    1.40 05/10/06 17:54:24 monty@mysql.com +5 -5
+    Better to reuse mysqltest database (test didn't properly delete mysqltest1 at start)
+
+  mysql-test/r/temp_table.result
+    1.18.1.1 05/10/06 17:54:24 monty@mysql.com +15 -14
+    Drop used views
+    Rename views to v#
+
+  mysql-test/r/mysqlshow.result
+    1.2 05/10/06 17:54:24 monty@mysql.com +1 -0
+    Drop used tables
+
+  mysql-test/r/mysqldump.result
+    1.71.2.1 05/10/06 17:54:24 monty@mysql.com +36 -34
+    ;; is now used as SP/trigger delimiter
+
+  mysql-test/r/mysql.result
+    1.4 05/10/06 17:54:24 monty@mysql.com +1 -0
+    Add error messages to result
+
+  mysql-test/r/multi_statement.result
+    1.3.1.1 05/10/06 17:54:24 monty@mysql.com +1 -0
+    Drop used tables
+
+  mysql-test/r/information_schema_inno.result
+    1.6.1.1 05/10/06 17:54:23 monty@mysql.com +1 -1
+    Drop all used tables
+
+  mysql-test/r/information_schema.result
+    1.80.2.1 05/10/06 17:54:23 monty@mysql.com +12 -11
+    Drop all used tables and views
+    Rename view tables to 'v#' to ensure that if this test fails, not a lot of other test fails
+
+  mysql-test/r/func_str.result
+    1.106.1.1 05/10/06 17:54:23 monty@mysql.com +3 -0
+    More testing of CONV() (to ensure that longlong2str() works correctly)
+
+  mysql-test/r/alter_table.result
+    1.53 05/10/06 17:54:23 monty@mysql.com +5 -5
+    Better to reuse mysqltest database (test didn't properly delete mysqltest1 at start)
+
+  include/my_sys.h
+    1.167.1.1 05/10/06 17:54:23 monty@mysql.com +0 -1
+    Remove not needed MY_UNIX_PATH parameter
+
+  client/mysqltest.c
+    1.159.2.1 05/10/06 17:54:23 monty@mysql.com +5 -3
+    Indentation fixes
+
+  client/mysqldump.c
+    1.201.1.1 05/10/06 17:54:23 monty@mysql.com +31 -28
+    Indentation fixes
+    Use ;; as a delmimiter for stored procedures and triggers instead of //
+
+  client/mysql.cc
+    1.178.1.1 05/10/06 17:54:23 monty@mysql.com +49 -27
+    More debugging
+    Ensure that 'delimiter' works the same way in batch mode as in normal mode.
+    Compare 'delimiter' command case-insensitive.
+    The above fixes the delimiter bugs so that we can now use ;; as a trigger/SP function delimiter in mysqldump.
+
+  BUILD/SETUP.sh
+    1.44.1.1 05/10/06 17:54:23 monty@mysql.com +4 -0
+    Ensure that ccache is also used for C programs
+
+  BUILD/FINISH.sh
+    1.30 05/10/06 17:54:23 monty@mysql.com +1 -1
+    Ensure that ccache is also used for C programs
+
+ChangeSet
+  1.1616.2336.1 05/10/06 19:51:08 gluh@eagle.intranet.mysql.r18.ru +2 -0
+  Fix for bug#13605 'rpl_openssl' test hangs
+
+  mysql-test/t/rpl_openssl.test
+    1.3.1.3 05/10/06 19:50:26 gluh@mysql.com +1 -1
+    Fix for bug#13605 'rpl_openssl' test hangs
+
+  mysql-test/r/rpl_openssl.result
+    1.7.1.1 05/10/06 19:50:26 gluh@mysql.com +3 -3
+    Fix for bug#13605 'rpl_openssl' test hangs
+
+ChangeSet
+  1.1616.2335.3 05/10/06 15:42:50 kent@mysql.com +1 -0
+  Merge
+
+  client/mysql.cc
+    1.121.1.93 05/10/06 15:42:45 kent@mysql.com +0 -1
+
+ChangeSet
+  1.2019.1.1 05/10/06 14:40:18 msvensson@msdesk.(none) +25 -0
+  Merge msdesk.(none):/home/msvensson/mysql-4.1
+  into  msdesk.(none):/home/msvensson/mysql-5.0
+
+  strings/ctype-tis620.c
+    1.89 05/10/06 14:40:13 msvensson@msdesk.(none) +0 -0
+    Merge
+
+  strings/ctype-mb.c
+    1.47 05/10/06 14:40:13 msvensson@msdesk.(none) +5 -0
+    Merge
+
+  mysql-test/r/ctype_ujis.result
+    1.15 05/10/06 14:40:13 msvensson@msdesk.(none) +0 -0
+    Merge
+
+  mysql-test/r/ctype_uca.result
+    1.16 05/10/06 14:40:13 msvensson@msdesk.(none) +0 -0
+    Merge
+
+  client/mysql.cc
+    1.182 05/10/06 14:40:13 msvensson@msdesk.(none) +0 -1
+    Sam change in both 4.1 and 5.0
+
+  strings/ctype-ucs2.c
+    1.55 05/10/06 14:36:56 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  strings/ctype-sjis.c
+    1.87 05/10/06 14:36:55 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  strings/ctype-simple.c
+    1.73 05/10/06 14:36:55 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  strings/ctype-gbk.c
+    1.77 05/10/06 14:36:55 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  strings/ctype-big5.c
+    1.86 05/10/06 14:36:55 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  sql/item_cmpfunc.cc
+    1.181 05/10/06 14:36:54 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  sql/ha_innodb.cc
+    1.270 05/10/06 14:36:54 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  mysql-test/t/ctype_utf8.test
+    1.71 05/10/06 14:36:54 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  mysql-test/t/ctype_ujis.test
+    1.16 05/10/06 14:36:54 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  mysql-test/t/ctype_ucs.test
+    1.35 05/10/06 14:36:54 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  mysql-test/t/ctype_uca.test
+    1.14 05/10/06 14:36:54 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  mysql-test/r/ctype_utf8.result
+    1.75 05/10/06 14:36:53 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  mysql-test/r/ctype_ucs.result
+    1.39 05/10/06 14:36:53 msvensson@msdesk.(none) +11 -11
+    Auto merged
+
+  mysql-test/r/ctype_tis620.result
+    1.11 05/10/06 14:36:53 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  innobase/os/os0sync.c
+    1.26 05/10/06 14:36:53 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  BitKeeper/deleted/.del-ndb_range_bounds.pl~ff7e47a35fb44c74
+    1.7 05/10/06 14:36:53 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  BitKeeper/deleted/.del-ctype_cp932.test
+    1.7 05/10/06 14:36:53 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  BitKeeper/deleted/.del-ctype_cp932.result
+    1.6 05/10/06 14:36:53 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  BitKeeper/deleted/.del-ctype-cp932.c
+    1.10 05/10/06 14:36:52 msvensson@msdesk.(none) +0 -0
+    Auto merged
+
+  BitKeeper/deleted/.del-ndb_range_bounds.pl~ff7e47a35fb44c74
+    1.6 05/10/06 14:36:52 msvensson@msdesk.(none) +0 -0
+    Merge rename: mysql-test/ndb/ndb_range_bounds.pl -> BitKeeper/deleted/.del-ndb_range_bounds.pl~ff7e47a35fb44c74
+
+  BitKeeper/deleted/.del-ctype_cp932.test
+    1.1.5.2 05/10/06 14:36:52 msvensson@msdesk.(none) +0 -0
+    Merge rename: mysql-test/t/ctype_cp932.test -> BitKeeper/deleted/.del-ctype_cp932.test
+
+  BitKeeper/deleted/.del-ctype_cp932.result
+    1.1.4.2 05/10/06 14:36:52 msvensson@msdesk.(none) +0 -0
+    Merge rename: mysql-test/r/ctype_cp932.result -> BitKeeper/deleted/.del-ctype_cp932.result
+
+  BitKeeper/deleted/.del-ctype-cp932.c
+    1.1.7.2 05/10/06 14:36:52 msvensson@msdesk.(none) +0 -0
+    Merge rename: strings/ctype-cp932.c -> BitKeeper/deleted/.del-ctype-cp932.c
+
+  BUILD/SETUP.sh
+    1.53 05/10/06 14:36:52 msvensson@msdesk.(none) +0 -2
+    Auto merged
+
+ChangeSet
+  1.1616.2335.2 05/10/06 15:26:59 bar@mysql.com +1 -0
+  item_cmpfunc.cc:
+    Wrong variable.
+
+  sql/item_cmpfunc.cc
+    1.111.22.1 05/10/06 15:25:59 bar@mysql.com +1 -1
+    Wrong variable.
+
+ChangeSet
+  1.2020 05/10/06 10:59:58 tomas@poseidon.ndb.mysql.com +1 -0
+  Merge tulin@bk-internal.mysql.com:/home/bk/mysql-5.0
+  into poseidon.ndb.mysql.com:/home/tomas/mysql-5.0
+
+  ndb/src/mgmsrv/Services.cpp
+    1.54 05/10/06 10:59:52 tomas@poseidon.ndb.mysql.com +0 -0
+    Auto merged
+
+ChangeSet
+  1.1616.2335.1 05/10/06 09:44:25 pekka@mysql.com +3 -0
+  ndb - prelim perl scripts to autotest
+
+  BitKeeper/deleted/.del-ndb_range_bounds.pl~ff7e47a35fb44c74
+    1.3.1.1 05/10/06 09:42:45 pekka@mysql.com +0 -0
+    Delete: mysql-test/ndb/ndb_range_bounds.pl
+
+  ndb/test/sql/test_range_bounds.pl
+    1.1 05/10/06 09:42:23 pekka@mysql.com +218 -0
+
+  ndb/test/sql/test_range_bounds.pl
+    1.0 05/10/06 09:42:23 pekka@mysql.com +0 -0
+    BitKeeper file /space/pekka/ndb/version/my41/ndb/test/sql/test_range_bounds.pl
+
+  ndb/test/sql/test_create_drop.pl
+    1.1 05/10/06 09:42:22 pekka@mysql.com +179 -0
+
+  ndb/test/sql/test_create_drop.pl
+    1.0 05/10/06 09:42:22 pekka@mysql.com +0 -0
+    BitKeeper file /space/pekka/ndb/version/my41/ndb/test/sql/test_create_drop.pl
+
+ChangeSet
+  1.2019 05/10/06 03:49:14 kent@mysql.com +2 -0
+  my_pthread.h:
+    Let pthread_mutex_init() macro return 0 on Windows
+  mysql_priv.h:
+    Return type is to be 'my_bool' for 'opt_enable_shared_memory'
+
+  include/my_pthread.h
+    1.85 05/10/06 00:40:56 kent@mysql.com +1 -1
+    Let pthread_mutex_init() macro return 0 on Windows
+
+  sql/mysql_priv.h
+    1.359 05/10/06 00:40:54 kent@mysql.com +1 -1
+    Return type is to be 'my_bool' for 'opt_enable_shared_memory'
+
+ChangeSet
+  1.2014.1.3 05/10/05 19:58:16 serg@serg.mylan +4 -0
+  Bug#12935 Local and XA transactions not mutually exclusive
+
+  sql/sql_parse.cc
+    1.499 05/10/05 19:58:04 serg@serg.mylan +18 -0
+    Bug#12935 Local and XA transactions not mutually exclusive
+
+  sql/share/errmsg.txt
+    1.49 05/10/05 19:58:04 serg@serg.mylan +2 -1
+    Bug#12935 Local and XA transactions not mutually exclusive
+
+  mysql-test/t/xa.test
+    1.6 05/10/05 19:58:03 serg@serg.mylan +12 -0
+    Bug#12935 Local and XA transactions not mutually exclusive
+
+  mysql-test/r/xa.result
+    1.4 05/10/05 19:58:03 serg@serg.mylan +10 -2
+    Bug#12935 Local and XA transactions not mutually exclusive
+
+ChangeSet
+  1.2014.1.2 05/10/05 19:37:02 serg@serg.mylan +1 -0
+  Merge mysqldev@production.mysql.com:/data0/mysqldev/my/mysql-5.0-release
+  into serg.mylan:/usr/home/serg/Abk/mysql-5.0
+
+  sql/sql_table.cc
+    1.277 05/10/05 19:36:48 serg@serg.mylan +0 -0
+    Auto merged
+
+ChangeSet
+  1.1996.40.10 05/10/05 19:36:20 serg@mysql.com +1 -0
+  sql_table.cc:
+    fixed CHECKSUM TABLE to be independent from the first 'deleted' bit in the null bitmask (undefined in the InnoDB)
+    bug#13710
+
+  sql/sql_table.cc
+    1.274.1.2 05/10/05 19:34:21 serg@mysql.com +3 -0
+    fixed CHECKSUM TABLE to be independent from the first 'deleted' bit in the null bitmask (undefined in the InnoDB)
+    bug#13710
+
+ChangeSet
+  1.1973.1.1 05/10/05 10:06:31 jimw@mysql.com +1 -0
+  Fail when two messages exist for the same language for an error in the
+  server error messages file. (Bug #13071)
+
+  extra/comp_err.c
+    1.21 05/10/05 10:06:28 jimw@mysql.com +23 -7
+    Fail when two messages for the same language are given for an error
+
+ChangeSet
+  1.2015.1.1 05/10/05 16:39:37 pem@mysql.com +1 -0
+  Fixed BUG#13616: "CALL <dbname>.<procedurename>" executes properly, but
+                   displays error
+      When returning to the old database (which may be ""), don't do
+      access check - mysql_change_db() would then generate the error
+      "No database selected".
+      Note: No test case added; it seems a db is always selected when running
+      tests.
+
+  sql/sp_head.cc
+    1.189 05/10/05 16:39:30 pem@mysql.com +3 -1
+    Don't do access check when returning to db after a call.
+
+ChangeSet
+  1.2014.1.1 05/10/05 16:38:53 serg@serg.mylan +4 -0
+  Bug#13143 - formatID should not affect XID's uniqueness
+
+  sql/sql_class.cc
+    1.214 05/10/05 16:38:40 serg@serg.mylan +6 -6
+    Bug#13143 - formatID should not affect XID's uniqueness
+
+  sql/handler.h
+    1.160 05/10/05 16:38:40 serg@serg.mylan +9 -1
+    Bug#13143 - formatID should not affect XID's uniqueness
+
+  mysql-test/t/xa.test
+    1.5 05/10/05 16:38:40 serg@serg.mylan +2 -0
+    Bug#13143 - formatID should not affect XID's uniqueness
+
+  mysql-test/r/xa.result
+    1.3 05/10/05 16:38:40 serg@serg.mylan +2 -0
+    Bug#13143 - formatID should not affect XID's uniqueness
+
+ChangeSet
+  1.2002.7.5 05/10/05 16:35:28 tomas@poseidon.ndb.mysql.com +18 -0
+  Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+  + revised error messages after feedback
+  + revides classifications and status
+  + removed all progError(..0..) to make sure all error invocations have an error code
+  + added some new error codes to replace some generic usage of SYSTEM_ERROR
+  + removed some unused codes
+
+  ndb/src/kernel/vm/Configuration.cpp
+    1.41 05/10/05 16:35:21 tomas@poseidon.ndb.mysql.com +1 -1
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+    + revised error messages after feedback
+    + revides classifications and status
+    + removed all progError(..0..) to make sure all error invocations have an error code
+    + added some new error codes to replace some generic usage of SYSTEM_ERROR
+    + removed some unused codes
+
+  ndb/src/kernel/main.cpp
+    1.57 05/10/05 16:35:21 tomas@poseidon.ndb.mysql.com +8 -4
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+
+  ndb/src/kernel/error/ndbd_exit_codes.c
+    1.5 05/10/05 16:35:21 tomas@poseidon.ndb.mysql.com +67 -33
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+    + revised error messages after feedback
+    + revides classifications and status
+    + removed all progError(..0..) to make sure all error invocations have an error code
+    + added some new error codes to replace some generic usage of SYSTEM_ERROR
+    + removed some unused codes
+
+  ndb/src/kernel/blocks/qmgr/QmgrMain.cpp
+    1.21 05/10/05 16:35:21 tomas@poseidon.ndb.mysql.com +1 -1
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+    + revised error messages after feedback
+    + revides classifications and status
+    + removed all progError(..0..) to make sure all error invocations have an error code
+    + added some new error codes to replace some generic usage of SYSTEM_ERROR
+    + removed some unused codes
+
+  ndb/src/kernel/blocks/ndbfs/Filename.cpp
+    1.9 05/10/05 16:35:21 tomas@poseidon.ndb.mysql.com +1 -1
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+    + revised error messages after feedback
+    + revides classifications and status
+    + removed all progError(..0..) to make sure all error invocations have an error code
+    + added some new error codes to replace some generic usage of SYSTEM_ERROR
+    + removed some unused codes
+
+  ndb/src/kernel/blocks/ndbcntr/NdbcntrMain.cpp
+    1.23 05/10/05 16:35:21 tomas@poseidon.ndb.mysql.com +24 -46
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+    + revised error messages after feedback
+    + revides classifications and status
+    + removed all progError(..0..) to make sure all error invocations have an error code
+    + added some new error codes to replace some generic usage of SYSTEM_ERROR
+    + removed some unused codes
+
+  ndb/src/kernel/blocks/ndbcntr/Ndbcntr.hpp
+    1.5 05/10/05 16:35:20 tomas@poseidon.ndb.mysql.com +1 -1
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+    + revised error messages after feedback
+    + revides classifications and status
+    + removed all progError(..0..) to make sure all error invocations have an error code
+    + added some new error codes to replace some generic usage of SYSTEM_ERROR
+    + removed some unused codes
+
+  ndb/src/kernel/blocks/dbtc/DbtcMain.cpp
+    1.85 05/10/05 16:35:20 tomas@poseidon.ndb.mysql.com +94 -94
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+    + revised error messages after feedback
+    + revides classifications and status
+    + removed all progError(..0..) to make sure all error invocations have an error code
+    + added some new error codes to replace some generic usage of SYSTEM_ERROR
+    + removed some unused codes
+
+  ndb/src/kernel/blocks/dbtc/Dbtc.hpp
+    1.31 05/10/05 16:35:20 tomas@poseidon.ndb.mysql.com +3 -3
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+    + revised error messages after feedback
+    + revides classifications and status
+    + removed all progError(..0..) to make sure all error invocations have an error code
+    + added some new error codes to replace some generic usage of SYSTEM_ERROR
+    + removed some unused codes
+
+  ndb/src/kernel/blocks/dblqh/DblqhMain.cpp
+    1.75 05/10/05 16:35:20 tomas@poseidon.ndb.mysql.com +44 -46
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+    + revised error messages after feedback
+    + revides classifications and status
+    + removed all progError(..0..) to make sure all error invocations have an error code
+    + added some new error codes to replace some generic usage of SYSTEM_ERROR
+    + removed some unused codes
+
+  ndb/src/kernel/blocks/dblqh/Dblqh.hpp
+    1.36 05/10/05 16:35:20 tomas@poseidon.ndb.mysql.com +2 -3
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+    + revised error messages after feedback
+    + revides classifications and status
+    + removed all progError(..0..) to make sure all error invocations have an error code
+    + added some new error codes to replace some generic usage of SYSTEM_ERROR
+    + removed some unused codes
+
+  ndb/src/kernel/blocks/dbdih/DbdihMain.cpp
+    1.37 05/10/05 16:35:20 tomas@poseidon.ndb.mysql.com +9 -19
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+    + revised error messages after feedback
+    + revides classifications and status
+    + removed all progError(..0..) to make sure all error invocations have an error code
+    + added some new error codes to replace some generic usage of SYSTEM_ERROR
+    + removed some unused codes
+
+  ndb/src/kernel/blocks/dbdict/Dbdict.cpp
+    1.57 05/10/05 16:35:20 tomas@poseidon.ndb.mysql.com +4 -1
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+    + revised error messages after feedback
+    + revides classifications and status
+    + removed all progError(..0..) to make sure all error invocations have an error code
+    + added some new error codes to replace some generic usage of SYSTEM_ERROR
+    + removed some unused codes
+
+  ndb/src/kernel/blocks/dbacc/DbaccMain.cpp
+    1.59 05/10/05 16:35:20 tomas@poseidon.ndb.mysql.com +21 -21
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+    + revised error messages after feedback
+    + revides classifications and status
+    + removed all progError(..0..) to make sure all error invocations have an error code
+    + added some new error codes to replace some generic usage of SYSTEM_ERROR
+    + removed some unused codes
+
+  ndb/src/kernel/blocks/dbacc/Dbacc.hpp
+    1.22 05/10/05 16:35:20 tomas@poseidon.ndb.mysql.com +1 -1
+    + removed all progError(..0..) to make sure all error invocations have an error code
+
+  ndb/include/mgmapi/ndbd_exit_codes.h
+    1.6 05/10/05 16:35:20 tomas@poseidon.ndb.mysql.com +17 -8
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+    + revised error messages after feedback
+    + revides classifications and status
+    + removed all progError(..0..) to make sure all error invocations have an error code
+    + added some new error codes to replace some generic usage of SYSTEM_ERROR
+    + removed some unused codes
+
+  ndb/include/kernel/signaldata/SystemError.hpp
+    1.2 05/10/05 16:35:19 tomas@poseidon.ndb.mysql.com +0 -3
+    + removed some unused codes
+
+  configure.in
+    1.351 05/10/05 16:35:19 tomas@poseidon.ndb.mysql.com +1 -1
+    Bug #11749  	No message slogan found for Signal 8 received. (need better message)
+
+ChangeSet
+  1.1616.2333.5 05/10/05 19:20:49 bar@mysql.com +3 -0
+    Bug#12476 Some big5 codes are still missing.
+  ctype-big5.c:
+    Adding extra cp950 characters into Unicode mapping.
+  ctype_big5.result, ctype_big5.test:
+    Adding test case
+
+  mysql-test/r/ctype_big5.result
+    1.10 05/10/05 19:20:19 bar@mysql.com +19 -0
+    Adding test case
+
+  mysql-test/t/ctype_big5.test
+    1.10 05/10/05 19:20:08 bar@mysql.com +15 -0
+    Adding test case
+
+  strings/ctype-big5.c
+    1.67.1.12 05/10/05 19:19:19 bar@mysql.com +11 -10
+    Bug#12476 Some big5 codes are still missing.
+    Adding extra cp950 characters into Unicode mapping.
+
+ChangeSet
+  1.1616.2333.4 05/10/05 17:45:23 bar@mysql.com +1 -0
+  item_cmpfunc.cc:
+    sorry, another wrong variable
+
+  sql/item_cmpfunc.cc
+    1.111.1.91 05/10/05 17:45:04 bar@mysql.com +1 -1
+    sorry, another wrong variable
+
+ChangeSet
+  1.2016 05/10/05 14:37:42 msvensson@neptunus.(none) +1 -0
+  Revert
+
+  BUILD/SETUP.sh
+    1.52 05/10/05 14:37:37 msvensson@neptunus.(none) +1 -1
+    Remove -ansi
+
+ChangeSet
+  1.1616.2334.1 05/10/05 14:35:41 msvensson@neptunus.(none) +1 -0
+  Revert 
+
+  BUILD/SETUP.sh
+    1.26.1.11 05/10/05 14:35:36 msvensson@neptunus.(none) +1 -1
+    Remov -ansi flag
+
+ChangeSet
+  1.1616.2333.2 05/10/05 17:33:39 bar@mysql.com +1 -0
+  item_cmpfunc.cc:
+    wrong variable.
+
+  sql/item_cmpfunc.cc
+    1.111.1.90 05/10/05 17:33:20 bar@mysql.com +1 -1
+    wrong variable.
+
+ChangeSet
+  1.1616.2143.118 05/10/05 12:21:53 guilhem@mysql.com +1 -0
+  The "exit" command of mysqltest is quite useful when writing tests for 4.1 so I'm porting it from 5.0 to 4.1.
+
+  client/mysqltest.c
+    1.92.1.96 05/10/05 12:21:50 guilhem@mysql.com +7 -2
+    The "exit" command of mysqltest is quite useful when writing tests for 4.1 so I'm porting it from 5.0 to 4.1.
+
+ChangeSet
+  1.2015 05/10/05 01:08:22 anozdrin@mysql.com +1 -0
+  Make mysql_fix_privilege_tables.sh not dependent on the current directory.
+
+  scripts/mysql_fix_privilege_tables.sh
+    1.35 05/10/05 01:08:16 anozdrin@mysql.com +11 -2
+    Make the script not dependent on the current directory.
+
+ChangeSet
+  1.1616.2143.117 05/10/04 22:24:04 guilhem@mysql.com +2 -0
+  Importing BUILD/compile-pentium64-valgrind-max from 5.0 (unchanged), and speeding up 'bk citool' for me
+
+  BUILD/compile-pentium64-valgrind-max
+    1.1 05/10/04 22:24:01 guilhem@mysql.com +29 -0
+    New BitKeeper file ``BUILD/compile-pentium64-valgrind-max''
+
+  BitKeeper/etc/config
+    1.10.1.7 05/10/04 22:24:01 guilhem@mysql.com +1 -0
+    speed up 'bk citool' for me
+
+  BUILD/compile-pentium64-valgrind-max
+    1.0 05/10/04 22:24:01 guilhem@mysql.com +0 -0
+    BitKeeper file /home/mysql_src/mysql-4.1/BUILD/compile-pentium64-valgrind-max
+
+ChangeSet
+  1.2014 05/10/04 21:43:56 serg@serg.mylan +3 -0
+  Merge bk-internal.mysql.com:/home/bk/mysql-5.0
+  into serg.mylan:/usr/home/serg/Abk/mysql-5.0
+
+  sql/handler.h
+    1.159 05/10/04 21:43:42 serg@serg.mylan +0 -0
+    Auto merged
+
+  sql/ha_ndbcluster.cc
+    1.213 05/10/04 21:43:42 serg@serg.mylan +0 -0
+    Auto merged
+
+  sql/ha_innodb.cc
+    1.269 05/10/04 21:43:41 serg@serg.mylan +0 -0
+    Auto merged
+
+ChangeSet
+  1.1996.40.9 05/10/04 21:37:50 serg@mysql.com +1 -0
+  innodb.result:
+    somehow it didn't get into the previous changeset
+
+  mysql-test/r/innodb.result
+    1.144 05/10/04 21:35:26 serg@mysql.com +3 -3
+    somehow it didn't get into the previous changeset
+

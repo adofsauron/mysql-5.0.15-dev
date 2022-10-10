@@ -154,18 +154,18 @@ bool Item_subselect::fix_fields(THD *thd_param, Item **ref)
 
       // did we changed top item of WHERE condition
       if (unit->outer_select()->where == (*ref))
-	unit->outer_select()->where= substitution; // correct WHERE for PS
+	    unit->outer_select()->where= substitution; // correct WHERE for PS
       else if (unit->outer_select()->having == (*ref))
-	unit->outer_select()->having= substitution; // correct HAVING for PS
+	    unit->outer_select()->having= substitution; // correct HAVING for PS
 
       (*ref)= substitution;
       substitution->name= name;
       if (have_to_be_excluded)
-	engine->exclude();
+	    engine->exclude();
       substitution= 0;
       thd->where= "checking transformed subquery";
       if (!(*ref)->fixed)
-	ret= (*ref)->fix_fields(thd, ref);
+	    ret= (*ref)->fix_fields(thd, ref);
       thd->where= save_where;
       return ret;
     }

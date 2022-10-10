@@ -157,11 +157,11 @@ Item_func::fix_fields(THD *thd, Item **ref)
     {
       Item *item;
       /*
-	We can't yet set item to *arg as fix_fields may change *arg
-	We shouldn't call fix_fields() twice, so check 'fixed' field first
+		We can't yet set item to *arg as fix_fields may change *arg
+		We shouldn't call fix_fields() twice, so check 'fixed' field first
       */
       if ((!(*arg)->fixed && (*arg)->fix_fields(thd, arg)))
-	return TRUE;				/* purecov: inspected */
+	    return TRUE;				/* purecov: inspected */
       item= *arg;
 
       if (allowed_arg_cols)
@@ -178,7 +178,7 @@ Item_func::fix_fields(THD *thd, Item **ref)
       }
 
       if (item->maybe_null)
-	maybe_null=1;
+	    maybe_null=1;
 
       with_sum_func= with_sum_func || item->with_sum_func;
       used_tables_cache|=     item->used_tables();

@@ -4731,8 +4731,8 @@ int setup_conds(THD *thd, TABLE_LIST *tables, TABLE_LIST *leaves,
   {
     thd->where="where clause";
     if (!(*conds)->fixed && (*conds)->fix_fields(thd, conds) ||
-	(*conds)->check_cols(1))
-      goto err_no_arena;
+	        (*conds)->check_cols(1))
+        goto err_no_arena;
   }
 
   /*
@@ -4751,9 +4751,9 @@ int setup_conds(THD *thd, TABLE_LIST *tables, TABLE_LIST *leaves,
         /* Make a join an a expression */
         thd->where="on clause";
         if (!embedded->on_expr->fixed &&
-            embedded->on_expr->fix_fields(thd, &embedded->on_expr) ||
-	    embedded->on_expr->check_cols(1))
-	  goto err_no_arena;
+                embedded->on_expr->fix_fields(thd, &embedded->on_expr) ||
+	            embedded->on_expr->check_cols(1))
+	        goto err_no_arena;
         select_lex->cond_count++;
       }
       embedding= embedded->embedding;

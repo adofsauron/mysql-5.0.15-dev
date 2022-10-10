@@ -1783,20 +1783,20 @@ mysql_select(THD *thd, Item ***rref_pointer_array,
     {
       if (select_lex->linkage != GLOBAL_OPTIONS_TYPE)
       {
-	//here is EXPLAIN of subselect or derived table
-	if (join->change_result(result))
-	{
-	  DBUG_RETURN(TRUE);
-	}
+	    //here is EXPLAIN of subselect or derived table
+	    if (join->change_result(result))
+	    {
+	      DBUG_RETURN(TRUE);
+	    }
       }
       else
       {
         if (err= join->prepare(rref_pointer_array, tables, wild_num,
                                conds, og_num, order, group, having, proc_param,
                                select_lex, unit))
-	{
-	  goto err;
-	}
+		{
+			goto err;
+		}
       }
     }
     free_join= 0;
@@ -10562,49 +10562,49 @@ make_cond_for_table(COND *cond, table_map tables, table_map used_table)
       /* Create new top level AND item */
       Item_cond_and *new_cond=new Item_cond_and;
       if (!new_cond)
-	return (COND*) 0;			// OOM /* purecov: inspected */
+	    return (COND*) 0;			// OOM /* purecov: inspected */
       List_iterator<Item> li(*((Item_cond*) cond)->argument_list());
       Item *item;
       while ((item=li++))
       {
-	Item *fix=make_cond_for_table(item,tables,used_table);
-	if (fix)
-	  new_cond->argument_list()->push_back(fix);
+		  Item* fix = make_cond_for_table(item, tables, used_table);
+		  if (fix)
+			  new_cond->argument_list()->push_back(fix);
       }
       switch (new_cond->argument_list()->elements) {
       case 0:
-	return (COND*) 0;			// Always true
+	    return (COND*) 0;			// Always true
       case 1:
-	return new_cond->argument_list()->head();
+	    return new_cond->argument_list()->head();
       default:
-	/*
-	  Item_cond_and do not need fix_fields for execution, its parameters
-	  are fixed or do not need fix_fields, too
-	*/
-	new_cond->quick_fix_field();
-	new_cond->used_tables_cache=
-	  ((Item_cond_and*) cond)->used_tables_cache &
-	  tables;
-	return new_cond;
+	    /*
+	      Item_cond_and do not need fix_fields for execution, its parameters
+	      are fixed or do not need fix_fields, too
+	    */
+	    new_cond->quick_fix_field();
+	    new_cond->used_tables_cache=
+	      ((Item_cond_and*) cond)->used_tables_cache &
+	      tables;
+	    return new_cond;
       }
     }
     else
     {						// Or list
       Item_cond_or *new_cond=new Item_cond_or;
       if (!new_cond)
-	return (COND*) 0;			// OOM /* purecov: inspected */
+	    return (COND*) 0;			// OOM /* purecov: inspected */
       List_iterator<Item> li(*((Item_cond*) cond)->argument_list());
       Item *item;
       while ((item=li++))
       {
-	Item *fix=make_cond_for_table(item,tables,0L);
-	if (!fix)
-	  return (COND*) 0;			// Always true
-	new_cond->argument_list()->push_back(fix);
+	    Item *fix=make_cond_for_table(item,tables,0L);
+	    if (!fix)
+	      return (COND*) 0;			// Always true
+	    new_cond->argument_list()->push_back(fix);
       }
       /*
-	Item_cond_and do not need fix_fields for execution, its parameters
-	are fixed or do not need fix_fields, too
+		Item_cond_and do not need fix_fields for execution, its parameters
+		are fixed or do not need fix_fields, too
       */
       new_cond->quick_fix_field();
       new_cond->used_tables_cache= ((Item_cond_or*) cond)->used_tables_cache;

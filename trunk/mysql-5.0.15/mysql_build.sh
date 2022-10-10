@@ -2,7 +2,7 @@
 
 # ./configure --with-debug --with-plugin-innobase
 
-make clean
+# make clean
 
 make -j4
 

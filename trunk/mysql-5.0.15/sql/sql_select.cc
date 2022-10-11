@@ -5160,12 +5160,12 @@ make_join_select(JOIN *join,SQL_SELECT *select,COND *cond)
       if (join->tables > 1)
         cond->update_used_tables();		// Tablenr may have changed
       if (join->const_tables == join->tables &&
-	  thd->lex->current_select->master_unit() ==
-	  &thd->lex->unit)		// not upper level SELECT
+	      thd->lex->current_select->master_unit() ==
+	      &thd->lex->unit)		// not upper level SELECT
         join->const_table_map|=RAND_TABLE_BIT;
       {						// Check const tables
         COND *const_cond=
-	  make_cond_for_table(cond,join->const_table_map,(table_map) 0);
+	        make_cond_for_table(cond,join->const_table_map,(table_map) 0);
         DBUG_EXECUTE("where",print_where(const_cond,"constants"););
         for (JOIN_TAB *tab= join->join_tab+join->const_tables;
              tab < join->join_tab+join->tables ; tab++)
@@ -5185,14 +5185,14 @@ make_join_select(JOIN *join,SQL_SELECT *select,COND *cond)
             cond_tab->select_cond= !cond_tab->select_cond ? tmp :
 	                            new Item_cond_and(cond_tab->select_cond,tmp);
             if (!cond_tab->select_cond)
-	      DBUG_RETURN(1);
+	            DBUG_RETURN(1);
             cond_tab->select_cond->quick_fix_field();
           }       
         }
         if (const_cond && !const_cond->val_int())
         {
-	  DBUG_PRINT("info",("Found impossible WHERE condition"));
-	  DBUG_RETURN(1);	 // Impossible const condition
+	      DBUG_PRINT("info",("Found impossible WHERE condition"));
+	      DBUG_RETURN(1);	 // Impossible const condition
         }
       }
     }
@@ -5207,24 +5207,24 @@ make_join_select(JOIN *join,SQL_SELECT *select,COND *cond)
       COND *tmp;
 
       /*
-	Following force including random expression in last table condition.
-	It solve problem with select like SELECT * FROM t1 WHERE rand() > 0.5
+		Following force including random expression in last table condition.
+		It solve problem with select like SELECT * FROM t1 WHERE rand() > 0.5
       */
       if (i == join->tables-1)
-	current_map|= OUTER_REF_TABLE_BIT | RAND_TABLE_BIT;
+	    current_map|= OUTER_REF_TABLE_BIT | RAND_TABLE_BIT;
       used_tables|=current_map;
 
       if (tab->type == JT_REF && tab->quick &&
 	  (uint) tab->ref.key == tab->quick->index &&
 	  tab->ref.key_length < tab->quick->max_used_key_length)
       {
-	/* Range uses longer key;  Use this instead of ref on key */
-	tab->type=JT_ALL;
-	use_quick_range=1;
-	tab->use_quick=1;
-        tab->ref.key= -1;
-	tab->ref.key_parts=0;		// Don't use ref key.
-	join->best_positions[i].records_read= rows2double(tab->quick->records);
+	    /* Range uses longer key;  Use this instead of ref on key */
+	    tab->type=JT_ALL;
+	    use_quick_range=1;
+	    tab->use_quick=1;
+            tab->ref.key= -1;
+	    tab->ref.key_parts=0;		// Don't use ref key.
+	    join->best_positions[i].records_read= rows2double(tab->quick->records);
       }
 
       tmp= NULL;
@@ -5257,165 +5257,165 @@ make_join_select(JOIN *join,SQL_SELECT *select,COND *cond)
       }
       if (tmp || !cond)
       {
-	DBUG_EXECUTE("where",print_where(tmp,tab->table->alias););
-	SQL_SELECT *sel=tab->select=(SQL_SELECT*)
-	  thd->memdup((gptr) select, sizeof(SQL_SELECT));
-	if (!sel)
-	  DBUG_RETURN(1);			// End of memory
-        /*
-          If tab is an inner table of an outer join operation,
-          add a match guard to the pushed down predicate.
-          The guard will turn the predicate on only after
-          the first match for outer tables is encountered.
-	*/        
-        if (cond)
-        {
-          /*
-            Because of QUICK_GROUP_MIN_MAX_SELECT there may be a select without
-            a cond, so neutralize the hack above.
-          */
-          if (!(tmp= add_found_match_trig_cond(first_inner_tab, tmp, 0)))
-            DBUG_RETURN(1);
-          tab->select_cond=sel->cond=tmp;
-          /* Push condition to storage engine if this is enabled
-             and the condition is not guarded */
-          tab->table->file->pushed_cond= NULL;
-	  if (thd->variables.engine_condition_pushdown)
-          {
-            COND *push_cond= 
-              make_cond_for_table(tmp, current_map, current_map);
-            if (push_cond)
+	    DBUG_EXECUTE("where",print_where(tmp,tab->table->alias););
+	    SQL_SELECT *sel=tab->select=(SQL_SELECT*)
+	      thd->memdup((gptr) select, sizeof(SQL_SELECT));
+	    if (!sel)
+	      DBUG_RETURN(1);			// End of memory
+            /*
+              If tab is an inner table of an outer join operation,
+              add a match guard to the pushed down predicate.
+              The guard will turn the predicate on only after
+              the first match for outer tables is encountered.
+	    */        
+            if (cond)
             {
-              /* Push condition to handler */
-              if (!tab->table->file->cond_push(push_cond))
-                tab->table->file->pushed_cond= push_cond;
-            }
-          }
-        }
-        else
-          tab->select_cond= sel->cond= NULL;
-
-	sel->head=tab->table;
-	DBUG_EXECUTE("where",print_where(tmp,tab->table->alias););
-	if (tab->quick)
-	{
-	  /* Use quick key read if it's a constant and it's not used
-	     with key reading */
-	  if (tab->needed_reg.is_clear_all() && tab->type != JT_EQ_REF
-	      && tab->type != JT_FT && (tab->type != JT_REF ||
-               (uint) tab->ref.key == tab->quick->index))
-	  {
-	    sel->quick=tab->quick;		// Use value from get_quick_...
-	    sel->quick_keys.clear_all();
-	    sel->needed_reg.clear_all();
-	  }
-	  else
-	  {
-	    delete tab->quick;
-	  }
-	  tab->quick=0;
-	}
-	uint ref_key=(uint) sel->head->reginfo.join_tab->ref.key+1;
-	if (i == join->const_tables && ref_key)
-	{
-	  if (!tab->const_keys.is_clear_all() &&
-              tab->table->reginfo.impossible_range)
-	    DBUG_RETURN(1);
-	}
-	else if (tab->type == JT_ALL && ! use_quick_range)
-	{
-	  if (!tab->const_keys.is_clear_all() &&
-	      tab->table->reginfo.impossible_range)
-	    DBUG_RETURN(1);				// Impossible range
-	  /*
-	    We plan to scan all rows.
-	    Check again if we should use an index.
-	    We could have used an column from a previous table in
-	    the index if we are using limit and this is the first table
-	  */
-
-	  if (cond &&
-              (!tab->keys.is_subset(tab->const_keys) && i > 0) ||
-	      (!tab->const_keys.is_clear_all() && i == join->const_tables &&
-	       join->unit->select_limit_cnt <
-	       join->best_positions[i].records_read &&
-	       !(join->select_options & OPTION_FOUND_ROWS)))
-	  {
-	    /* Join with outer join condition */
-	    COND *orig_cond=sel->cond;
-	    sel->cond= and_conds(sel->cond, *tab->on_expr_ref);
-
-	    /*
-              We can't call sel->cond->fix_fields,
-              as it will break tab->on_expr if it's AND condition
-              (fix_fields currently removes extra AND/OR levels).
-              Yet attributes of the just built condition are not needed.
-              Thus we call sel->cond->quick_fix_field for safety.
-	    */
-	    if (sel->cond && !sel->cond->fixed)
-	      sel->cond->quick_fix_field();
-
-	    if (sel->test_quick_select(thd, tab->keys,
-				       used_tables & ~ current_map,
-				       (join->select_options &
-					OPTION_FOUND_ROWS ?
-					HA_POS_ERROR :
-					join->unit->select_limit_cnt), 0) < 0)
-            {
-	      /*
-		Before reporting "Impossible WHERE" for the whole query
-		we have to check isn't it only "impossible ON" instead
-	      */
-              sel->cond=orig_cond;
-              if (!*tab->on_expr_ref ||
-                  sel->test_quick_select(thd, tab->keys,
-                                         used_tables & ~ current_map,
-                                         (join->select_options &
-                                          OPTION_FOUND_ROWS ?
-                                          HA_POS_ERROR :
-                                          join->unit->select_limit_cnt),0) < 0)
-		DBUG_RETURN(1);			// Impossible WHERE
+              /*
+                Because of QUICK_GROUP_MIN_MAX_SELECT there may be a select without
+                a cond, so neutralize the hack above.
+              */
+              if (!(tmp= add_found_match_trig_cond(first_inner_tab, tmp, 0)))
+                DBUG_RETURN(1);
+              tab->select_cond=sel->cond=tmp;
+              /* Push condition to storage engine if this is enabled
+                 and the condition is not guarded */
+              tab->table->file->pushed_cond= NULL;
+	      if (thd->variables.engine_condition_pushdown)
+              {
+                COND *push_cond= 
+                  make_cond_for_table(tmp, current_map, current_map);
+                if (push_cond)
+                {
+                  /* Push condition to handler */
+                  if (!tab->table->file->cond_push(push_cond))
+                    tab->table->file->pushed_cond= push_cond;
+                }
+              }
             }
             else
-	      sel->cond=orig_cond;
+              tab->select_cond= sel->cond= NULL;
 
-	    /* Fix for EXPLAIN */
-	    if (sel->quick)
-	      join->best_positions[i].records_read= sel->quick->records;
-	  }
-	  else
-	  {
-	    sel->needed_reg=tab->needed_reg;
-	    sel->quick_keys.clear_all();
-	  }
-	  if (!sel->quick_keys.is_subset(tab->checked_keys) ||
-              !sel->needed_reg.is_subset(tab->checked_keys))
-	  {
-	    tab->keys=sel->quick_keys;
-            tab->keys.merge(sel->needed_reg);
-	    tab->use_quick= (!sel->needed_reg.is_clear_all() &&
-			     (select->quick_keys.is_clear_all() ||
-			      (select->quick &&
-			       (select->quick->records >= 100L)))) ?
-	      2 : 1;
-	    sel->read_tables= used_tables & ~current_map;
-	  }
-	  if (i != join->const_tables && tab->use_quick != 2)
-	  {					/* Read with cache */
-	    if (cond &&
-                (tmp=make_cond_for_table(cond,
-					 join->const_table_map |
-					 current_map,
-					 current_map)))
+	    sel->head=tab->table;
+	    DBUG_EXECUTE("where",print_where(tmp,tab->table->alias););
+	    if (tab->quick)
 	    {
-	      DBUG_EXECUTE("where",print_where(tmp,"cache"););
-	      tab->cache.select=(SQL_SELECT*)
-		thd->memdup((gptr) sel, sizeof(SQL_SELECT));
-	      tab->cache.select->cond=tmp;
-	      tab->cache.select->read_tables=join->const_table_map;
+	      /* Use quick key read if it's a constant and it's not used
+	         with key reading */
+	      if (tab->needed_reg.is_clear_all() && tab->type != JT_EQ_REF
+	          && tab->type != JT_FT && (tab->type != JT_REF ||
+                   (uint) tab->ref.key == tab->quick->index))
+	      {
+	        sel->quick=tab->quick;		// Use value from get_quick_...
+	        sel->quick_keys.clear_all();
+	        sel->needed_reg.clear_all();
+	      }
+	      else
+	      {
+	        delete tab->quick;
+	      }
+	      tab->quick=0;
 	    }
-	  }
-	}
+	    uint ref_key=(uint) sel->head->reginfo.join_tab->ref.key+1;
+	    if (i == join->const_tables && ref_key)
+	    {
+	      if (!tab->const_keys.is_clear_all() &&
+                  tab->table->reginfo.impossible_range)
+	        DBUG_RETURN(1);
+	    }
+	    else if (tab->type == JT_ALL && ! use_quick_range)
+	    {
+	      if (!tab->const_keys.is_clear_all() &&
+	          tab->table->reginfo.impossible_range)
+	        DBUG_RETURN(1);				// Impossible range
+	      /*
+	        We plan to scan all rows.
+	        Check again if we should use an index.
+	        We could have used an column from a previous table in
+	        the index if we are using limit and this is the first table
+	      */
+
+	      if (cond &&
+                  (!tab->keys.is_subset(tab->const_keys) && i > 0) ||
+	          (!tab->const_keys.is_clear_all() && i == join->const_tables &&
+	           join->unit->select_limit_cnt <
+	           join->best_positions[i].records_read &&
+	           !(join->select_options & OPTION_FOUND_ROWS)))
+	      {
+	        /* Join with outer join condition */
+	        COND *orig_cond=sel->cond;
+	        sel->cond= and_conds(sel->cond, *tab->on_expr_ref);
+
+	        /*
+                  We can't call sel->cond->fix_fields,
+                  as it will break tab->on_expr if it's AND condition
+                  (fix_fields currently removes extra AND/OR levels).
+                  Yet attributes of the just built condition are not needed.
+                  Thus we call sel->cond->quick_fix_field for safety.
+	        */
+	        if (sel->cond && !sel->cond->fixed)
+	          sel->cond->quick_fix_field();
+
+	        if (sel->test_quick_select(thd, tab->keys,
+				           used_tables & ~ current_map,
+				           (join->select_options &
+					    OPTION_FOUND_ROWS ?
+					    HA_POS_ERROR :
+					    join->unit->select_limit_cnt), 0) < 0)
+                {
+	          /*
+				Before reporting "Impossible WHERE" for the whole query
+				we have to check isn't it only "impossible ON" instead
+	          */
+                  sel->cond=orig_cond;
+                  if (!*tab->on_expr_ref ||
+                      sel->test_quick_select(thd, tab->keys,
+                                             used_tables & ~ current_map,
+                                             (join->select_options &
+                                              OPTION_FOUND_ROWS ?
+                                              HA_POS_ERROR :
+                                              join->unit->select_limit_cnt),0) < 0)
+		            DBUG_RETURN(1);			// Impossible WHERE
+                }
+                else
+	                sel->cond=orig_cond;
+
+	        /* Fix for EXPLAIN */
+	        if (sel->quick)
+	          join->best_positions[i].records_read= sel->quick->records;
+	      }
+	      else
+	      {
+	        sel->needed_reg=tab->needed_reg;
+	        sel->quick_keys.clear_all();
+	      }
+	      if (!sel->quick_keys.is_subset(tab->checked_keys) ||
+                  !sel->needed_reg.is_subset(tab->checked_keys))
+	      {
+	        tab->keys=sel->quick_keys;
+                tab->keys.merge(sel->needed_reg);
+	        tab->use_quick= (!sel->needed_reg.is_clear_all() &&
+			         (select->quick_keys.is_clear_all() ||
+			          (select->quick &&
+			           (select->quick->records >= 100L)))) ?
+	          2 : 1;
+	        sel->read_tables= used_tables & ~current_map;
+	      }
+	      if (i != join->const_tables && tab->use_quick != 2)
+	      {					/* Read with cache */
+	        if (cond &&
+                    (tmp=make_cond_for_table(cond,
+					     join->const_table_map |
+					     current_map,
+					     current_map)))
+	        {
+	          DBUG_EXECUTE("where",print_where(tmp,"cache"););
+	          tab->cache.select=(SQL_SELECT*)
+		    thd->memdup((gptr) sel, sizeof(SQL_SELECT));
+	          tab->cache.select->cond=tmp;
+	          tab->cache.select->read_tables=join->const_table_map;
+	        }
+	      }
+	    }
       }
       
       /* 
@@ -5432,12 +5432,12 @@ make_join_select(JOIN *join,SQL_SELECT *select,COND *cond)
         /* 
           Table tab is the last inner table of an outer join.
           An on expression is always attached to it.
-	*/     
+	    */     
         COND *on_expr= *first_inner_tab->on_expr_ref;
 
         table_map used_tables= join->const_table_map |
 		               OUTER_REF_TABLE_BIT | RAND_TABLE_BIT;
-	for (tab= join->join_tab+join->const_tables; tab <= last_tab ; tab++)
+	    for (tab= join->join_tab+join->const_tables; tab <= last_tab ; tab++)
         {
           current_map= tab->table->map;
           used_tables|= current_map;
@@ -5448,28 +5448,28 @@ make_join_select(JOIN *join,SQL_SELECT *select,COND *cond)
             /*
               First add the guards for match variables of
               all embedding outer join operations.
-	    */
+	        */
             if (!(tmp= add_found_match_trig_cond(cond_tab->first_inner,
                                                  tmp, first_inner_tab)))
               DBUG_RETURN(1);
             /* 
               Now add the guard turning the predicate off for 
               the null complemented row.
-	    */ 
+	        */ 
             DBUG_PRINT("info", ("Item_func_trig_cond"));
             tmp= new Item_func_trig_cond(tmp, 
                                          &first_inner_tab->not_null_compl);
             DBUG_PRINT("info", ("Item_func_trig_cond 0x%lx", (ulong) tmp));
             if (tmp)
               tmp->quick_fix_field();
-	    /* Add the predicate to other pushed down predicates */
+	        /* Add the predicate to other pushed down predicates */
             DBUG_PRINT("info", ("Item_cond_and"));
             cond_tab->select_cond= !cond_tab->select_cond ? tmp :
 	                          new Item_cond_and(cond_tab->select_cond,tmp);
             DBUG_PRINT("info", ("Item_cond_and 0x%lx",
                                 (ulong)cond_tab->select_cond));
             if (!cond_tab->select_cond)
-	      DBUG_RETURN(1);
+	            DBUG_RETURN(1);
             cond_tab->select_cond->quick_fix_field();
           }              
         }

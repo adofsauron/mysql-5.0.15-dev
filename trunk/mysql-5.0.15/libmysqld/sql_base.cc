@@ -4379,7 +4379,7 @@ bool setup_tables(THD *thd, Name_resolution_context *context,
       key_map map;
       get_key_map_from_key_list(&map, table, table_list->use_index);
       if (map.is_set_all())
-	DBUG_RETURN(1);
+	    DBUG_RETURN(1);
       table->keys_in_use_for_query=map;
     }
     if (table_list->ignore_index)
@@ -4387,7 +4387,7 @@ bool setup_tables(THD *thd, Name_resolution_context *context,
       key_map map;
       get_key_map_from_key_list(&map, table, table_list->ignore_index);
       if (map.is_set_all())
-	DBUG_RETURN(1);
+	    DBUG_RETURN(1);
       table->keys_in_use_for_query.subtract(map);
     }
     table->used_keys.intersect(table->keys_in_use_for_query);

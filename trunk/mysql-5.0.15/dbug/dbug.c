@@ -753,7 +753,7 @@ char ***_sframep_ __attribute__((unused)))
     if (DoTrace(state))
     {
       if (!state->locked)
-	pthread_mutex_lock(&THR_LOCK_dbug);
+	    pthread_mutex_lock(&THR_LOCK_dbug);
       DoPrefix (_line_);
       Indent (state -> level);
       (void) fprintf (_db_fp_, ">%s [%s:%d]\n", state->func, state->file,state->lineno);

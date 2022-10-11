@@ -1178,7 +1178,7 @@ JOIN::exec()
   if (procedure)
   {
     if (procedure->change_columns(fields_list) ||
-	result->prepare(fields_list, unit))
+	    result->prepare(fields_list, unit))
     {
       thd->limit_found_rows= thd->examined_row_count= 0;
       DBUG_VOID_RETURN;
@@ -1189,8 +1189,7 @@ JOIN::exec()
   if (!tables_list)
   {                                           // Only test of functions
     if (select_options & SELECT_DESCRIBE)
-      select_describe(this, FALSE, FALSE, FALSE,
-		      (zero_result_cause?zero_result_cause:"No tables used"));
+      select_describe(this, FALSE, FALSE, FALSE, (zero_result_cause?zero_result_cause:"No tables used"));
     else
     {
       result->send_fields(fields_list,

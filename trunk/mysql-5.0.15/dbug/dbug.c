@@ -694,7 +694,7 @@ void _db_pop_ ()
  *
  */
 
-void _db_enter_ (
+void _db_enter_(
 const char *_func_,
 const char *_file_,
 uint _line_,

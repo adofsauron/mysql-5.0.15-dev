@@ -1205,6 +1205,11 @@ static BOOLEAN DoTrace (CODE_STATE *state)
 	  trace = FALSE;
   }
 
+  if (0 == strcmp("mysql_fetch_row", state->func))
+  {
+	  trace = FALSE;
+  }
+
   if (TRACING && !state->disable_output &&
       state->level <= stack -> maxdepth &&
       InList (stack -> functions, state->func) &&

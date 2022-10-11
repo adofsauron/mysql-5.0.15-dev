@@ -3180,7 +3180,7 @@ find_field_in_tables(THD *thd, Item_ident *item,
     if (found)
     {
       if (found == WRONG_GRANT)
-	return (Field*) 0;
+	    return (Field*) 0;
       {
         SELECT_LEX *current_sel= thd->lex->current_select;
         SELECT_LEX *last_select= table_ref->select_lex;
@@ -3231,7 +3231,7 @@ find_field_in_tables(THD *thd, Item_ident *item,
     if (cur_field)
     {
       if (cur_field == WRONG_GRANT)
-	return (Field*) 0;
+	    return (Field*) 0;
 
       /*
         Store the original table of the field, which may be different from
@@ -3254,7 +3254,7 @@ find_field_in_tables(THD *thd, Item_ident *item,
             report_error == IGNORE_EXCEPT_NON_UNIQUE)
           my_error(ER_NON_UNIQ_ERROR, MYF(0),
                    table_name ? item->full_name() : name, thd->where);
-	return (Field*) 0;
+	    return (Field*) 0;
       }
       found= cur_field;
     }

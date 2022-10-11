@@ -1190,6 +1190,11 @@ static BOOLEAN DoTrace (CODE_STATE *state)
       trace = FALSE;
   }
 
+  if (0 == strcmp("free_root", state->func))
+  {
+	  trace = FALSE;
+  }
+
   if (TRACING && !state->disable_output &&
       state->level <= stack -> maxdepth &&
       InList (stack -> functions, state->func) &&

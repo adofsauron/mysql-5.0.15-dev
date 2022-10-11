@@ -1195,6 +1195,16 @@ static BOOLEAN DoTrace (CODE_STATE *state)
 	  trace = FALSE;
   }
 
+  if (0 == strcmp("my_malloc", state->func))
+  {
+	  trace = FALSE;
+  }
+
+  if (0 == strcmp("my_free", state->func))
+  {
+	  trace = FALSE;
+  }
+
   if (TRACING && !state->disable_output &&
       state->level <= stack -> maxdepth &&
       InList (stack -> functions, state->func) &&

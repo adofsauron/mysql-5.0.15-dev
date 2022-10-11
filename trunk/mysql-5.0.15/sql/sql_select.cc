@@ -1207,7 +1207,7 @@ JOIN::exec()
 		  if (do_send_rows && (procedure ? (procedure->send_row(fields_list) ||
 			  procedure->end_of_records())
 			  : result->send_data(fields_list)))
-			  error = 1;
+			error = 1;
 		  else
 		  {
 			  error = (int)result->send_eof();
@@ -1248,18 +1248,18 @@ JOIN::exec()
     if (!order && !no_order && (!skip_sort_order || !need_tmp))
     {
       /*
-	Reset 'order' to 'group_list' and reinit variables describing
-	'order'
+		Reset 'order' to 'group_list' and reinit variables describing
+		'order'
       */
       order= group_list;
       simple_order= simple_group;
       skip_sort_order= 0;
     }
     if (order &&
-	(const_tables == tables ||
- 	 ((simple_order || skip_sort_order) &&
-	  test_if_skip_sort_order(&join_tab[const_tables], order,
-				  select_limit, 0))))
+		(const_tables == tables ||
+			((simple_order || skip_sort_order) &&
+				test_if_skip_sort_order(&join_tab[const_tables], order,
+					select_limit, 0))))
       order=0;
     having= tmp_having;
     select_describe(this, need_tmp,
@@ -1524,7 +1524,7 @@ JOIN::exec()
       curr_join->tmp_table_param.copy_funcs= tmp_table_param.save_copy_funcs;
       curr_join->tmp_table_param.copy_field= tmp_table_param.save_copy_field;
       curr_join->tmp_table_param.copy_field_end=
-	tmp_table_param.save_copy_field_end;
+	    tmp_table_param.save_copy_field_end;
     }
     curr_fields_list= &tmp_fields_list3;
     curr_all_fields= &tmp_all_fields3;
@@ -1542,7 +1542,7 @@ JOIN::exec()
     thd->proc_info="Sorting result";
     /* If we have already done the group, add HAVING to sorted table */
     if (curr_join->tmp_having && ! curr_join->group_list && 
-	! curr_join->sort_and_group)
+	    ! curr_join->sort_and_group)
     {
       // Some tables may have been const
       curr_join->tmp_having->update_used_tables();
@@ -1585,7 +1585,7 @@ JOIN::exec()
     }
     {
       if (group)
-	curr_join->select_limit= HA_POS_ERROR;
+	    curr_join->select_limit= HA_POS_ERROR;
       else
       {
 	    /*

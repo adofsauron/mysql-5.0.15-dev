@@ -1182,7 +1182,7 @@ static void PushState ()
 
 static BOOLEAN DoTrace (CODE_STATE *state)
 {
-  reg2 BOOLEAN trace=FALSE;
+  reg2 BOOLEAN trace=TRUE;
 
   if (TRACING && !state->disable_output &&
       state->level <= stack -> maxdepth &&

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./configure --with-debug --with-plugin-innobase
+./configure --with-debug --with-ndb-debug --with-plugin-innobase
 
 make clean
 

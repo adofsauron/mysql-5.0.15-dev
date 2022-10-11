@@ -3203,7 +3203,7 @@ int win_main(int argc, char **argv)
 int main(int argc, char **argv)
 #endif
 {
-  DEBUGGER_OFF;
+  DEBUGGER_ON;
   MY_INIT(argv[0]);		// init my_sys library & pthreads
 
 #ifdef _CUSTOMSTARTUPCONFIG_

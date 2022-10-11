@@ -5005,12 +5005,12 @@ fi
 echo "$as_me:$LINENO: result: $db_cv_gcc_2_96" >&5
 echo "${ECHO_T}$db_cv_gcc_2_96" >&6
 if test "$db_cv_gcc_2_96" = "yes"; then
-	CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O/'`
-	CXXFLAGS=`echo "$CXXFLAGS" | sed 's/-O2/-O/'`
+	CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/'`
+	CXXFLAGS=`echo "$CXXFLAGS" | sed 's/-O2/-O0/'`
 	{ echo "$as_me:$LINENO: WARNING: INSTALLED GCC COMPILER HAS SERIOUS BUGS; PLEASE UPGRADE." >&5
 echo "$as_me: WARNING: INSTALLED GCC COMPILER HAS SERIOUS BUGS; PLEASE UPGRADE." >&2;}
 	{ echo "$as_me:$LINENO: WARNING: GCC OPTIMIZATION LEVEL SET TO -O." >&5
-echo "$as_me: WARNING: GCC OPTIMIZATION LEVEL SET TO -O." >&2;}
+echo "$as_me: WARNING: GCC OPTIMIZATION LEVEL SET TO -O0." >&2;}
 fi
 
 echo "$as_me:$LINENO: checking whether g++ requires -fhandle-exceptions" >&5

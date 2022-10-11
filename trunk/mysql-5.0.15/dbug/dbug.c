@@ -722,7 +722,8 @@ char ***_sframep_ __attribute__((unused)))
     *_sfunc_ = state->func;
     *_sfile_ = state->file;
     state->func =(char*)  _func_;
-    state->file = (char*) _file_;		/* BaseName takes time !! */
+	state->file = (char*)_file_;		/* BaseName takes time !! */
+	state->lineno = (int)_line_;		/* BaseName takes time !! */
     *_slevel_ =  ++state->level;
 #ifndef THREAD
     *_sframep_ = state->framep;
@@ -755,7 +756,7 @@ char ***_sframep_ __attribute__((unused)))
 	pthread_mutex_lock(&THR_LOCK_dbug);
       DoPrefix (_line_);
       Indent (state -> level);
-      (void) fprintf (_db_fp_, ">%s\n", state->func);
+      (void) fprintf (_db_fp_, ">%s [%s:%d]\n", state->func, state->file,state->lineno);
       dbug_flush (state);			/* This does a unlock */
     }
 #ifdef SAFEMALLOC
@@ -1183,6 +1184,11 @@ static void PushState ()
 static BOOLEAN DoTrace (CODE_STATE *state)
 {
   reg2 BOOLEAN trace=TRUE;
+
+  if (0==strcmp("alloc_root", state->func))
+  {
+      trace = FALSE;
+  }
 
   if (TRACING && !state->disable_output &&
       state->level <= stack -> maxdepth &&

@@ -6595,13 +6595,12 @@ static void propagate_cond_constants(THD *thd, I_List<COND_CMP> *save_list, COND
     The query is converted first to:
       SELECT * FROM t1 INNER JOIN t2 ON t2.a=t1.a WHERE t2.b < 5
     then to the equivalent form:
-      SELECT * FROM t1, t2 ON t2.a=t1.a WHERE t2.b < 5 AND t2.a=t1.a.
+      SELECT * FROM t1,t2 WHERE t2.b < 5 AND t2.a=t1.a.
 
     Similarly the following query:
-      SELECT * from t1 LEFT JOIN (t2, t3) ON t2.a=t1.a t3.b=t1.b
-        WHERE t2.c < 5
+      SELECT * from t1 LEFT JOIN (t2, t3) ON t2.a=t1.a AND t3.b=t1.b WHERE t2.c < 5
     is converted to:
-      SELECT * FROM t1, (t2, t3) WHERE t2.c < 5 AND t2.a=t1.a t3.b=t1.b
+      SELECT * FROM t1, (t2, t3) WHERE t2.c < 5 AND t2.a=t1.a AND t3.b=t1.b
 
     One conversion might trigger another:
       SELECT * FROM t1 LEFT JOIN t2 ON t2.a=t1.a

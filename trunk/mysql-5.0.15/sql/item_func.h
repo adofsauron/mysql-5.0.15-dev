@@ -99,7 +99,7 @@ public:
       arg_count= 4;
       args[0]= a; args[1]= b; args[2]= c; args[3]= d;
       with_sum_func= a->with_sum_func || b->with_sum_func ||
-	c->with_sum_func || d->with_sum_func;
+	    c->with_sum_func || d->with_sum_func;
     }
   }
   Item_func(Item *a,Item *b,Item *c,Item *d,Item* e):
@@ -110,7 +110,7 @@ public:
     {
       args[0]= a; args[1]= b; args[2]= c; args[3]= d; args[4]= e;
       with_sum_func= a->with_sum_func || b->with_sum_func ||
-	c->with_sum_func || d->with_sum_func || e->with_sum_func ;
+	    c->with_sum_func || d->with_sum_func || e->with_sum_func ;
     }
   }
   Item_func(List<Item> &list);

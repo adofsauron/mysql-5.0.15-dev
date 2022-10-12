@@ -18,17 +18,19 @@
 #pragma interface /* gcc class implementation */
 #endif
 
-class SQL_CRYPT : public Sql_alloc {
+class SQL_CRYPT : public Sql_alloc
+{
   struct rand_struct rand, org_rand;
   char decode_buff[256], encode_buff[256];
   uint shift;
   void crypt_init(ulong *seed);
 
-public:
+ public:
   SQL_CRYPT(const char *seed);
   SQL_CRYPT(ulong *seed) { crypt_init(seed); }
   ~SQL_CRYPT() {}
-  void init() {
+  void init()
+  {
     shift = 0;
     rand = org_rand;
   }

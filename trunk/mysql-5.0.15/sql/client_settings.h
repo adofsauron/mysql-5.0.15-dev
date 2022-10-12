@@ -16,15 +16,16 @@
 
 #include <thr_alarm.h>
 
-#define CLIENT_CAPABILITIES                                                    \
-  (CLIENT_LONG_PASSWORD | CLIENT_LONG_FLAG | CLIENT_SECURE_CONNECTION |        \
-   CLIENT_TRANSACTIONS | CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION)
+#define CLIENT_CAPABILITIES                                                                                        \
+  (CLIENT_LONG_PASSWORD | CLIENT_LONG_FLAG | CLIENT_SECURE_CONNECTION | CLIENT_TRANSACTIONS | CLIENT_PROTOCOL_41 | \
+   CLIENT_SECURE_CONNECTION)
 
 #define init_sigpipe_variables
 #define set_sigpipe(mysql)
 #define reset_sigpipe(mysql)
-#define read_user_name(A)                                                      \
-  {}
+#define read_user_name(A) \
+  {                       \
+  }
 #define mysql_rpl_query_type(A, B) MYSQL_RPL_ADMIN
 #define mysql_master_send_query(A, B, C) 1
 #define mysql_slave_send_query(A, B, C) 1

@@ -20,8 +20,8 @@
 */
 
 #ifdef USE_PRAGMA_IMPLEMENTATION
-#pragma implementation // gcc: Class implementation
+#pragma implementation  // gcc: Class implementation
 #endif
 
-#include "mysql_priv.h"
 #include "hash_filo.h"
+#include "mysql_priv.h"

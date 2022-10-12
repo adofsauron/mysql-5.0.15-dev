@@ -22,21 +22,25 @@
 
 #include <my_bitmap.h>
 
-template <uint default_width> class Bitmap {
+template <uint default_width>
+class Bitmap
+{
   MY_BITMAP map;
   uchar buffer[(default_width + 7) / 8];
 
-public:
+ public:
   Bitmap() { init(); }
   Bitmap(const Bitmap &from) { *this = from; }
   explicit Bitmap(uint prefix_to_set) { init(prefix_to_set); }
   void init() { bitmap_init(&map, buffer, default_width, 0); }
-  void init(uint prefix_to_set) {
+  void init(uint prefix_to_set)
+  {
     init();
     set_prefix(prefix_to_set);
   }
   uint length() const { return default_width; }
-  Bitmap &operator=(const Bitmap &map2) {
+  Bitmap &operator=(const Bitmap &map2)
+  {
     init();
     memcpy(buffer, map2.buffer, sizeof(buffer));
     return *this;
@@ -47,17 +51,18 @@ public:
   void set_all() { bitmap_set_all(&map); }
   void clear_all() { bitmap_clear_all(&map); }
   void intersect(Bitmap &map2) { bitmap_intersect(&map, &map2.map); }
-  void intersect(ulonglong map2buff) {
+  void intersect(ulonglong map2buff)
+  {
     MY_BITMAP map2;
     bitmap_init(&map2, (uchar *)&map2buff, sizeof(ulonglong) * 8, 0);
     bitmap_intersect(&map, &map2);
   }
   /* Use highest bit for all bits above sizeof(ulonglong)*8. */
-  void intersect_extended(ulonglong map2buff) {
+  void intersect_extended(ulonglong map2buff)
+  {
     intersect(map2buff);
     if (map.bitmap_size > sizeof(ulonglong))
-      bitmap_set_above(&map, sizeof(ulonglong),
-                       test(map2buff & (LL(1) << (sizeof(ulonglong) * 8 - 1))));
+      bitmap_set_above(&map, sizeof(ulonglong), test(map2buff & (LL(1) << (sizeof(ulonglong) * 8 - 1))));
   }
   void subtract(Bitmap &map2) { bitmap_subtract(&map, &map2.map); }
   void merge(Bitmap &map2) { bitmap_union(&map, &map2.map); }
@@ -65,39 +70,37 @@ public:
   my_bool is_prefix(uint n) const { return bitmap_is_prefix(&map, n); }
   my_bool is_clear_all() const { return bitmap_is_clear_all(&map); }
   my_bool is_set_all() const { return bitmap_is_set_all(&map); }
-  my_bool is_subset(const Bitmap &map2) const {
-    return bitmap_is_subset(&map, &map2.map);
-  }
-  my_bool operator==(const Bitmap &map2) const {
-    return bitmap_cmp(&map, &map2.map);
-  }
-  char *print(char *buf) const {
+  my_bool is_subset(const Bitmap &map2) const { return bitmap_is_subset(&map, &map2.map); }
+  my_bool operator==(const Bitmap &map2) const { return bitmap_cmp(&map, &map2.map); }
+  char *print(char *buf) const
+  {
     char *s = buf;
     const uchar *e = buffer, *b = e + sizeof(buffer) - 1;
-    while (!*b && b > e)
-      b--;
-    if ((*s = _dig_vec_upper[*b >> 4]) != '0')
-      s++;
+    while (!*b && b > e) b--;
+    if ((*s = _dig_vec_upper[*b >> 4]) != '0') s++;
     *s++ = _dig_vec_upper[*b & 15];
-    while (--b >= e) {
+    while (--b >= e)
+    {
       *s++ = _dig_vec_upper[*b >> 4];
       *s++ = _dig_vec_upper[*b & 15];
     }
     *s = 0;
     return buf;
   }
-  ulonglong to_ulonglong() const {
-    if (sizeof(buffer) >= 8)
-      return uint8korr(buffer);
+  ulonglong to_ulonglong() const
+  {
+    if (sizeof(buffer) >= 8) return uint8korr(buffer);
     DBUG_ASSERT(sizeof(buffer) >= 4);
     return (ulonglong)uint4korr(buffer);
   }
 };
 
-template <> class Bitmap<64> {
+template <>
+class Bitmap<64>
+{
   ulonglong map;
 
-public:
+ public:
   Bitmap<64>() {}
 #if defined(__NETWARE__) || defined(__MWERKS__)
   /*
@@ -114,7 +117,8 @@ public:
   uint length() const { return 64; }
   void set_bit(uint n) { map |= ((ulonglong)1) << n; }
   void clear_bit(uint n) { map &= ~(((ulonglong)1) << n); }
-  void set_prefix(uint n) {
+  void set_prefix(uint n)
+  {
     if (n >= length())
       set_all();
     else
@@ -133,7 +137,8 @@ public:
   my_bool is_set_all() const { return map == ~(ulonglong)0; }
   my_bool is_subset(const Bitmap<64> &map2) const { return !(map & ~map2.map); }
   my_bool operator==(const Bitmap<64> &map2) const { return map == map2.map; }
-  char *print(char *buf) const {
+  char *print(char *buf) const
+  {
     longlong2str(map, buf, 16);
     return buf;
   }

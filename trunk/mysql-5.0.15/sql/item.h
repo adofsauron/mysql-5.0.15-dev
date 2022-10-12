@@ -28,7 +28,8 @@ class Item_field;
    A combination of collation and its derivation.
 */
 
-enum Derivation {
+enum Derivation
+{
   DERIVATION_IGNORABLE = 5,
   DERIVATION_COERCIBLE = 4,
   DERIVATION_SYSCONST = 3,
@@ -56,50 +57,58 @@ enum Derivation {
 #define MY_COLL_DISALLOW_NONE 4
 #define MY_COLL_CMP_CONV 7
 
-class DTCollation {
-public:
+class DTCollation
+{
+ public:
   CHARSET_INFO *collation;
   enum Derivation derivation;
 
-  DTCollation() {
+  DTCollation()
+  {
     collation = &my_charset_bin;
     derivation = DERIVATION_NONE;
   }
-  DTCollation(CHARSET_INFO *collation_arg, Derivation derivation_arg) {
+  DTCollation(CHARSET_INFO *collation_arg, Derivation derivation_arg)
+  {
     collation = collation_arg;
     derivation = derivation_arg;
   }
-  void set(DTCollation &dt) {
+  void set(DTCollation &dt)
+  {
     collation = dt.collation;
     derivation = dt.derivation;
   }
-  void set(CHARSET_INFO *collation_arg, Derivation derivation_arg) {
+  void set(CHARSET_INFO *collation_arg, Derivation derivation_arg)
+  {
     collation = collation_arg;
     derivation = derivation_arg;
   }
   void set(CHARSET_INFO *collation_arg) { collation = collation_arg; }
   void set(Derivation derivation_arg) { derivation = derivation_arg; }
   bool aggregate(DTCollation &dt, uint flags = 0);
-  bool set(DTCollation &dt1, DTCollation &dt2, uint flags = 0) {
+  bool set(DTCollation &dt1, DTCollation &dt2, uint flags = 0)
+  {
     set(dt1);
     return aggregate(dt2, flags);
   }
-  const char *derivation_name() const {
-    switch (derivation) {
-    case DERIVATION_IGNORABLE:
-      return "IGNORABLE";
-    case DERIVATION_COERCIBLE:
-      return "COERCIBLE";
-    case DERIVATION_IMPLICIT:
-      return "IMPLICIT";
-    case DERIVATION_SYSCONST:
-      return "SYSCONST";
-    case DERIVATION_EXPLICIT:
-      return "EXPLICIT";
-    case DERIVATION_NONE:
-      return "NONE";
-    default:
-      return "UNKNOWN";
+  const char *derivation_name() const
+  {
+    switch (derivation)
+    {
+      case DERIVATION_IGNORABLE:
+        return "IGNORABLE";
+      case DERIVATION_COERCIBLE:
+        return "COERCIBLE";
+      case DERIVATION_IMPLICIT:
+        return "IMPLICIT";
+      case DERIVATION_SYSCONST:
+        return "SYSCONST";
+      case DERIVATION_EXPLICIT:
+        return "EXPLICIT";
+      case DERIVATION_NONE:
+        return "NONE";
+      default:
+        return "UNKNOWN";
     }
   }
 };
@@ -113,7 +122,8 @@ public:
 
 struct Hybrid_type_traits;
 
-struct Hybrid_type {
+struct Hybrid_type
+{
   longlong integer;
 
   double real;
@@ -140,31 +150,27 @@ struct Hybrid_type {
 
 /* Hybryd_type_traits interface + default implementation for REAL_RESULT */
 
-struct Hybrid_type_traits {
+struct Hybrid_type_traits
+{
   virtual Item_result type() const { return REAL_RESULT; }
 
   virtual void fix_length_and_dec(Item *item, Item *arg) const;
 
   /* Hybrid_type operations. */
   virtual void set_zero(Hybrid_type *val) const { val->real = 0.0; }
-  virtual void add(Hybrid_type *val, Field *f) const {
-    val->real += f->val_real();
-  }
-  virtual void div(Hybrid_type *val, ulonglong u) const {
-    val->real /= ulonglong2double(u);
-  }
+  virtual void add(Hybrid_type *val, Field *f) const { val->real += f->val_real(); }
+  virtual void div(Hybrid_type *val, ulonglong u) const { val->real /= ulonglong2double(u); }
 
-  virtual longlong val_int(Hybrid_type *val, bool unsigned_flag) const {
-    return (longlong)val->real;
-  }
+  virtual longlong val_int(Hybrid_type *val, bool unsigned_flag) const { return (longlong)val->real; }
   virtual double val_real(Hybrid_type *val) const { return val->real; }
   virtual my_decimal *val_decimal(Hybrid_type *val, my_decimal *buf) const;
   virtual String *val_str(Hybrid_type *val, String *buf, uint8 decimals) const;
   static const Hybrid_type_traits *instance();
-  Hybrid_type_traits() {};
+  Hybrid_type_traits(){};
 };
 
-struct Hybrid_type_traits_decimal : public Hybrid_type_traits {
+struct Hybrid_type_traits_decimal : public Hybrid_type_traits
+{
   virtual Item_result type() const { return DECIMAL_RESULT; }
 
   virtual void fix_length_and_dec(Item *arg, Item *item) const;
@@ -176,44 +182,40 @@ struct Hybrid_type_traits_decimal : public Hybrid_type_traits {
 
   virtual longlong val_int(Hybrid_type *val, bool unsigned_flag) const;
   virtual double val_real(Hybrid_type *val) const;
-  virtual my_decimal *val_decimal(Hybrid_type *val, my_decimal *buf) const {
+  virtual my_decimal *val_decimal(Hybrid_type *val, my_decimal *buf) const
+  {
     return &val->dec_buf[val->used_dec_buf_no];
   }
   virtual String *val_str(Hybrid_type *val, String *buf, uint8 decimals) const;
   static const Hybrid_type_traits_decimal *instance();
-  Hybrid_type_traits_decimal() {};
+  Hybrid_type_traits_decimal(){};
 };
 
-struct Hybrid_type_traits_integer : public Hybrid_type_traits {
+struct Hybrid_type_traits_integer : public Hybrid_type_traits
+{
   virtual Item_result type() const { return INT_RESULT; }
 
   virtual void fix_length_and_dec(Item *arg, Item *item) const;
 
   /* Hybrid_type operations. */
   virtual void set_zero(Hybrid_type *val) const { val->integer = 0; }
-  virtual void add(Hybrid_type *val, Field *f) const {
-    val->integer += f->val_int();
-  }
-  virtual void div(Hybrid_type *val, ulonglong u) const {
-    val->integer /= (longlong)u;
-  }
+  virtual void add(Hybrid_type *val, Field *f) const { val->integer += f->val_int(); }
+  virtual void div(Hybrid_type *val, ulonglong u) const { val->integer /= (longlong)u; }
 
-  virtual longlong val_int(Hybrid_type *val, bool unsigned_flag) const {
-    return val->integer;
-  }
-  virtual double val_real(Hybrid_type *val) const {
-    return (double)val->integer;
-  }
-  virtual my_decimal *val_decimal(Hybrid_type *val, my_decimal *buf) const {
+  virtual longlong val_int(Hybrid_type *val, bool unsigned_flag) const { return val->integer; }
+  virtual double val_real(Hybrid_type *val) const { return (double)val->integer; }
+  virtual my_decimal *val_decimal(Hybrid_type *val, my_decimal *buf) const
+  {
     int2my_decimal(E_DEC_FATAL_ERROR, val->integer, 0, &val->dec_buf[2]);
     return &val->dec_buf[2];
   }
-  virtual String *val_str(Hybrid_type *val, String *buf, uint8 decimals) const {
+  virtual String *val_str(Hybrid_type *val, String *buf, uint8 decimals) const
+  {
     buf->set(val->integer, &my_charset_bin);
     return buf;
   }
   static const Hybrid_type_traits_integer *instance();
-  Hybrid_type_traits_integer() {};
+  Hybrid_type_traits_integer(){};
 };
 
 void dummy_error_processor(THD *thd, void *data);
@@ -235,7 +237,8 @@ void view_error_processor(THD *thd, void *data);
   structure before and after INSERT/CREATE and its SELECT to make correct
   field name resolution.
 */
-struct Name_resolution_context : Sql_alloc {
+struct Name_resolution_context : Sql_alloc
+{
   /*
     The name resolution context to search in when an Item cannot be
     resolved in this context (the context of an outer select)
@@ -294,24 +297,25 @@ struct Name_resolution_context : Sql_alloc {
   bool check_privileges;
 
   Name_resolution_context()
-      : outer_context(0), table_list(0), select_lex(0), error_processor_data(0),
-        check_privileges(TRUE) {}
+      : outer_context(0), table_list(0), select_lex(0), error_processor_data(0), check_privileges(TRUE)
+  {
+  }
 
-  void init() {
+  void init()
+  {
     resolve_in_select_list = FALSE;
     error_processor = &dummy_error_processor;
     first_name_resolution_table = NULL;
     last_name_resolution_table = NULL;
   }
 
-  void resolve_in_table_list_only(TABLE_LIST *tables) {
+  void resolve_in_table_list_only(TABLE_LIST *tables)
+  {
     table_list = first_name_resolution_table = tables;
     resolve_in_select_list = FALSE;
   }
 
-  void process_error(THD *thd) {
-    (*error_processor)(thd, error_processor_data);
-  }
+  void process_error(THD *thd) { (*error_processor)(thd, error_processor_data); }
 };
 
 /*************************************************************************/
@@ -320,23 +324,21 @@ typedef bool (Item::*Item_processor)(byte *arg);
 typedef Item *(Item::*Item_transformer)(byte *arg);
 typedef void (*Cond_traverser)(const Item *item, void *arg);
 
-class Item {
+class Item
+{
   Item(const Item &); /* Prevent use of these */
   void operator=(Item &);
 
-public:
-  static void *operator new(size_t size) {
-    return (void *)sql_alloc((uint)size);
-  }
-  static void *operator new(size_t size, MEM_ROOT *mem_root) {
-    return (void *)alloc_root(mem_root, (uint)size);
-  }
+ public:
+  static void *operator new(size_t size) { return (void *)sql_alloc((uint)size); }
+  static void *operator new(size_t size, MEM_ROOT *mem_root) { return (void *)alloc_root(mem_root, (uint)size); }
   /* Special for SP local variable assignment - reusing slots */
   static void *operator new(size_t size, Item *reuse, uint *rsize);
   static void operator delete(void *ptr, size_t size) { TRASH(ptr, size); }
   static void operator delete(void *ptr, MEM_ROOT *mem_root) {}
 
-  enum Type {
+  enum Type
+  {
     FIELD_ITEM = 0,
     FUNC_ITEM,
     SUM_FUNC_ITEM,
@@ -364,14 +366,16 @@ public:
     VIEW_FIXER_ITEM
   };
 
-  enum cond_result {
+  enum cond_result
+  {
     COND_UNDEF,
     COND_OK,
     COND_TRUE,
     COND_FALSE
   };
 
-  enum traverse_order {
+  enum traverse_order
+  {
     POSTFIX,
     PREFIX
   };
@@ -411,7 +415,8 @@ public:
      optimisation changes in prepared statements
   */
   Item(THD *thd, Item *item);
-  virtual ~Item() {
+  virtual ~Item()
+  {
 #ifdef EXTRA_DEBUG
     name = 0;
 #endif
@@ -431,12 +436,8 @@ public:
   /* Function returns 1 on overflow and -1 on fatal errors */
   int save_in_field_no_warnings(Field *field, bool no_conversions);
   virtual int save_in_field(Field *field, bool no_conversions);
-  virtual void save_org_in_field(Field *field) {
-    (void)save_in_field(field, 1);
-  }
-  virtual int save_safe_in_field(Field *field) {
-    return save_in_field(field, 1);
-  }
+  virtual void save_org_in_field(Field *field) { (void)save_in_field(field, 1); }
+  virtual int save_safe_in_field(Field *field) { return save_in_field(field, 1); }
   virtual bool send(Protocol *protocol, String *str);
   virtual bool eq(const Item *, bool binary_cmp) const;
   virtual Item_result result_type() const { return REAL_RESULT; }
@@ -556,9 +557,7 @@ public:
   virtual double val_result() { return val_real(); }
   virtual longlong val_int_result() { return val_int(); }
   virtual String *str_result(String *tmp) { return val_str(tmp); }
-  virtual my_decimal *val_decimal_result(my_decimal *val) {
-    return val_decimal(val);
-  }
+  virtual my_decimal *val_decimal_result(my_decimal *val) { return val_decimal(val); }
   virtual bool val_bool_result() { return val_bool(); }
 
   /* bit map of tables used by item */
@@ -583,14 +582,12 @@ public:
   /* cloning of constant items (0 if it is not const) */
   virtual Item *new_item() { return 0; }
   virtual cond_result eq_cmp_result() const { return COND_OK; }
-  inline uint float_length(uint decimals_par) const {
-    return decimals != NOT_FIXED_DEC ? (DBL_DIG + 2 + decimals_par)
-                                     : DBL_DIG + 8;
+  inline uint float_length(uint decimals_par) const
+  {
+    return decimals != NOT_FIXED_DEC ? (DBL_DIG + 2 + decimals_par) : DBL_DIG + 8;
   }
   virtual uint decimal_precision() const;
-  inline int decimal_int_part() const {
-    return my_decimal_int_part(decimal_precision(), decimals);
-  }
+  inline int decimal_int_part() const { return my_decimal_int_part(decimal_precision(), decimals); }
   /*
     Returns true if this is constant (during query execution, i.e. its value
     will not change until next fix_fields) and its value is known.
@@ -600,9 +597,7 @@ public:
     Returns true if this is constant but its value may be not known yet.
     (Can be used for parameters of prep. stmts or of stored procedures.)
   */
-  virtual bool const_during_execution() const {
-    return (used_tables() & ~PARAM_TABLE_BIT) == 0;
-  }
+  virtual bool const_during_execution() const { return (used_tables() & ~PARAM_TABLE_BIT) == 0; }
   /*
     This is an essential method for correct functioning of VIEWS.
     To save a view in an .frm file we need its unequivocal
@@ -618,16 +613,12 @@ public:
   virtual void print(String *str_arg) { str_arg->append(full_name()); }
   void print_item_w_name(String *);
   virtual void update_used_tables() {}
-  virtual void split_sum_func(THD *thd, Item **ref_pointer_array,
-                              List<Item> &fields) {}
+  virtual void split_sum_func(THD *thd, Item **ref_pointer_array, List<Item> &fields) {}
   /* Called for items that really have to be split */
-  void split_sum_func2(THD *thd, Item **ref_pointer_array, List<Item> &fields,
-                       Item **ref);
+  void split_sum_func2(THD *thd, Item **ref_pointer_array, List<Item> &fields, Item **ref);
   virtual bool get_date(TIME *ltime, uint fuzzydate);
   virtual bool get_time(TIME *ltime);
-  virtual bool get_date_result(TIME *ltime, uint fuzzydate) {
-    return get_date(ltime, fuzzydate);
-  }
+  virtual bool get_date_result(TIME *ltime, uint fuzzydate) { return get_date(ltime, fuzzydate); }
   /*
     This function is used only in Item_func_isnull/Item_func_isnotnull
     (implementations of IS NULL/IS NOT NULL clauses). Item_func_is{not}null
@@ -662,21 +653,15 @@ public:
   static CHARSET_INFO *default_charset();
   virtual CHARSET_INFO *compare_collation() { return NULL; }
 
-  virtual bool walk(Item_processor processor, byte *arg) {
-    return (this->*processor)(arg);
-  }
+  virtual bool walk(Item_processor processor, byte *arg) { return (this->*processor)(arg); }
 
-  virtual Item *transform(Item_transformer transformer, byte *arg) {
-    return (this->*transformer)(arg);
-  }
+  virtual Item *transform(Item_transformer transformer, byte *arg) { return (this->*transformer)(arg); }
 
-  virtual void traverse_cond(Cond_traverser traverser, void *arg,
-                             traverse_order order) {
-    (*traverser)(this, arg);
-  }
+  virtual void traverse_cond(Cond_traverser traverser, void *arg, traverse_order order) { (*traverser)(this, arg); }
 
   virtual bool remove_dependence_processor(byte *arg) { return 0; }
-  virtual bool remove_fixed(byte *arg) {
+  virtual bool remove_fixed(byte *arg)
+  {
     fixed = 0;
     return 0;
   }
@@ -717,7 +702,8 @@ public:
 
   virtual Item *neg_transformer(THD *thd) { return NULL; }
   virtual Item *safe_charset_converter(CHARSET_INFO *tocs);
-  void delete_self() {
+  void delete_self()
+  {
     cleanup();
     delete this;
   }
@@ -737,10 +723,11 @@ public:
     variable.
 */
 
-class Item_splocal : public Item {
+class Item_splocal : public Item
+{
   uint m_offset;
 
-public:
+ public:
   LEX_STRING m_name;
   THD *thd;
 
@@ -757,14 +744,15 @@ public:
   uint pos_in_query;
 
   Item_splocal(LEX_STRING name, uint offset, uint pos_in_q = 0)
-      : m_offset(offset), m_name(name), thd(0), pos_in_query(pos_in_q) {
+      : m_offset(offset), m_name(name), thd(0), pos_in_query(pos_in_q)
+  {
     maybe_null = TRUE;
   }
 
   /* For error printing */
-  inline LEX_STRING *my_name(LEX_STRING *get_name) {
-    if (!get_name)
-      return &m_name;
+  inline LEX_STRING *my_name(LEX_STRING *get_name)
+  {
+    if (!get_name) return &m_name;
     (*get_name) = m_name;
     return get_name;
   }
@@ -791,7 +779,8 @@ public:
   bool is_null();
   void print(String *str);
 
-  void make_field(Send_field *field) {
+  void make_field(Send_field *field)
+  {
     Item *it = this_item();
 
     if (name)
@@ -805,13 +794,9 @@ public:
 
   bool const_item() const { return TRUE; }
 
-  int save_in_field(Field *field, bool no_conversions) {
-    return this_item()->save_in_field(field, no_conversions);
-  }
+  int save_in_field(Field *field, bool no_conversions) { return this_item()->save_in_field(field, no_conversions); }
 
-  bool send(Protocol *protocol, String *str) {
-    return this_item()->send(protocol, str);
-  }
+  bool send(Protocol *protocol, String *str) { return this_item()->send(protocol, str); }
 };
 
 /*
@@ -828,14 +813,13 @@ public:
     extract a common base with class Item_ref, too.
 */
 
-class Item_name_const : public Item {
+class Item_name_const : public Item
+{
   Item *value_item;
   Item *name_item;
 
-public:
-  Item_name_const(Item *name, Item *val) : value_item(val), name_item(name) {
-    Item::maybe_null = TRUE;
-  }
+ public:
+  Item_name_const(Item *name, Item *val) : value_item(val), name_item(name) { Item::maybe_null = TRUE; }
 
   bool fix_fields(THD *, Item **);
   void cleanup();
@@ -852,25 +836,18 @@ public:
 
   bool const_item() const { return TRUE; }
 
-  int save_in_field(Field *field, bool no_conversions) {
-    return value_item->save_in_field(field, no_conversions);
-  }
+  int save_in_field(Field *field, bool no_conversions) { return value_item->save_in_field(field, no_conversions); }
 
-  bool send(Protocol *protocol, String *str) {
-    return value_item->send(protocol, str);
-  }
+  bool send(Protocol *protocol, String *str) { return value_item->send(protocol, str); }
 };
 
-bool agg_item_collations(DTCollation &c, const char *name, Item **items,
-                         uint nitems, uint flags = 0);
-bool agg_item_collations_for_comparison(DTCollation &c, const char *name,
-                                        Item **items, uint nitems,
-                                        uint flags = 0);
-bool agg_item_charsets(DTCollation &c, const char *name, Item **items,
-                       uint nitems, uint flags = 0);
+bool agg_item_collations(DTCollation &c, const char *name, Item **items, uint nitems, uint flags = 0);
+bool agg_item_collations_for_comparison(DTCollation &c, const char *name, Item **items, uint nitems, uint flags = 0);
+bool agg_item_charsets(DTCollation &c, const char *name, Item **items, uint nitems, uint flags = 0);
 
-class Item_num : public Item {
-public:
+class Item_num : public Item
+{
+ public:
   virtual Item_num *neg() = 0;
   Item *safe_charset_converter(CHARSET_INFO *tocs);
 };
@@ -878,8 +855,9 @@ public:
 #define NO_CACHED_FIELD_INDEX ((uint)(-1))
 
 class st_select_lex;
-class Item_ident : public Item {
-protected:
+class Item_ident : public Item
+{
+ protected:
   /*
     We have to store initial values of db_name, table_name and field_name
     to be able to restore them during cleanup() because they can be
@@ -890,17 +868,17 @@ protected:
   const char *orig_table_name;
   const char *orig_field_name;
 
-public:
+ public:
   Name_resolution_context *context;
   const char *db_name;
   const char *table_name;
   const char *field_name;
   bool alias_name_used; /* true if item was resolved against alias */
                         /*
-    Cached value of index for this field in table->field array, used by prep.
-    stmts for speeding up their re-execution. Holds NO_CACHED_FIELD_INDEX
-    if index value is not known.
-  */
+Cached value of index for this field in table->field array, used by prep.
+stmts for speeding up their re-execution. Holds NO_CACHED_FIELD_INDEX
+if index value is not known.
+*/
   uint cached_field_index;
   /*
     Cached pointer to table which contains this field, used for the same reason
@@ -909,30 +887,31 @@ public:
   */
   TABLE_LIST *cached_table;
   st_select_lex *depended_from;
-  Item_ident(Name_resolution_context *context_arg, const char *db_name_arg,
-             const char *table_name_arg, const char *field_name_arg);
+  Item_ident(Name_resolution_context *context_arg, const char *db_name_arg, const char *table_name_arg,
+             const char *field_name_arg);
   Item_ident(THD *thd, Item_ident *item);
   const char *full_name() const;
   void cleanup();
   bool remove_dependence_processor(byte *arg);
   void print(String *str);
-  virtual bool change_context_processor(byte *cntx) {
+  virtual bool change_context_processor(byte *cntx)
+  {
     context = (Name_resolution_context *)cntx;
     return FALSE;
   }
-  friend bool insert_fields(THD *thd, Name_resolution_context *context,
-                            const char *db_name, const char *table_name,
+  friend bool insert_fields(THD *thd, Name_resolution_context *context, const char *db_name, const char *table_name,
                             List_iterator<Item> *it, bool any_privileges);
 };
 
 class Item_equal;
 class COND_EQUAL;
 
-class Item_field : public Item_ident {
-protected:
+class Item_field : public Item_ident
+{
+ protected:
   void set_field(Field *field);
 
-public:
+ public:
   Field *field, *result_field;
   Item_equal *item_equal;
   bool no_const_subst;
@@ -944,8 +923,8 @@ public:
   /* field need any privileges (for VIEW creation) */
   bool any_privileges;
 
-  Item_field(Name_resolution_context *context_arg, const char *db_arg,
-             const char *table_name_arg, const char *field_name_arg);
+  Item_field(Name_resolution_context *context_arg, const char *db_arg, const char *table_name_arg,
+             const char *field_name_arg);
   /*
     Constructor needed to process subselect with temporary tables (see Item)
   */
@@ -991,10 +970,10 @@ public:
   bool is_null() { return field->is_null(); }
   Item *get_tmp_table_item(THD *thd);
   bool collect_item_field_processor(byte *arg);
-  bool reset_query_id_processor(byte *arg) {
+  bool reset_query_id_processor(byte *arg)
+  {
     field->query_id = *((query_id_t *)arg);
-    if (result_field)
-      result_field->query_id = field->query_id;
+    if (result_field) result_field->query_id = field->query_id;
     return 0;
   }
   void cleanup();
@@ -1010,9 +989,11 @@ public:
   friend class st_select_lex_unit;
 };
 
-class Item_null : public Item {
-public:
-  Item_null(char *name_par = 0) {
+class Item_null : public Item
+{
+ public:
+  Item_null(char *name_par = 0)
+  {
     maybe_null = null_value = TRUE;
     max_length = 0;
     name = name_par ? name_par : (char *)"NULL";
@@ -1039,21 +1020,22 @@ public:
   Item *safe_charset_converter(CHARSET_INFO *tocs);
 };
 
-class Item_null_result : public Item_null {
-public:
+class Item_null_result : public Item_null
+{
+ public:
   Field *result_field;
   Item_null_result() : Item_null(), result_field(0) {}
   bool is_result_field() { return result_field != 0; }
-  void save_in_result_field(bool no_conversions) {
-    save_in_field(result_field, no_conversions);
-  }
+  void save_in_result_field(bool no_conversions) { save_in_field(result_field, no_conversions); }
 };
 
 /* Item represents one placeholder ('?') of prepared statement */
 
-class Item_param : public Item {
-public:
-  enum enum_item_param_state {
+class Item_param : public Item
+{
+ public:
+  enum enum_item_param_state
+  {
     NO_VALUE,
     NULL_VALUE,
     INT_VALUE,
@@ -1076,7 +1058,8 @@ public:
   */
   String str_value_ptr;
   my_decimal decimal_value;
-  union {
+  union
+  {
     longlong integer;
     double real;
     /*
@@ -1085,7 +1068,8 @@ public:
       for all conversions, even if one of them is later changed (i.e.
       between subsequent calls to mysql_stmt_execute).
     */
-    struct CONVERSION_INFO {
+    struct CONVERSION_INFO
+    {
       CHARSET_INFO *character_set_client;
       CHARSET_INFO *character_set_of_placeholder;
       /*
@@ -1158,11 +1142,10 @@ public:
     so noone will use parameters value in fix_fields still
     parameter is constant during execution.
   */
-  virtual table_map used_tables() const {
-    return state != NO_VALUE ? (table_map)0 : PARAM_TABLE_BIT;
-  }
+  virtual table_map used_tables() const { return state != NO_VALUE ? (table_map)0 : PARAM_TABLE_BIT; }
   void print(String *str);
-  bool is_null() {
+  bool is_null()
+  {
     DBUG_ASSERT(state != NO_VALUE);
     return state == NULL_VALUE;
   }
@@ -1186,23 +1169,28 @@ public:
   bool eq(const Item *item, bool binary_cmp) const;
 };
 
-class Item_int : public Item_num {
-public:
+class Item_int : public Item_num
+{
+ public:
   longlong value;
-  Item_int(int32 i, uint length = 11) : value((longlong)i) {
+  Item_int(int32 i, uint length = 11) : value((longlong)i)
+  {
     max_length = length;
     fixed = 1;
   }
-  Item_int(longlong i, uint length = 21) : value(i) {
+  Item_int(longlong i, uint length = 21) : value(i)
+  {
     max_length = length;
     fixed = 1;
   }
-  Item_int(ulonglong i, uint length = 21) : value((longlong)i) {
+  Item_int(ulonglong i, uint length = 21) : value((longlong)i)
+  {
     max_length = length;
     fixed = 1;
     unsigned_flag = 1;
   }
-  Item_int(const char *str_arg, longlong i, uint length) : value(i) {
+  Item_int(const char *str_arg, longlong i, uint length) : value(i)
+  {
     max_length = length;
     name = (char *)str_arg;
     fixed = 1;
@@ -1211,11 +1199,13 @@ public:
   enum Type type() const { return INT_ITEM; }
   enum Item_result result_type() const { return INT_RESULT; }
   enum_field_types field_type() const { return MYSQL_TYPE_LONGLONG; }
-  longlong val_int() {
+  longlong val_int()
+  {
     DBUG_ASSERT(fixed == 1);
     return value;
   }
-  double val_real() {
+  double val_real()
+  {
     DBUG_ASSERT(fixed == 1);
     return (double)value;
   }
@@ -1227,32 +1217,33 @@ public:
   // to prevent drop fixed flag (no need parent cleanup call)
   void cleanup() {}
   void print(String *str);
-  Item_num *neg() {
+  Item_num *neg()
+  {
     value = -value;
     return this;
   }
-  uint decimal_precision() const {
-    return (uint)(max_length - test(value < 0));
-  }
+  uint decimal_precision() const { return (uint)(max_length - test(value < 0)); }
   bool eq(const Item *, bool binary_cmp) const;
 };
 
-class Item_static_int_func : public Item_int {
+class Item_static_int_func : public Item_int
+{
   const char *func_name;
 
-public:
-  Item_static_int_func(const char *str_arg, longlong i, uint length)
-      : Item_int(NullS, i, length), func_name(str_arg) {}
+ public:
+  Item_static_int_func(const char *str_arg, longlong i, uint length) : Item_int(NullS, i, length), func_name(str_arg) {}
   Item *safe_charset_converter(CHARSET_INFO *tocs);
   void print(String *str) { str->append(func_name); }
 };
 
-class Item_uint : public Item_int {
-public:
+class Item_uint : public Item_int
+{
+ public:
   Item_uint(const char *str_arg, uint length);
   Item_uint(ulonglong i) : Item_int((ulonglong)i, 10) {}
   Item_uint(const char *str_arg, longlong i, uint length);
-  double val_real() {
+  double val_real()
+  {
     DBUG_ASSERT(fixed == 1);
     return ulonglong2double((ulonglong)value);
   }
@@ -1265,14 +1256,14 @@ public:
 };
 
 /* decimal (fixed point) constant */
-class Item_decimal : public Item_num {
-protected:
+class Item_decimal : public Item_num
+{
+ protected:
   my_decimal decimal_value;
 
-public:
+ public:
   Item_decimal(const char *str_arg, uint length, CHARSET_INFO *charset);
-  Item_decimal(const char *str, const my_decimal *val_arg, uint decimal_par,
-               uint length);
+  Item_decimal(const char *str, const my_decimal *val_arg, uint decimal_par, uint length);
   Item_decimal(my_decimal *value_par);
   Item_decimal(longlong val, bool unsig);
   Item_decimal(double val, int precision, int scale);
@@ -1287,13 +1278,12 @@ public:
   my_decimal *val_decimal(my_decimal *val) { return &decimal_value; }
   int save_in_field(Field *field, bool no_conversions);
   bool basic_const_item() const { return 1; }
-  Item *new_item() {
-    return new Item_decimal(name, &decimal_value, decimals, max_length);
-  }
+  Item *new_item() { return new Item_decimal(name, &decimal_value, decimals, max_length); }
   // to prevent drop fixed flag (no need parent cleanup call)
   void cleanup() {}
   void print(String *str);
-  Item_num *neg() {
+  Item_num *neg()
+  {
     my_decimal_neg(&decimal_value);
     unsigned_flag = !decimal_value.sign();
     return this;
@@ -1302,36 +1292,40 @@ public:
   bool eq(const Item *, bool binary_cmp) const;
 };
 
-class Item_float : public Item_num {
+class Item_float : public Item_num
+{
   char *presentation;
 
-public:
+ public:
   double value;
   // Item_real() :value(0) {}
   Item_float(const char *str_arg, uint length);
-  Item_float(const char *str, double val_arg, uint decimal_par, uint length)
-      : value(val_arg) {
+  Item_float(const char *str, double val_arg, uint decimal_par, uint length) : value(val_arg)
+  {
     presentation = name = (char *)str;
     decimals = (uint8)decimal_par;
     max_length = length;
     fixed = 1;
   }
-  Item_float(double value_par) : presentation(0), value(value_par) {
-    fixed = 1;
-  }
+  Item_float(double value_par) : presentation(0), value(value_par) { fixed = 1; }
 
   int save_in_field(Field *field, bool no_conversions);
   enum Type type() const { return REAL_ITEM; }
   enum_field_types field_type() const { return MYSQL_TYPE_DOUBLE; }
-  double val_real() {
+  double val_real()
+  {
     DBUG_ASSERT(fixed == 1);
     return value;
   }
-  longlong val_int() {
+  longlong val_int()
+  {
     DBUG_ASSERT(fixed == 1);
-    if (value <= (double)LONGLONG_MIN) {
+    if (value <= (double)LONGLONG_MIN)
+    {
       return LONGLONG_MIN;
-    } else if (value >= (double)(ulonglong)LONGLONG_MAX) {
+    }
+    else if (value >= (double)(ulonglong)LONGLONG_MAX)
+    {
       return LONGLONG_MAX;
     }
     return (longlong)(value + (value > 0 ? 0.5 : -0.5));
@@ -1342,7 +1336,8 @@ public:
   // to prevent drop fixed flag (no need parent cleanup call)
   void cleanup() {}
   Item *new_item() { return new Item_float(name, value, decimals, max_length); }
-  Item_num *neg() {
+  Item_num *neg()
+  {
     value = -value;
     return this;
   }
@@ -1350,21 +1345,24 @@ public:
   bool eq(const Item *, bool binary_cmp) const;
 };
 
-class Item_static_float_func : public Item_float {
+class Item_static_float_func : public Item_float
+{
   const char *func_name;
 
-public:
-  Item_static_float_func(const char *str, double val_arg, uint decimal_par,
-                         uint length)
-      : Item_float(NullS, val_arg, decimal_par, length), func_name(str) {}
+ public:
+  Item_static_float_func(const char *str, double val_arg, uint decimal_par, uint length)
+      : Item_float(NullS, val_arg, decimal_par, length), func_name(str)
+  {
+  }
   void print(String *str) { str->append(func_name); }
   Item *safe_charset_converter(CHARSET_INFO *tocs);
 };
 
-class Item_string : public Item {
-public:
-  Item_string(const char *str, uint length, CHARSET_INFO *cs,
-              Derivation dv = DERIVATION_COERCIBLE) {
+class Item_string : public Item
+{
+ public:
+  Item_string(const char *str, uint length, CHARSET_INFO *cs, Derivation dv = DERIVATION_COERCIBLE)
+  {
     collation.set(cs, dv);
     str_value.set_or_copy_aligned(str, length, cs);
     /*
@@ -1381,15 +1379,17 @@ public:
     fixed = 1;
   }
   /* Just create an item and do not fill string representation */
-  Item_string(CHARSET_INFO *cs, Derivation dv = DERIVATION_COERCIBLE) {
+  Item_string(CHARSET_INFO *cs, Derivation dv = DERIVATION_COERCIBLE)
+  {
     collation.set(cs, dv);
     max_length = 0;
     set_name(NULL, 0, cs);
     decimals = NOT_FIXED_DEC;
     fixed = 1;
   }
-  Item_string(const char *name_par, const char *str, uint length,
-              CHARSET_INFO *cs, Derivation dv = DERIVATION_COERCIBLE) {
+  Item_string(const char *name_par, const char *str, uint length, CHARSET_INFO *cs,
+              Derivation dv = DERIVATION_COERCIBLE)
+  {
     collation.set(cs, dv);
     str_value.set_or_copy_aligned(str, length, cs);
     max_length = str_value.numchars() * cs->mbmaxlen;
@@ -1402,14 +1402,16 @@ public:
     This is used in stored procedures to avoid memory leaks and
     does a deep copy of its argument.
   */
-  void set_str_with_copy(const char *str_arg, uint length_arg) {
+  void set_str_with_copy(const char *str_arg, uint length_arg)
+  {
     str_value.copy(str_arg, length_arg, collation.collation);
     max_length = str_value.numchars() * collation.collation->mbmaxlen;
   }
   enum Type type() const { return STRING_ITEM; }
   double val_real();
   longlong val_int();
-  String *val_str(String *) {
+  String *val_str(String *)
+  {
     DBUG_ASSERT(fixed == 1);
     return (String *)&str_value;
   }
@@ -1419,10 +1421,7 @@ public:
   enum_field_types field_type() const { return MYSQL_TYPE_VARCHAR; }
   bool basic_const_item() const { return 1; }
   bool eq(const Item *item, bool binary_cmp) const;
-  Item *new_item() {
-    return new Item_string(name, str_value.ptr(), str_value.length(),
-                           collation.collation);
-  }
+  Item *new_item() { return new Item_string(name, str_value.ptr(), str_value.length(), collation.collation); }
   Item *safe_charset_converter(CHARSET_INFO *tocs);
   String *const_string() { return &str_value; }
   inline void append(char *str, uint length) { str_value.append(str, length); }
@@ -1431,63 +1430,69 @@ public:
   void cleanup() {}
 };
 
-class Item_static_string_func : public Item_string {
+class Item_static_string_func : public Item_string
+{
   const char *func_name;
 
-public:
-  Item_static_string_func(const char *name_par, const char *str, uint length,
-                          CHARSET_INFO *cs,
+ public:
+  Item_static_string_func(const char *name_par, const char *str, uint length, CHARSET_INFO *cs,
                           Derivation dv = DERIVATION_COERCIBLE)
-      : Item_string(NullS, str, length, cs, dv), func_name(name_par) {}
+      : Item_string(NullS, str, length, cs, dv), func_name(name_par)
+  {
+  }
   Item *safe_charset_converter(CHARSET_INFO *tocs);
   void print(String *str) { str->append(func_name); }
 };
 
 /* for show tables */
 
-class Item_datetime : public Item_string {
-public:
-  Item_datetime(const char *item_name)
-      : Item_string(item_name, "", 0, &my_charset_bin) {
-    max_length = 19;
-  }
+class Item_datetime : public Item_string
+{
+ public:
+  Item_datetime(const char *item_name) : Item_string(item_name, "", 0, &my_charset_bin) { max_length = 19; }
   enum_field_types field_type() const { return MYSQL_TYPE_DATETIME; }
 };
 
-class Item_empty_string : public Item_string {
-public:
+class Item_empty_string : public Item_string
+{
+ public:
   Item_empty_string(const char *header, uint length, CHARSET_INFO *cs = NULL)
-      : Item_string("", 0, cs ? cs : &my_charset_bin) {
+      : Item_string("", 0, cs ? cs : &my_charset_bin)
+  {
     name = (char *)header;
     max_length = cs ? length * cs->mbmaxlen : length;
   }
   void make_field(Send_field *field);
 };
 
-class Item_return_int : public Item_int {
+class Item_return_int : public Item_int
+{
   enum_field_types int_field_type;
 
-public:
-  Item_return_int(const char *name, uint length,
-                  enum_field_types field_type_arg)
-      : Item_int(name, 0, length), int_field_type(field_type_arg) {
+ public:
+  Item_return_int(const char *name, uint length, enum_field_types field_type_arg)
+      : Item_int(name, 0, length), int_field_type(field_type_arg)
+  {
     unsigned_flag = 1;
   }
   enum_field_types field_type() const { return int_field_type; }
 };
 
-class Item_hex_string : public Item {
-public:
+class Item_hex_string : public Item
+{
+ public:
   Item_hex_string() : Item() {}
   Item_hex_string(const char *str, uint str_length);
   enum Type type() const { return VARBIN_ITEM; }
-  double val_real() {
+  double val_real()
+  {
     DBUG_ASSERT(fixed == 1);
     return (double)Item_hex_string::val_int();
   }
   longlong val_int();
   bool basic_const_item() const { return 1; }
-  String *val_str(String *) {
+  String *val_str(String *)
+  {
     DBUG_ASSERT(fixed == 1);
     return &str_value;
   }
@@ -1502,19 +1507,19 @@ public:
   virtual Item *safe_charset_converter(CHARSET_INFO *tocs);
 };
 
-class Item_bin_string : public Item_hex_string {
-public:
+class Item_bin_string : public Item_hex_string
+{
+ public:
   Item_bin_string(const char *str, uint str_length);
 };
 
 class Item_result_field : public Item /* Item with result field */
-                          {
-public:
+{
+ public:
   Field *result_field; /* Save result here */
   Item_result_field() : result_field(0) {}
   // Constructor used for Item_sum/Item_cond_and/or (see Item comment)
-  Item_result_field(THD *thd, Item_result_field *item)
-      : Item(thd, item), result_field(item->result_field) {}
+  Item_result_field(THD *thd, Item_result_field *item) : Item(thd, item), result_field(item->result_field) {}
   ~Item_result_field() {} /* Required with gcc 2.95 */
   Field *get_tmp_table_field() { return result_field; }
   Field *tmp_table_field(TABLE *t_arg) { return result_field; }
@@ -1522,28 +1527,29 @@ public:
   virtual void fix_length_and_dec() = 0;
   void set_result_field(Field *field) { result_field = field; }
   bool is_result_field() { return 1; }
-  void save_in_result_field(bool no_conversions) {
-    save_in_field(result_field, no_conversions);
-  }
+  void save_in_result_field(bool no_conversions) { save_in_field(result_field, no_conversions); }
   void cleanup();
 };
 
-class Item_ref : public Item_ident {
-protected:
+class Item_ref : public Item_ident
+{
+ protected:
   void set_properties();
 
-public:
-  enum Ref_Type {
+ public:
+  enum Ref_Type
+  {
     REF,
     DIRECT_REF,
     VIEW_REF
   };
   Field *result_field; /* Save result here */
   Item **ref;
-  Item_ref(Name_resolution_context *context_arg, const char *db_arg,
-           const char *table_name_arg, const char *field_name_arg)
-      : Item_ident(context_arg, db_arg, table_name_arg, field_name_arg),
-        result_field(0), ref(0) {}
+  Item_ref(Name_resolution_context *context_arg, const char *db_arg, const char *table_name_arg,
+           const char *field_name_arg)
+      : Item_ident(context_arg, db_arg, table_name_arg, field_name_arg), result_field(0), ref(0)
+  {
+  }
   /*
     This constructor is used in two scenarios:
     A) *item = NULL
@@ -1558,15 +1564,13 @@ public:
     TODO we probably fix a superset of problems like in BUG#6658. Check this
          with Bar, and if we have a more broader set of problems like this.
   */
-  Item_ref(Name_resolution_context *context_arg, Item **item,
-           const char *table_name_arg, const char *field_name_arg);
+  Item_ref(Name_resolution_context *context_arg, Item **item, const char *table_name_arg, const char *field_name_arg);
 
   /* Constructor need to process subselect with temporary tables (see Item) */
-  Item_ref(THD *thd, Item_ref *item)
-      : Item_ident(thd, item), result_field(item->result_field),
-        ref(item->ref) {}
+  Item_ref(THD *thd, Item_ref *item) : Item_ident(thd, item), result_field(item->result_field), ref(item->ref) {}
   enum Type type() const { return REF_ITEM; }
-  bool eq(const Item *item, bool binary_cmp) const {
+  bool eq(const Item *item, bool binary_cmp) const
+  {
     Item *it = ((Item *)item)->real_item();
     return ref && (*ref)->eq(it, binary_cmp);
   }
@@ -1589,31 +1593,21 @@ public:
   void save_org_in_field(Field *field) { (*ref)->save_org_in_field(field); }
   enum Item_result result_type() const { return (*ref)->result_type(); }
   enum_field_types field_type() const { return (*ref)->field_type(); }
-  Field *get_tmp_table_field() {
-    return result_field ? result_field : (*ref)->get_tmp_table_field();
+  Field *get_tmp_table_field() { return result_field ? result_field : (*ref)->get_tmp_table_field(); }
+  Item *get_tmp_table_item(THD *thd)
+  {
+    return (result_field ? new Item_field(result_field) : (*ref)->get_tmp_table_item(thd));
   }
-  Item *get_tmp_table_item(THD *thd) {
-    return (result_field ? new Item_field(result_field)
-                         : (*ref)->get_tmp_table_item(thd));
-  }
-  table_map used_tables() const {
-    return depended_from ? OUTER_REF_TABLE_BIT : (*ref)->used_tables();
-  }
+  table_map used_tables() const { return depended_from ? OUTER_REF_TABLE_BIT : (*ref)->used_tables(); }
   table_map not_null_tables() const { return (*ref)->not_null_tables(); }
   void set_result_field(Field *field) { result_field = field; }
   bool is_result_field() { return 1; }
-  void save_in_result_field(bool no_conversions) {
-    (*ref)->save_in_field(result_field, no_conversions);
-  }
+  void save_in_result_field(bool no_conversions) { (*ref)->save_in_field(result_field, no_conversions); }
   Item *real_item() { return ref ? (*ref)->real_item() : this; }
-  bool walk(Item_processor processor, byte *arg) {
-    return (*ref)->walk(processor, arg);
-  }
+  bool walk(Item_processor processor, byte *arg) { return (*ref)->walk(processor, arg); }
   void print(String *str);
   void cleanup();
-  Item_field *filed_for_view_update() {
-    return (*ref)->filed_for_view_update();
-  }
+  Item_field *filed_for_view_update() { return (*ref)->filed_for_view_update(); }
   virtual Ref_Type ref_type() { return REF; }
 };
 
@@ -1621,11 +1615,14 @@ public:
   The same as Item_ref, but get value from val_* family of method to get
   value of item on which it referred instead of result* family.
 */
-class Item_direct_ref : public Item_ref {
-public:
-  Item_direct_ref(Name_resolution_context *context_arg, Item **item,
-                  const char *table_name_arg, const char *field_name_arg)
-      : Item_ref(context_arg, item, table_name_arg, field_name_arg) {}
+class Item_direct_ref : public Item_ref
+{
+ public:
+  Item_direct_ref(Name_resolution_context *context_arg, Item **item, const char *table_name_arg,
+                  const char *field_name_arg)
+      : Item_ref(context_arg, item, table_name_arg, field_name_arg)
+  {
+  }
   /* Constructor need to process subselect with temporary tables (see Item) */
   Item_direct_ref(THD *thd, Item_direct_ref *item) : Item_ref(thd, item) {}
 
@@ -1643,14 +1640,16 @@ public:
   Class for view fields, the same as Item_direct_ref, but call fix_fields
   of reference if it is not called yet
 */
-class Item_direct_view_ref : public Item_direct_ref {
-public:
-  Item_direct_view_ref(Name_resolution_context *context_arg, Item **item,
-                       const char *table_name_arg, const char *field_name_arg)
-      : Item_direct_ref(context_arg, item, table_name_arg, field_name_arg) {}
+class Item_direct_view_ref : public Item_direct_ref
+{
+ public:
+  Item_direct_view_ref(Name_resolution_context *context_arg, Item **item, const char *table_name_arg,
+                       const char *field_name_arg)
+      : Item_direct_ref(context_arg, item, table_name_arg, field_name_arg)
+  {
+  }
   /* Constructor need to process subselect with temporary tables (see Item) */
-  Item_direct_view_ref(THD *thd, Item_direct_ref *item)
-      : Item_direct_ref(thd, item) {}
+  Item_direct_view_ref(THD *thd, Item_direct_ref *item) : Item_direct_ref(thd, item) {}
 
   bool fix_fields(THD *, Item **);
   bool eq(const Item *item, bool binary_cmp) const;
@@ -1659,16 +1658,17 @@ public:
 
 class Item_in_subselect;
 
-class Item_ref_null_helper : public Item_ref {
-protected:
+class Item_ref_null_helper : public Item_ref
+{
+ protected:
   Item_in_subselect *owner;
 
-public:
-  Item_ref_null_helper(Name_resolution_context *context_arg,
-                       Item_in_subselect *master, Item **item,
+ public:
+  Item_ref_null_helper(Name_resolution_context *context_arg, Item_in_subselect *master, Item **item,
                        const char *table_name_arg, const char *field_name_arg)
-      : Item_ref(context_arg, item, table_name_arg, field_name_arg),
-        owner(master) {}
+      : Item_ref(context_arg, item, table_name_arg, field_name_arg), owner(master)
+  {
+  }
   double val_real();
   longlong val_int();
   String *val_str(String *s);
@@ -1679,22 +1679,21 @@ public:
   /*
     we add RAND_TABLE_BIT to prevent moving this item from HAVING to WHERE
   */
-  table_map used_tables() const {
-    return (depended_from ? OUTER_REF_TABLE_BIT
-                          : (*ref)->used_tables() | RAND_TABLE_BIT);
+  table_map used_tables() const
+  {
+    return (depended_from ? OUTER_REF_TABLE_BIT : (*ref)->used_tables() | RAND_TABLE_BIT);
   }
 };
 
-class Item_null_helper : public Item_ref_null_helper {
+class Item_null_helper : public Item_ref_null_helper
+{
   Item *store;
 
-public:
-  Item_null_helper(Name_resolution_context *context_arg,
-                   Item_in_subselect *master, Item *item,
+ public:
+  Item_null_helper(Name_resolution_context *context_arg, Item_in_subselect *master, Item *item,
                    const char *table_name_arg, const char *field_name_arg)
-      : Item_ref_null_helper(context_arg, master, (store = 0, &store),
-                             table_name_arg, field_name_arg),
-        store(item) {
+      : Item_ref_null_helper(context_arg, master, (store = 0, &store), table_name_arg, field_name_arg), store(item)
+  {
     ref = &store;
   }
   void print(String *str);
@@ -1709,37 +1708,36 @@ public:
 
 */
 
-class Item_int_with_ref : public Item_int {
+class Item_int_with_ref : public Item_int
+{
   Item *ref;
 
-public:
-  Item_int_with_ref(longlong i, Item *ref_arg) : Item_int(i), ref(ref_arg) {
-    unsigned_flag = ref_arg->unsigned_flag;
-  }
-  int save_in_field(Field *field, bool no_conversions) {
-    return ref->save_in_field(field, no_conversions);
-  }
+ public:
+  Item_int_with_ref(longlong i, Item *ref_arg) : Item_int(i), ref(ref_arg) { unsigned_flag = ref_arg->unsigned_flag; }
+  int save_in_field(Field *field, bool no_conversions) { return ref->save_in_field(field, no_conversions); }
   Item *new_item();
 };
 
 #include "gstream.h"
-#include "spatial.h"
-#include "item_sum.h"
-#include "item_func.h"
-#include "item_row.h"
 #include "item_cmpfunc.h"
-#include "item_strfunc.h"
+#include "item_func.h"
 #include "item_geofunc.h"
+#include "item_row.h"
+#include "item_strfunc.h"
+#include "item_subselect.h"
+#include "item_sum.h"
 #include "item_timefunc.h"
 #include "item_uniq.h"
-#include "item_subselect.h"
+#include "spatial.h"
 
-class Item_copy_string : public Item {
+class Item_copy_string : public Item
+{
   enum enum_field_types cached_field_type;
 
-public:
+ public:
   Item *item;
-  Item_copy_string(Item *i) : item(i) {
+  Item_copy_string(Item *i) : item(i)
+  {
     null_value = maybe_null = item->maybe_null;
     decimals = item->decimals;
     max_length = item->max_length;
@@ -1749,19 +1747,19 @@ public:
   enum Type type() const { return COPY_STR_ITEM; }
   enum Item_result result_type() const { return STRING_RESULT; }
   enum_field_types field_type() const { return cached_field_type; }
-  double val_real() {
+  double val_real()
+  {
     int err_not_used;
     char *end_not_used;
-    return (null_value
-                ? 0.0
-                : my_strntod(str_value.charset(), (char *)str_value.ptr(),
-                             str_value.length(), &end_not_used, &err_not_used));
+    return (null_value ? 0.0
+                       : my_strntod(str_value.charset(), (char *)str_value.ptr(), str_value.length(), &end_not_used,
+                                    &err_not_used));
   }
-  longlong val_int() {
+  longlong val_int()
+  {
     int err;
     return null_value ? LL(0)
-                      : my_strntoll(str_value.charset(), str_value.ptr(),
-                                    str_value.length(), 10, (char **)0, &err);
+                      : my_strntoll(str_value.charset(), str_value.ptr(), str_value.length(), 10, (char **)0, &err);
   }
   String *val_str(String *);
   my_decimal *val_decimal(my_decimal *);
@@ -1773,75 +1771,83 @@ public:
   bool is_null() { return null_value; }
 };
 
-class Cached_item : public Sql_alloc {
-public:
+class Cached_item : public Sql_alloc
+{
+ public:
   my_bool null_value;
   Cached_item() : null_value(0) {}
   virtual bool cmp(void) = 0;
   virtual ~Cached_item(); /*line -e1509 */
 };
 
-class Cached_item_str : public Cached_item {
+class Cached_item_str : public Cached_item
+{
   Item *item;
   String value, tmp_value;
 
-public:
+ public:
   Cached_item_str(THD *thd, Item *arg);
   bool cmp(void);
-  ~Cached_item_str(); // Deallocate String:s
+  ~Cached_item_str();  // Deallocate String:s
 };
 
-class Cached_item_real : public Cached_item {
+class Cached_item_real : public Cached_item
+{
   Item *item;
   double value;
 
-public:
+ public:
   Cached_item_real(Item *item_par) : item(item_par), value(0.0) {}
   bool cmp(void);
 };
 
-class Cached_item_int : public Cached_item {
+class Cached_item_int : public Cached_item
+{
   Item *item;
   longlong value;
 
-public:
+ public:
   Cached_item_int(Item *item_par) : item(item_par), value(0) {}
   bool cmp(void);
 };
 
-class Cached_item_decimal : public Cached_item {
+class Cached_item_decimal : public Cached_item
+{
   Item *item;
   my_decimal value;
 
-public:
+ public:
   Cached_item_decimal(Item *item_par);
   bool cmp(void);
 };
 
-class Cached_item_field : public Cached_item {
+class Cached_item_field : public Cached_item
+{
   char *buff;
   Field *field;
   uint length;
 
-public:
-  Cached_item_field(Item_field *item) {
+ public:
+  Cached_item_field(Item_field *item)
+  {
     field = item->field;
     buff = (char *)sql_calloc(length = field->pack_length());
   }
   bool cmp(void);
 };
 
-class Item_default_value : public Item_field {
-public:
+class Item_default_value : public Item_field
+{
+ public:
   Item *arg;
   Item_default_value(Name_resolution_context *context_arg)
-      : Item_field(context_arg, (const char *)NULL, (const char *)NULL,
-                   (const char *)NULL),
-        arg(NULL) {}
+      : Item_field(context_arg, (const char *)NULL, (const char *)NULL, (const char *)NULL), arg(NULL)
+  {
+  }
   Item_default_value(Name_resolution_context *context_arg, Item *a)
-      : Item_field(context_arg, (const char *)NULL, (const char *)NULL,
-                   (const char *)NULL),
-        arg(a) {}
+      : Item_field(context_arg, (const char *)NULL, (const char *)NULL, (const char *)NULL), arg(a)
+  {
+  }
   enum Type type() const { return DEFAULT_VALUE_ITEM; }
   bool eq(const Item *item, bool binary_cmp) const;
   bool fix_fields(THD *, Item **);
@@ -1849,41 +1855,39 @@ public:
   int save_in_field(Field *field_arg, bool no_conversions);
   table_map used_tables() const { return (table_map)0L; }
 
-  bool walk(Item_processor processor, byte *args) {
-    return arg->walk(processor, args) || (this->*processor)(args);
-  }
+  bool walk(Item_processor processor, byte *args) { return arg->walk(processor, args) || (this->*processor)(args); }
 
   /*
      This method like the walk method traverses the item tree, but
      at the same time it can replace some nodes in the tree
   */
-  Item *transform(Item_transformer transformer, byte *args) {
+  Item *transform(Item_transformer transformer, byte *args)
+  {
     Item *new_item = arg->transform(transformer, args);
-    if (!new_item)
-      return 0;
+    if (!new_item) return 0;
     arg = new_item;
     return (this->*transformer)(args);
   }
 };
 
-class Item_insert_value : public Item_field {
-public:
+class Item_insert_value : public Item_field
+{
+ public:
   Item *arg;
   Item_insert_value(Name_resolution_context *context_arg, Item *a)
-      : Item_field(context_arg, (const char *)NULL, (const char *)NULL,
-                   (const char *)NULL),
-        arg(a) {}
+      : Item_field(context_arg, (const char *)NULL, (const char *)NULL, (const char *)NULL), arg(a)
+  {
+  }
   bool eq(const Item *item, bool binary_cmp) const;
   bool fix_fields(THD *, Item **);
   void print(String *str);
-  int save_in_field(Field *field_arg, bool no_conversions) {
+  int save_in_field(Field *field_arg, bool no_conversions)
+  {
     return Item_field::save_in_field(field_arg, no_conversions);
   }
   table_map used_tables() const { return (table_map)0L; }
 
-  bool walk(Item_processor processor, byte *args) {
-    return arg->walk(processor, args) || (this->*processor)(args);
-  }
+  bool walk(Item_processor processor, byte *args) { return arg->walk(processor, args) || (this->*processor)(args); }
 };
 
 /*
@@ -1893,7 +1897,8 @@ public:
   Time when trigger is invoked (i.e. before or after row actually
   inserted/updated/deleted).
 */
-enum trg_action_time_type {
+enum trg_action_time_type
+{
   TRG_ACTION_BEFORE = 0,
   TRG_ACTION_AFTER = 1,
   TRG_ACTION_MAX
@@ -1902,7 +1907,8 @@ enum trg_action_time_type {
 /*
   Event on which trigger is invoked.
 */
-enum trg_event_type {
+enum trg_event_type
+{
   TRG_EVENT_INSERT = 0,
   TRG_EVENT_UPDATE = 1,
   TRG_EVENT_DELETE = 2,
@@ -1922,10 +1928,12 @@ class Table_triggers_list;
         two Field instances representing either OLD or NEW version of this
         field.
 */
-class Item_trigger_field : public Item_field {
-public:
+class Item_trigger_field : public Item_field
+{
+ public:
   /* Is this item represents row from NEW or OLD row ? */
-  enum row_version_type {
+  enum row_version_type
+  {
     OLD_ROW,
     NEW_ROW
   };
@@ -1937,11 +1945,12 @@ public:
   /* Pointer to Table_trigger_list object for table of this trigger */
   Table_triggers_list *triggers;
 
-  Item_trigger_field(Name_resolution_context *context_arg,
-                     row_version_type row_ver_arg, const char *field_name_arg)
-      : Item_field(context_arg, (const char *)NULL, (const char *)NULL,
-                   field_name_arg),
-        row_version(row_ver_arg), field_idx((uint) - 1) {}
+  Item_trigger_field(Name_resolution_context *context_arg, row_version_type row_ver_arg, const char *field_name_arg)
+      : Item_field(context_arg, (const char *)NULL, (const char *)NULL, field_name_arg),
+        row_version(row_ver_arg),
+        field_idx((uint)-1)
+  {
+  }
   void setup_field(THD *thd, TABLE *table);
   enum Type type() const { return TRIGGER_FIELD_ITEM; }
   bool eq(const Item *item, bool binary_cmp) const;
@@ -1951,13 +1960,15 @@ public:
   void cleanup();
 };
 
-class Item_cache : public Item {
-protected:
+class Item_cache : public Item
+{
+ protected:
   Item *example;
   table_map used_table_map;
 
-public:
-  Item_cache() : example(0), used_table_map(0) {
+ public:
+  Item_cache() : example(0), used_table_map(0)
+  {
     fixed = 1;
     null_value = 1;
   }
@@ -1965,7 +1976,8 @@ public:
   void set_used_tables(table_map map) { used_table_map = map; }
 
   virtual bool allocate(uint i) { return 0; }
-  virtual bool setup(Item *item) {
+  virtual bool setup(Item *item)
+  {
     example = item;
     max_length = item->max_length;
     decimals = item->decimals;
@@ -1982,19 +1994,22 @@ public:
   void print(String *str);
 };
 
-class Item_cache_int : public Item_cache {
-protected:
+class Item_cache_int : public Item_cache
+{
+ protected:
   longlong value;
 
-public:
+ public:
   Item_cache_int() : Item_cache(), value(0) {}
 
   void store(Item *item);
-  double val_real() {
+  double val_real()
+  {
     DBUG_ASSERT(fixed == 1);
     return (double)value;
   }
-  longlong val_int() {
+  longlong val_int()
+  {
     DBUG_ASSERT(fixed == 1);
     return value;
   }
@@ -2003,14 +2018,16 @@ public:
   enum Item_result result_type() const { return INT_RESULT; }
 };
 
-class Item_cache_real : public Item_cache {
+class Item_cache_real : public Item_cache
+{
   double value;
 
-public:
+ public:
   Item_cache_real() : Item_cache(), value(0) {}
 
   void store(Item *item);
-  double val_real() {
+  double val_real()
+  {
     DBUG_ASSERT(fixed == 1);
     return value;
   }
@@ -2020,11 +2037,12 @@ public:
   enum Item_result result_type() const { return REAL_RESULT; }
 };
 
-class Item_cache_decimal : public Item_cache {
-protected:
+class Item_cache_decimal : public Item_cache
+{
+ protected:
   my_decimal decimal_value;
 
-public:
+ public:
   Item_cache_decimal() : Item_cache() {}
 
   void store(Item *item);
@@ -2035,33 +2053,34 @@ public:
   enum Item_result result_type() const { return DECIMAL_RESULT; }
 };
 
-class Item_cache_str : public Item_cache {
+class Item_cache_str : public Item_cache
+{
   char buffer[STRING_BUFFER_USUAL_SIZE];
   String *value, value_buff;
 
-public:
+ public:
   Item_cache_str() : Item_cache(), value(0) {}
 
   void store(Item *item);
   double val_real();
   longlong val_int();
-  String *val_str(String *) {
+  String *val_str(String *)
+  {
     DBUG_ASSERT(fixed == 1);
     return value;
   }
   my_decimal *val_decimal(my_decimal *);
   enum Item_result result_type() const { return STRING_RESULT; }
-  CHARSET_INFO *charset() const {
-    return value->charset();
-  };
+  CHARSET_INFO *charset() const { return value->charset(); };
 };
 
-class Item_cache_row : public Item_cache {
+class Item_cache_row : public Item_cache
+{
   Item_cache **values;
   uint item_count;
   bool save_array;
 
-public:
+ public:
   Item_cache_row() : Item_cache(), values(0), item_count(2), save_array(0) {}
 
   /*
@@ -2076,22 +2095,24 @@ public:
   bool setup(Item *item);
   void store(Item *item);
   void illegal_method_call(const char *);
-  void make_field(Send_field *) {
-    illegal_method_call((const char *)"make_field");
-  };
-  double val_real() {
+  void make_field(Send_field *) { illegal_method_call((const char *)"make_field"); };
+  double val_real()
+  {
     illegal_method_call((const char *)"val");
     return 0;
   };
-  longlong val_int() {
+  longlong val_int()
+  {
     illegal_method_call((const char *)"val_int");
     return 0;
   };
-  String *val_str(String *) {
+  String *val_str(String *)
+  {
     illegal_method_call((const char *)"val_str");
     return 0;
   };
-  my_decimal *val_decimal(my_decimal *val) {
+  my_decimal *val_decimal(my_decimal *val)
+  {
     illegal_method_call((const char *)"val_decimal");
     return 0;
   };
@@ -2105,7 +2126,8 @@ public:
   bool null_inside();
   void bring_value();
   void keep_array() { save_array = 1; }
-  void cleanup() {
+  void cleanup()
+  {
     DBUG_ENTER("Item_cache_row::cleanup");
     Item_cache::cleanup();
     if (save_array)
@@ -2123,8 +2145,9 @@ public:
   Item_type_holder do not need cleanup() because its time of live limited by
   single SP/PS execution.
 */
-class Item_type_holder : public Item {
-protected:
+class Item_type_holder : public Item
+{
+ protected:
   TYPELIB *enum_set_typelib;
   enum_field_types fld_type;
 
@@ -2133,13 +2156,11 @@ protected:
   /* It is used to count decimal precision in join_types */
   int prev_decimal_int_part;
 
-public:
+ public:
   Item_type_holder(THD *, Item *);
 
   Item_result result_type() const;
-  enum_field_types field_type() const {
-    return fld_type;
-  };
+  enum_field_types field_type() const { return fld_type; };
   enum Type type() const { return TYPE_HOLDER; }
   double val_real();
   longlong val_int();
@@ -2152,10 +2173,8 @@ public:
 };
 
 class st_select_lex;
-void mark_select_range_as_dependent(THD *thd, st_select_lex *last_select,
-                                    st_select_lex *current_sel,
-                                    Field *found_field, Item *found_item,
-                                    Item_ident *resolved_item);
+void mark_select_range_as_dependent(THD *thd, st_select_lex *last_select, st_select_lex *current_sel,
+                                    Field *found_field, Item *found_item, Item_ident *resolved_item);
 
 extern Cached_item *new_Cached_item(THD *thd, Item *item);
 extern Item_result item_cmp_type(Item_result a, Item_result b);

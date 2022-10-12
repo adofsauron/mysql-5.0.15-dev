@@ -34,7 +34,8 @@
 
 #define TZ_MAGIC "TZif"
 
-struct tzhead {
+struct tzhead
+{
   char tzh_magic[4];      /* TZ_MAGIC */
   char tzh_reserved[16];  /* reserved for future use */
   char tzh_ttisgmtcnt[4]; /* coded number of trans. time flags */
@@ -121,8 +122,8 @@ struct tzhead {
 #define DAYS_PER_WEEK 7
 #define DAYS_PER_NYEAR 365
 #define DAYS_PER_LYEAR 366
-#define SECS_PER_HOUR (SECS_PER_MIN *MINS_PER_HOUR)
-#define SECS_PER_DAY ((long)SECS_PER_HOUR *HOURS_PER_DAY)
+#define SECS_PER_HOUR (SECS_PER_MIN * MINS_PER_HOUR)
+#define SECS_PER_DAY ((long)SECS_PER_HOUR * HOURS_PER_DAY)
 #define MONS_PER_YEAR 12
 
 #define TM_YEAR_BASE 1900

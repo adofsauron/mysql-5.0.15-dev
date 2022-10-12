@@ -20,11 +20,14 @@
   A typesafe wrapper around DYNAMIC_ARRAY
 */
 
-template <class Elem> class Dynamic_array {
+template <class Elem>
+class Dynamic_array
+{
   DYNAMIC_ARRAY array;
 
-public:
-  Dynamic_array(uint prealloc = 16, uint increment = 16) {
+ public:
+  Dynamic_array(uint prealloc = 16, uint increment = 16)
+  {
     my_init_dynamic_array(&array, sizeof(Elem), prealloc, increment);
   }
 
@@ -34,7 +37,7 @@ public:
 
   Elem *back() { return ((Elem *)array.buffer) + array.elements; }
 
-  bool append(Elem &el) { return (insert_dynamic(&array, (gptr) & el)); }
+  bool append(Elem &el) { return (insert_dynamic(&array, (gptr)&el)); }
 
   int elements() { return array.elements; }
 
@@ -42,7 +45,5 @@ public:
 
   typedef int (*CMP_FUNC)(const Elem *el1, const Elem *el2);
 
-  void sort(CMP_FUNC cmp_func) {
-    qsort(array.buffer, array.elements, sizeof(Elem), (qsort_cmp)cmp_func);
-  }
+  void sort(CMP_FUNC cmp_func) { qsort(array.buffer, array.elements, sizeof(Elem), (qsort_cmp)cmp_func); }
 };

@@ -21,26 +21,31 @@ class Field;
 
 #define STRING_WITH_LEN(X) ((char *)X), (sizeof(X) - 1)
 
-typedef struct st_lex_string {
+typedef struct st_lex_string
+{
   char *str;
   uint length;
 } LEX_STRING;
 
-typedef struct st_lex_string_with_init : public st_lex_string {
-  st_lex_string_with_init(const char *str_arg, uint length_arg) {
+typedef struct st_lex_string_with_init : public st_lex_string
+{
+  st_lex_string_with_init(const char *str_arg, uint length_arg)
+  {
     str = (char *)str_arg;
     length = length_arg;
   }
 } LEX_STRING_WITH_INIT;
 
-typedef struct st_date_time_format {
+typedef struct st_date_time_format
+{
   uchar positions[8];
   char time_separator; /* Separator between hour and minute */
   uint flag;           /* For future */
   LEX_STRING format;
 } DATE_TIME_FORMAT;
 
-typedef struct st_keyfile_info {  /* used with ha_info() */
+typedef struct st_keyfile_info
+{                                 /* used with ha_info() */
   byte ref[MAX_REFLENGTH];        /* Pointer to current row */
   byte dupp_ref[MAX_REFLENGTH];   /* Pointer to dupp row */
   uint ref_length;                /* Length of ref (1-8) */
@@ -61,7 +66,8 @@ typedef struct st_keyfile_info {  /* used with ha_info() */
   ulong mean_rec_length; /* physical reclength */
 } KEYFILE_INFO;
 
-typedef struct st_key_part_info { /* Info about a key part */
+typedef struct st_key_part_info
+{ /* Info about a key part */
   Field *field;
   uint offset;      /* offset in record (from 0) */
   uint null_offset; /* Offset to null_bit in record */
@@ -74,7 +80,8 @@ typedef struct st_key_part_info { /* Info about a key part */
   uint8 null_bit; /* Position to null_bit */
 } KEY_PART_INFO;
 
-typedef struct st_key {
+typedef struct st_key
+{
   uint key_length; /* Tot length of key */
   uint flags;      /* dupp key and pack flags */
   uint key_parts;  /* How many key_parts */
@@ -84,12 +91,13 @@ typedef struct st_key {
   KEY_PART_INFO *key_part;
   char *name; /* Name of key */
               /*
-    Array of AVG(#records with the same field value) for 1st ... Nth key part.
-    0 means 'not known'.
-    For temporary heap tables this member is NULL.
-  */
+Array of AVG(#records with the same field value) for 1st ... Nth key part.
+0 means 'not known'.
+For temporary heap tables this member is NULL.
+*/
   ulong *rec_per_key;
-  union {
+  union
+  {
     int bdb_return_if_eq;
   } handler;
   struct st_table *table;
@@ -97,7 +105,8 @@ typedef struct st_key {
 
 struct st_join_table;
 
-typedef struct st_reginfo {       /* Extra info about reg */
+typedef struct st_reginfo
+{                                 /* Extra info about reg */
   struct st_join_table *join_tab; /* Used by SELECT() */
   enum thr_lock_type lock_type;   /* How database is used */
   bool not_exists_optimize;
@@ -109,8 +118,9 @@ class SQL_SELECT;
 class THD;
 class handler;
 
-typedef struct st_read_record { /* Parameter to read_record */
-  struct st_table *table;       /* Head-form */
+typedef struct st_read_record
+{                         /* Parameter to read_record */
+  struct st_table *table; /* Head-form */
   handler *file;
   struct st_table **forms; /* head and ref forms */
   int (*read_record)(struct st_read_record *);
@@ -136,20 +146,23 @@ typedef struct st_read_record { /* Parameter to read_record */
 typedef struct st_mysql_time TIME;
 typedef enum enum_mysql_timestamp_type timestamp_type;
 
-typedef struct {
+typedef struct
+{
   ulong year, month, day, hour;
   ulonglong minute, second, second_part;
   bool neg;
 } INTERVAL;
 
-typedef struct st_known_date_time_format {
+typedef struct st_known_date_time_format
+{
   const char *format_name;
   const char *date_format;
   const char *datetime_format;
   const char *time_format;
 } KNOWN_DATE_TIME_FORMAT;
 
-enum SHOW_TYPE {
+enum SHOW_TYPE
+{
   SHOW_UNDEF,
   SHOW_LONG,
   SHOW_LONGLONG,
@@ -204,7 +217,8 @@ enum SHOW_TYPE {
   SHOW_SLAVE_SKIP_ERRORS
 };
 
-enum SHOW_COMP_OPTION {
+enum SHOW_COMP_OPTION
+{
   SHOW_OPTION_YES,
   SHOW_OPTION_NO,
   SHOW_OPTION_DISABLED
@@ -214,13 +228,15 @@ extern const char *show_comp_option_name[];
 
 typedef int *(*update_var)(THD *, struct show_var_st *);
 
-typedef struct show_var_st {
+typedef struct show_var_st
+{
   const char *name;
   char *value;
   SHOW_TYPE type;
 } SHOW_VAR;
 
-typedef struct st_lex_user {
+typedef struct st_lex_user
+{
   LEX_STRING user, host, password;
 } LEX_USER;
 
@@ -229,7 +245,8 @@ typedef struct st_lex_user {
   can be consumed by each account. Zero value of a member means
   there is no limit.
 */
-typedef struct user_resources {
+typedef struct user_resources
+{
   /* Maximum number of queries/statements per hour. */
   uint questions;
   /*
@@ -245,7 +262,8 @@ typedef struct user_resources {
      Values of this enum and specified_limits member are used by the
      parser to store which user limits were specified in GRANT statement.
   */
-  enum {
+  enum
+  {
     QUERIES_PER_HOUR = 1,
     UPDATES_PER_HOUR = 2,
     CONNECTIONS_PER_HOUR = 4,
@@ -258,7 +276,8 @@ typedef struct user_resources {
   This structure is used for counting resources consumed and for checking
   them against specified user limits.
 */
-typedef struct user_conn {
+typedef struct user_conn
+{
   /*
      Pointer to user+host key (pair separated by '\0') defining the entity
      for which resources are counted (By default it is user account thus

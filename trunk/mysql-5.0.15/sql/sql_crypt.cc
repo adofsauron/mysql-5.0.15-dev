@@ -22,38 +22,41 @@
 */
 
 #ifdef USE_PRAGMA_IMPLEMENTATION
-#pragma implementation // gcc: Class implementation
+#pragma implementation  // gcc: Class implementation
 #endif
 
 #include "mysql_priv.h"
 
-SQL_CRYPT::SQL_CRYPT(const char *password) {
+SQL_CRYPT::SQL_CRYPT(const char *password)
+{
   ulong rand_nr[2];
   hash_password(rand_nr, password, strlen(password));
   crypt_init(rand_nr);
 }
 
-void SQL_CRYPT::crypt_init(ulong *rand_nr) {
+void SQL_CRYPT::crypt_init(ulong *rand_nr)
+{
   uint i;
   randominit(&rand, rand_nr[0], rand_nr[1]);
 
-  for (i = 0; i <= 255; i++)
-    decode_buff[i] = (char)i;
+  for (i = 0; i <= 255; i++) decode_buff[i] = (char)i;
 
-  for (i = 0; i <= 255; i++) {
+  for (i = 0; i <= 255; i++)
+  {
     int idx = (uint)(my_rnd(&rand) * 255.0);
     char a = decode_buff[idx];
     decode_buff[idx] = decode_buff[i];
     decode_buff[+i] = a;
   }
-  for (i = 0; i <= 255; i++)
-    encode_buff[(unsigned char)decode_buff[i]] = i;
+  for (i = 0; i <= 255; i++) encode_buff[(unsigned char)decode_buff[i]] = i;
   org_rand = rand;
   shift = 0;
 }
 
-void SQL_CRYPT::encode(char *str, uint length) {
-  for (uint i = 0; i < length; i++) {
+void SQL_CRYPT::encode(char *str, uint length)
+{
+  for (uint i = 0; i < length; i++)
+  {
     shift ^= (uint)(my_rnd(&rand) * 255.0);
     uint idx = (uint)(uchar)str[0];
     *str++ = (char)((uchar)encode_buff[idx] ^ shift);
@@ -61,11 +64,13 @@ void SQL_CRYPT::encode(char *str, uint length) {
   }
 }
 
-void SQL_CRYPT::decode(char *str, uint length) {
-  for (uint i = 0; i < length; i++) {
+void SQL_CRYPT::decode(char *str, uint length)
+{
+  for (uint i = 0; i < length; i++)
+  {
     shift ^= (uint)(my_rnd(&rand) * 255.0);
     uint idx = (uint)((unsigned char)str[0] ^ shift);
     *str = decode_buff[idx];
-    shift ^= (uint)(uchar) * str++;
+    shift ^= (uint)(uchar)*str++;
   }
 }

@@ -36,15 +36,13 @@
 #define SHAREDIR "share/"
 #endif
 
-#define ER(X) errmesg[(X) - ER_ERROR_FIRST]
-#define ER_SAFE(X)                                                             \
-  (((X) >= ER_ERROR_FIRST &&(X) <= ER_ERROR_LAST) ? ER(X)                      \
-                                                  : "Invalid error code")
+#define ER(X) errmesg[(X)-ER_ERROR_FIRST]
+#define ER_SAFE(X) (((X) >= ER_ERROR_FIRST && (X) <= ER_ERROR_LAST) ? ER(X) : "Invalid error code")
 
 #define ERRMAPP 1                 /* Errormap f|r my_error */
 #define LIBLEN FN_REFLEN - FN_LEN /* Max l{ngd p} dev */
-#define MAX_DBKEY_LENGTH                                                       \
-  (FN_LEN * 2 + 1 + 1 + 4 + 4) /* extra 4+4 bytes for slave tmp                \
+#define MAX_DBKEY_LENGTH                                        \
+  (FN_LEN * 2 + 1 + 1 + 4 + 4) /* extra 4+4 bytes for slave tmp \
                                 * tables */
 #define MAX_ALIAS_NAME 256
 #define MAX_FIELD_NAME 34 /* Max colum name length +2 */
@@ -69,7 +67,7 @@
 #define CONVERT_IF_BIGGER_TO_BLOB 512 /* Used for CREATE ... SELECT */
 
 /* Max column width +1 */
-#define MAX_FIELD_WIDTH (MAX_FIELD_CHARLENGTH *MAX_MBWIDTH + 1)
+#define MAX_FIELD_WIDTH (MAX_FIELD_CHARLENGTH * MAX_MBWIDTH + 1)
 
 #define MAX_BIT_FIELD_LENGTH 64 /* Max length in bits for bit fields */
 
@@ -82,8 +80,7 @@
 #define PARAM_TABLE_BIT (((table_map)1) << (sizeof(table_map) * 8 - 3))
 #define OUTER_REF_TABLE_BIT (((table_map)1) << (sizeof(table_map) * 8 - 2))
 #define RAND_TABLE_BIT (((table_map)1) << (sizeof(table_map) * 8 - 1))
-#define PSEUDO_TABLE_BITS                                                      \
-  (PARAM_TABLE_BIT | OUTER_REF_TABLE_BIT | RAND_TABLE_BIT)
+#define PSEUDO_TABLE_BITS (PARAM_TABLE_BIT | OUTER_REF_TABLE_BIT | RAND_TABLE_BIT)
 #define MAX_FIELDS 4096 /* Limit in the .frm file */
 
 #define MAX_SORT_MEMORY (2048 * 1024 - MALLOC_OVERHEAD)
@@ -125,20 +122,18 @@
 #define SPECIAL_NO_HOST_CACHE 512 /* Don't cache hosts */
 #define SPECIAL_SHORT_LOG_FORMAT 1024
 #define SPECIAL_SAFE_MODE 2048
-#define SPECIAL_LOG_QUERIES_NOT_USING_INDEXES 4096 /* Log q not using indexes  \
-                                                      */
+#define SPECIAL_LOG_QUERIES_NOT_USING_INDEXES \
+  4096 /* Log q not using indexes             \
+        */
 
 /* Extern defines */
-#define store_record(A, B)                                                     \
-  bmove_align((A)->B, (A)->record[0], (size_t)(A)->s->reclength)
-#define restore_record(A, B)                                                   \
-  bmove_align((A)->record[0], (A)->B, (size_t)(A)->s->reclength)
-#define cmp_record(A, B)                                                       \
-  memcmp((A)->record[0], (A)->B, (size_t)(A)->s->reclength)
-#define empty_record(A)                                                        \
-  {                                                                            \
-    restore_record((A), s->default_values);                                    \
-    bfill((A)->null_flags, (A)->s->null_bytes, 255);                           \
+#define store_record(A, B) bmove_align((A)->B, (A)->record[0], (size_t)(A)->s->reclength)
+#define restore_record(A, B) bmove_align((A)->record[0], (A)->B, (size_t)(A)->s->reclength)
+#define cmp_record(A, B) memcmp((A)->record[0], (A)->B, (size_t)(A)->s->reclength)
+#define empty_record(A)                              \
+  {                                                  \
+    restore_record((A), s->default_values);          \
+    bfill((A)->null_flags, (A)->s->null_bytes, 255); \
   }
 
 /* Defines for use with openfrm, openprt and openfrd */

@@ -18,16 +18,15 @@
 
 #include "mysql_priv.h"
 
-bool mysql_do(THD *thd, List<Item> &values) {
+bool mysql_do(THD *thd, List<Item> &values)
+{
   List_iterator<Item> li(values);
   Item *value;
   DBUG_ENTER("mysql_do");
-  if (setup_fields(thd, 0, values, 0, 0, 0))
-    DBUG_RETURN(TRUE);
-  while ((value = li++))
-    value->val_int();
+  if (setup_fields(thd, 0, values, 0, 0, 0)) DBUG_RETURN(TRUE);
+  while ((value = li++)) value->val_int();
   free_underlaid_joins(thd, &thd->lex->select_lex);
-  thd->clear_error(); // DO always is OK
+  thd->clear_error();  // DO always is OK
   send_ok(thd);
   DBUG_RETURN(FALSE);
 }

@@ -17,11 +17,11 @@
 #include "mysql_priv.h"
 #ifdef HAVE_REPLICATION
 
-#include "sql_repl.h"
-#include "log_event.h"
 #include <my_dir.h>
+#include "log_event.h"
+#include "sql_repl.h"
 
-int max_binlog_dump_events = 0; // unlimited
+int max_binlog_dump_events = 0;  // unlimited
 my_bool opt_sporadic_binlog_dump_fail = 0;
 static int binlog_dump_count = 0;
 
@@ -43,8 +43,8 @@ static int binlog_dump_count = 0;
     part.
 */
 
-static int fake_rotate_event(NET *net, String *packet, char *log_file_name,
-                             ulonglong position, const char **errmsg) {
+static int fake_rotate_event(NET *net, String *packet, char *log_file_name, ulonglong position, const char **errmsg)
+{
   DBUG_ENTER("fake_rotate_event");
   char header[LOG_EVENT_HEADER_LEN], buf[ROTATE_HEADER_LEN + 100];
   /*
@@ -68,21 +68,23 @@ static int fake_rotate_event(NET *net, String *packet, char *log_file_name,
   int8store(buf + R_POS_OFFSET, position);
   packet->append(buf, ROTATE_HEADER_LEN);
   packet->append(p, ident_len);
-  if (my_net_write(net, (char *)packet->ptr(), packet->length())) {
+  if (my_net_write(net, (char *)packet->ptr(), packet->length()))
+  {
     *errmsg = "failed on my_net_write()";
     DBUG_RETURN(-1);
   }
   DBUG_RETURN(0);
 }
 
-static int send_file(THD *thd) {
+static int send_file(THD *thd)
+{
   NET *net = &thd->net;
   int fd = -1, bytes, error = 1;
   char fname[FN_REFLEN + 1];
   const char *errmsg = 0;
   int old_timeout;
   unsigned long packet_len;
-  char buf[IO_SIZE]; // It's safe to alloc this
+  char buf[IO_SIZE];  // It's safe to alloc this
   DBUG_ENTER("send_file");
 
   /*
@@ -96,7 +98,8 @@ static int send_file(THD *thd) {
     We need net_flush here because the client will not know it needs to send
     us the file name until it has processed the load event entry
   */
-  if (net_flush(net) || (packet_len = my_net_read(net)) == packet_error) {
+  if (net_flush(net) || (packet_len = my_net_read(net)) == packet_error)
+  {
     errmsg = "while reading file name";
     goto err;
   }
@@ -105,24 +108,26 @@ static int send_file(THD *thd) {
   *((char *)net->read_pos + packet_len) = 0;
   fn_format(fname, (char *)net->read_pos + 1, "", "", 4);
   // this is needed to make replicate-ignore-db
-  if (!strcmp(fname, "/dev/null"))
-    goto end;
+  if (!strcmp(fname, "/dev/null")) goto end;
 
-  if ((fd = my_open(fname, O_RDONLY, MYF(0))) < 0) {
+  if ((fd = my_open(fname, O_RDONLY, MYF(0))) < 0)
+  {
     errmsg = "on open of file";
     goto err;
   }
 
-  while ((bytes = (int)my_read(fd, (byte *)buf, IO_SIZE, MYF(0))) > 0) {
-    if (my_net_write(net, buf, bytes)) {
+  while ((bytes = (int)my_read(fd, (byte *)buf, IO_SIZE, MYF(0))) > 0)
+  {
+    if (my_net_write(net, buf, bytes))
+    {
       errmsg = "while writing data to client";
       goto err;
     }
   }
 
 end:
-  if (my_net_write(net, "", 0) || net_flush(net) ||
-      (my_net_read(net) == packet_error)) {
+  if (my_net_write(net, "", 0) || net_flush(net) || (my_net_read(net) == packet_error))
+  {
     errmsg = "while negotiating file transfer close";
     goto err;
   }
@@ -130,9 +135,9 @@ end:
 
 err:
   thd->net.read_timeout = old_timeout;
-  if (fd >= 0)
-    (void)my_close(fd, MYF(0));
-  if (errmsg) {
+  if (fd >= 0) (void)my_close(fd, MYF(0));
+  if (errmsg)
+  {
     sql_print_error("Failed in send_file() %s", errmsg);
     DBUG_PRINT("error", (errmsg));
   }
@@ -160,15 +165,18 @@ err:
       Now they sync is done for next read.
 */
 
-void adjust_linfo_offsets(my_off_t purge_offset) {
+void adjust_linfo_offsets(my_off_t purge_offset)
+{
   THD *tmp;
 
   pthread_mutex_lock(&LOCK_thread_count);
   I_List_iterator<THD> it(threads);
 
-  while ((tmp = it++)) {
+  while ((tmp = it++))
+  {
     LOG_INFO *linfo;
-    if ((linfo = tmp->current_linfo)) {
+    if ((linfo = tmp->current_linfo))
+    {
       pthread_mutex_lock(&linfo->lock);
       /*
         Index file offset can be less that purge offset only if
@@ -185,7 +193,8 @@ void adjust_linfo_offsets(my_off_t purge_offset) {
   pthread_mutex_unlock(&LOCK_thread_count);
 }
 
-bool log_in_use(const char *log_name) {
+bool log_in_use(const char *log_name)
+{
   int log_name_len = strlen(log_name) + 1;
   THD *tmp;
   bool result = 0;
@@ -193,14 +202,15 @@ bool log_in_use(const char *log_name) {
   pthread_mutex_lock(&LOCK_thread_count);
   I_List_iterator<THD> it(threads);
 
-  while ((tmp = it++)) {
+  while ((tmp = it++))
+  {
     LOG_INFO *linfo;
-    if ((linfo = tmp->current_linfo)) {
+    if ((linfo = tmp->current_linfo))
+    {
       pthread_mutex_lock(&linfo->lock);
       result = !bcmp(log_name, linfo->log_file_name, log_name_len);
       pthread_mutex_unlock(&linfo->lock);
-      if (result)
-        break;
+      if (result) break;
     }
   }
 
@@ -208,39 +218,42 @@ bool log_in_use(const char *log_name) {
   return result;
 }
 
-bool purge_error_message(THD *thd, int res) {
+bool purge_error_message(THD *thd, int res)
+{
   uint errmsg = 0;
 
-  switch (res) {
-  case 0:
-    break;
-  case LOG_INFO_EOF:
-    errmsg = ER_UNKNOWN_TARGET_BINLOG;
-    break;
-  case LOG_INFO_IO:
-    errmsg = ER_IO_ERR_LOG_INDEX_READ;
-    break;
-  case LOG_INFO_INVALID:
-    errmsg = ER_BINLOG_PURGE_PROHIBITED;
-    break;
-  case LOG_INFO_SEEK:
-    errmsg = ER_FSEEK_FAIL;
-    break;
-  case LOG_INFO_MEM:
-    errmsg = ER_OUT_OF_RESOURCES;
-    break;
-  case LOG_INFO_FATAL:
-    errmsg = ER_BINLOG_PURGE_FATAL_ERR;
-    break;
-  case LOG_INFO_IN_USE:
-    errmsg = ER_LOG_IN_USE;
-    break;
-  default:
-    errmsg = ER_LOG_PURGE_UNKNOWN_ERR;
-    break;
+  switch (res)
+  {
+    case 0:
+      break;
+    case LOG_INFO_EOF:
+      errmsg = ER_UNKNOWN_TARGET_BINLOG;
+      break;
+    case LOG_INFO_IO:
+      errmsg = ER_IO_ERR_LOG_INDEX_READ;
+      break;
+    case LOG_INFO_INVALID:
+      errmsg = ER_BINLOG_PURGE_PROHIBITED;
+      break;
+    case LOG_INFO_SEEK:
+      errmsg = ER_FSEEK_FAIL;
+      break;
+    case LOG_INFO_MEM:
+      errmsg = ER_OUT_OF_RESOURCES;
+      break;
+    case LOG_INFO_FATAL:
+      errmsg = ER_BINLOG_PURGE_FATAL_ERR;
+      break;
+    case LOG_INFO_IN_USE:
+      errmsg = ER_LOG_IN_USE;
+      break;
+    default:
+      errmsg = ER_LOG_PURGE_UNKNOWN_ERR;
+      break;
   }
 
-  if (errmsg) {
+  if (errmsg)
+  {
     my_message(errmsg, ER(errmsg), MYF(0));
     return TRUE;
   }
@@ -248,51 +261,55 @@ bool purge_error_message(THD *thd, int res) {
   return FALSE;
 }
 
-bool purge_master_logs(THD *thd, const char *to_log) {
+bool purge_master_logs(THD *thd, const char *to_log)
+{
   char search_file_name[FN_REFLEN];
-  if (!mysql_bin_log.is_open()) {
+  if (!mysql_bin_log.is_open())
+  {
     send_ok(thd);
     return FALSE;
   }
 
   mysql_bin_log.make_log_name(search_file_name, to_log);
-  return purge_error_message(
-      thd, mysql_bin_log.purge_logs(search_file_name, 0, 1, 1, NULL));
+  return purge_error_message(thd, mysql_bin_log.purge_logs(search_file_name, 0, 1, 1, NULL));
 }
 
-bool purge_master_logs_before_date(THD *thd, time_t purge_time) {
-  if (!mysql_bin_log.is_open()) {
+bool purge_master_logs_before_date(THD *thd, time_t purge_time)
+{
+  if (!mysql_bin_log.is_open())
+  {
     send_ok(thd);
     return 0;
   }
-  return purge_error_message(thd,
-                             mysql_bin_log.purge_logs_before_date(purge_time));
+  return purge_error_message(thd, mysql_bin_log.purge_logs_before_date(purge_time));
 }
 
-int test_for_non_eof_log_read_errors(int error, const char **errmsg) {
-  if (error == LOG_READ_EOF)
-    return 0;
+int test_for_non_eof_log_read_errors(int error, const char **errmsg)
+{
+  if (error == LOG_READ_EOF) return 0;
   my_errno = ER_MASTER_FATAL_ERROR_READING_BINLOG;
-  switch (error) {
-  case LOG_READ_BOGUS:
-    *errmsg = "bogus data in log event";
-    break;
-  case LOG_READ_TOO_LARGE:
-    *errmsg = "log event entry exceeded max_allowed_packet; \
+  switch (error)
+  {
+    case LOG_READ_BOGUS:
+      *errmsg = "bogus data in log event";
+      break;
+    case LOG_READ_TOO_LARGE:
+      *errmsg =
+          "log event entry exceeded max_allowed_packet; \
 Increase max_allowed_packet on master";
-    break;
-  case LOG_READ_IO:
-    *errmsg = "I/O error reading log event";
-    break;
-  case LOG_READ_MEM:
-    *errmsg = "memory allocation failed reading log event";
-    break;
-  case LOG_READ_TRUNC:
-    *errmsg = "binlog truncated in the middle of event";
-    break;
-  default:
-    *errmsg = "unknown error reading log event on the master";
-    break;
+      break;
+    case LOG_READ_IO:
+      *errmsg = "I/O error reading log event";
+      break;
+    case LOG_READ_MEM:
+      *errmsg = "memory allocation failed reading log event";
+      break;
+    case LOG_READ_TRUNC:
+      *errmsg = "binlog truncated in the middle of event";
+      break;
+    default:
+      *errmsg = "unknown error reading log event on the master";
+      break;
   }
   return error;
 }
@@ -301,7 +318,8 @@ Increase max_allowed_packet on master";
   TODO: Clean up loop to only have one call to send_file()
 */
 
-void mysql_binlog_send(THD *thd, char *log_ident, my_off_t pos, ushort flags) {
+void mysql_binlog_send(THD *thd, char *log_ident, my_off_t pos, ushort flags)
+{
   LOG_INFO linfo;
   char *log_file_name = linfo.log_file_name;
   char search_file_name[FN_REFLEN], *name;
@@ -322,19 +340,22 @@ void mysql_binlog_send(THD *thd, char *log_ident, my_off_t pos, ushort flags) {
   bzero((char *)&log, sizeof(log));
 
 #ifndef DBUG_OFF
-  if (opt_sporadic_binlog_dump_fail && (binlog_dump_count++ % 2)) {
+  if (opt_sporadic_binlog_dump_fail && (binlog_dump_count++ % 2))
+  {
     errmsg = "Master failed COM_BINLOG_DUMP to test if slave can recover";
     my_errno = ER_UNKNOWN_ERROR;
     goto err;
   }
 #endif
 
-  if (!mysql_bin_log.is_open()) {
+  if (!mysql_bin_log.is_open())
+  {
     errmsg = "Binary log is not open";
     my_errno = ER_MASTER_FATAL_ERROR_READING_BINLOG;
     goto err;
   }
-  if (!server_id_supplied) {
+  if (!server_id_supplied)
+  {
     errmsg = "Misconfigured master - server id was not set";
     my_errno = ER_MASTER_FATAL_ERROR_READING_BINLOG;
     goto err;
@@ -344,30 +365,33 @@ void mysql_binlog_send(THD *thd, char *log_ident, my_off_t pos, ushort flags) {
   if (log_ident[0])
     mysql_bin_log.make_log_name(search_file_name, log_ident);
   else
-    name = 0; // Find first log
+    name = 0;  // Find first log
 
   linfo.index_file_offset = 0;
   thd->current_linfo = &linfo;
 
-  if (mysql_bin_log.find_log_pos(&linfo, name, 1)) {
+  if (mysql_bin_log.find_log_pos(&linfo, name, 1))
+  {
     errmsg = "Could not find first log file name in binary log index file";
     my_errno = ER_MASTER_FATAL_ERROR_READING_BINLOG;
     goto err;
   }
 
-  if ((file = open_binlog(&log, log_file_name, &errmsg)) < 0) {
+  if ((file = open_binlog(&log, log_file_name, &errmsg)) < 0)
+  {
     my_errno = ER_MASTER_FATAL_ERROR_READING_BINLOG;
     goto err;
   }
-  if (pos < BIN_LOG_HEADER_SIZE || pos > my_b_filelength(&log)) {
-    errmsg = "Client requested master to start replication from \
+  if (pos < BIN_LOG_HEADER_SIZE || pos > my_b_filelength(&log))
+  {
+    errmsg =
+        "Client requested master to start replication from \
 impossible position";
     my_errno = ER_MASTER_FATAL_ERROR_READING_BINLOG;
     goto err;
   }
 
-  if (thd->variables.sync_replication)
-    ha_repl_report_sent_binlog(thd, log_file_name, pos);
+  if (thd->variables.sync_replication) ha_repl_report_sent_binlog(thd, log_file_name, pos);
 
   /*
     We need to start a packet with something other than 255
@@ -403,7 +427,8 @@ impossible position";
     given that we want minimum modification of 4.0, we send the normal
     and fake Rotates.
   */
-  if (fake_rotate_event(net, packet, log_file_name, pos, &errmsg)) {
+  if (fake_rotate_event(net, packet, log_file_name, pos, &errmsg))
+  {
     /*
        This error code is not perfect, as fake_rotate_event() does not
        read anything from the binlog; if it fails it's because of an
@@ -420,23 +445,23 @@ impossible position";
     only at shutdown).
   */
   log_lock = mysql_bin_log.get_log_lock();
-  if (pos > BIN_LOG_HEADER_SIZE) {
+  if (pos > BIN_LOG_HEADER_SIZE)
+  {
     /*
       Try to find a Format_description_log_event at the beginning of
       the binlog
     */
-    if (!(error = Log_event::read_log_event(&log, packet, log_lock))) {
+    if (!(error = Log_event::read_log_event(&log, packet, log_lock)))
+    {
       /*
         The packet has offsets equal to the normal offsets in a binlog
         event +1 (the first character is \0).
       */
-      DBUG_PRINT(
-          "info",
-          ("Looked for a Format_description_log_event, found event type %d",
-           (*packet)[EVENT_TYPE_OFFSET + 1]));
-      if ((*packet)[EVENT_TYPE_OFFSET + 1] == FORMAT_DESCRIPTION_EVENT) {
-        binlog_can_be_corrupted =
-            test((*packet)[FLAGS_OFFSET + 1] & LOG_EVENT_BINLOG_IN_USE_F);
+      DBUG_PRINT("info",
+                 ("Looked for a Format_description_log_event, found event type %d", (*packet)[EVENT_TYPE_OFFSET + 1]));
+      if ((*packet)[EVENT_TYPE_OFFSET + 1] == FORMAT_DESCRIPTION_EVENT)
+      {
+        binlog_can_be_corrupted = test((*packet)[FLAGS_OFFSET + 1] & LOG_EVENT_BINLOG_IN_USE_F);
         (*packet)[FLAGS_OFFSET + 1] &= ~LOG_EVENT_BINLOG_IN_USE_F;
         /*
           mark that this event with "log_pos=0", so the slave
@@ -445,14 +470,14 @@ impossible position";
         */
         int4store((char *)packet->ptr() + LOG_POS_OFFSET + 1, 0);
         /* send it */
-        if (my_net_write(net, (char *)packet->ptr(), packet->length())) {
+        if (my_net_write(net, (char *)packet->ptr(), packet->length()))
+        {
           errmsg = "Failed on my_net_write()";
           my_errno = ER_UNKNOWN_ERROR;
           goto err;
         }
 
-        if (thd->variables.sync_replication)
-          ha_repl_report_sent_binlog(thd, log_file_name, my_b_tell(&log));
+        if (thd->variables.sync_replication) ha_repl_report_sent_binlog(thd, log_file_name, my_b_tell(&log));
 
         /*
           No need to save this event. We are only doing simple reads
@@ -461,9 +486,10 @@ impossible position";
           3.23&4.x.
         */
       }
-    } else {
-      if (test_for_non_eof_log_read_errors(error, &errmsg))
-        goto err;
+    }
+    else
+    {
+      if (test_for_non_eof_log_read_errors(error, &errmsg)) goto err;
       /*
         It's EOF, nothing to do, go on reading next events, the
         Format_description_log_event will be found naturally if it is written.
@@ -472,17 +498,21 @@ impossible position";
     /* reset the packet as we wrote to it in any case */
     packet->set("\0", 1, &my_charset_bin);
   } /* end of if (pos > BIN_LOG_HEADER_SIZE); */
-  else {
+  else
+  {
     /* The Format_description_log_event event will be found naturally. */
   }
 
   /* seek to the requested position, to start the requested dump */
-  my_b_seek(&log, pos); // Seek will done on next read
+  my_b_seek(&log, pos);  // Seek will done on next read
 
-  while (!net->error && net->vio != 0 && !thd->killed) {
-    while (!(error = Log_event::read_log_event(&log, packet, log_lock))) {
+  while (!net->error && net->vio != 0 && !thd->killed)
+  {
+    while (!(error = Log_event::read_log_event(&log, packet, log_lock)))
+    {
 #ifndef DBUG_OFF
-      if (max_binlog_dump_events && !left_events--) {
+      if (max_binlog_dump_events && !left_events--)
+      {
         net_flush(net);
         errmsg = "Debugging binlog dump abort";
         my_errno = ER_UNKNOWN_ERROR;
@@ -490,26 +520,28 @@ impossible position";
       }
 #endif
 
-      if ((*packet)[EVENT_TYPE_OFFSET + 1] == FORMAT_DESCRIPTION_EVENT) {
-        binlog_can_be_corrupted =
-            test((*packet)[FLAGS_OFFSET + 1] & LOG_EVENT_BINLOG_IN_USE_F);
+      if ((*packet)[EVENT_TYPE_OFFSET + 1] == FORMAT_DESCRIPTION_EVENT)
+      {
+        binlog_can_be_corrupted = test((*packet)[FLAGS_OFFSET + 1] & LOG_EVENT_BINLOG_IN_USE_F);
         (*packet)[FLAGS_OFFSET + 1] &= ~LOG_EVENT_BINLOG_IN_USE_F;
-      } else if ((*packet)[EVENT_TYPE_OFFSET + 1] == STOP_EVENT)
+      }
+      else if ((*packet)[EVENT_TYPE_OFFSET + 1] == STOP_EVENT)
         binlog_can_be_corrupted = FALSE;
 
-      if (my_net_write(net, (char *)packet->ptr(), packet->length())) {
+      if (my_net_write(net, (char *)packet->ptr(), packet->length()))
+      {
         errmsg = "Failed on my_net_write()";
         my_errno = ER_UNKNOWN_ERROR;
         goto err;
       }
 
-      if (thd->variables.sync_replication)
-        ha_repl_report_sent_binlog(thd, log_file_name, my_b_tell(&log));
+      if (thd->variables.sync_replication) ha_repl_report_sent_binlog(thd, log_file_name, my_b_tell(&log));
 
-      DBUG_PRINT("info",
-                 ("log event code %d", (*packet)[LOG_EVENT_OFFSET + 1]));
-      if ((*packet)[LOG_EVENT_OFFSET + 1] == LOAD_EVENT) {
-        if (send_file(thd)) {
+      DBUG_PRINT("info", ("log event code %d", (*packet)[LOG_EVENT_OFFSET + 1]));
+      if ((*packet)[LOG_EVENT_OFFSET + 1] == LOAD_EVENT)
+      {
+        if (send_file(thd))
+        {
           errmsg = "failed in send_file()";
           my_errno = ER_UNKNOWN_ERROR;
           goto err;
@@ -522,8 +554,7 @@ impossible position";
       here we were reading binlog that was not closed properly (as a result
       of a crash ?). treat any corruption as EOF
     */
-    if (binlog_can_be_corrupted && error != LOG_READ_MEM)
-      error = LOG_READ_EOF;
+    if (binlog_can_be_corrupted && error != LOG_READ_MEM) error = LOG_READ_EOF;
     /*
       TODO: now that we are logging the offset, check to make sure
       the recorded offset and the actual match.
@@ -531,15 +562,15 @@ impossible position";
       <4.0.15 running with --log-slave-updates, because then log_pos may
       be the offset in the-master-of-this-master's binlog.
     */
-    if (test_for_non_eof_log_read_errors(error, &errmsg))
-      goto err;
+    if (test_for_non_eof_log_read_errors(error, &errmsg)) goto err;
 
-    if (!(flags & BINLOG_DUMP_NON_BLOCK) &&
-        mysql_bin_log.is_active(log_file_name)) {
+    if (!(flags & BINLOG_DUMP_NON_BLOCK) && mysql_bin_log.is_active(log_file_name))
+    {
       /*
         Block until there is more data in the log
       */
-      if (net_flush(net)) {
+      if (net_flush(net))
+      {
         errmsg = "failed on net_flush()";
         my_errno = ER_UNKNOWN_ERROR;
         goto err;
@@ -556,7 +587,8 @@ impossible position";
         bool read_packet = 0, fatal_error = 0;
 
 #ifndef DBUG_OFF
-        if (max_binlog_dump_events && !left_events--) {
+        if (max_binlog_dump_events && !left_events--)
+        {
           errmsg = "Debugging binlog dump abort";
           my_errno = ER_UNKNOWN_ERROR;
           goto err;
@@ -574,47 +606,53 @@ impossible position";
         */
 
         pthread_mutex_lock(log_lock);
-        switch (Log_event::read_log_event(&log, packet, (pthread_mutex_t *)0)) {
-        case 0:
-          /* we read successfully, so we'll need to send it to the slave */
-          pthread_mutex_unlock(log_lock);
-          read_packet = 1;
-          break;
-
-        case LOG_READ_EOF:
-          DBUG_PRINT("wait", ("waiting for data in binary log"));
-          if (thd->server_id == 0) // for mysqlbinlog (mysqlbinlog.server_id==0)
-          {
+        switch (Log_event::read_log_event(&log, packet, (pthread_mutex_t *)0))
+        {
+          case 0:
+            /* we read successfully, so we'll need to send it to the slave */
             pthread_mutex_unlock(log_lock);
-            goto end;
-          }
-          if (!thd->killed) {
-            /* Note that the following call unlocks lock_log */
-            mysql_bin_log.wait_for_update(thd, 0);
-          } else
-            pthread_mutex_unlock(log_lock);
-          DBUG_PRINT("wait", ("binary log received update"));
-          break;
+            read_packet = 1;
+            break;
 
-        default:
-          pthread_mutex_unlock(log_lock);
-          fatal_error = 1;
-          break;
+          case LOG_READ_EOF:
+            DBUG_PRINT("wait", ("waiting for data in binary log"));
+            if (thd->server_id == 0)  // for mysqlbinlog (mysqlbinlog.server_id==0)
+            {
+              pthread_mutex_unlock(log_lock);
+              goto end;
+            }
+            if (!thd->killed)
+            {
+              /* Note that the following call unlocks lock_log */
+              mysql_bin_log.wait_for_update(thd, 0);
+            }
+            else
+              pthread_mutex_unlock(log_lock);
+            DBUG_PRINT("wait", ("binary log received update"));
+            break;
+
+          default:
+            pthread_mutex_unlock(log_lock);
+            fatal_error = 1;
+            break;
         }
 
-        if (read_packet) {
+        if (read_packet)
+        {
           thd->proc_info = "Sending binlog event to slave";
-          if (my_net_write(net, (char *)packet->ptr(), packet->length())) {
+          if (my_net_write(net, (char *)packet->ptr(), packet->length()))
+          {
             errmsg = "Failed on my_net_write()";
             my_errno = ER_UNKNOWN_ERROR;
             goto err;
           }
 
-          if (thd->variables.sync_replication)
-            ha_repl_report_sent_binlog(thd, log_file_name, my_b_tell(&log));
+          if (thd->variables.sync_replication) ha_repl_report_sent_binlog(thd, log_file_name, my_b_tell(&log));
 
-          if ((*packet)[LOG_EVENT_OFFSET + 1] == LOAD_EVENT) {
-            if (send_file(thd)) {
+          if ((*packet)[LOG_EVENT_OFFSET + 1] == LOAD_EVENT)
+          {
+            if (send_file(thd))
+            {
               errmsg = "failed in send_file()";
               my_errno = ER_UNKNOWN_ERROR;
               goto err;
@@ -627,31 +665,34 @@ impossible position";
           */
         }
 
-        if (fatal_error) {
+        if (fatal_error)
+        {
           errmsg = "error reading log entry";
           my_errno = ER_MASTER_FATAL_ERROR_READING_BINLOG;
           goto err;
         }
         log.error = 0;
       }
-    } else {
+    }
+    else
+    {
       bool loop_breaker = 0;
       // need this to break out of the for loop from switch
       thd->proc_info = "Finished reading one binlog; switching to next binlog";
-      switch (mysql_bin_log.find_next_log(&linfo, 1)) {
-      case LOG_INFO_EOF:
-        loop_breaker = (flags & BINLOG_DUMP_NON_BLOCK);
-        break;
-      case 0:
-        break;
-      default:
-        errmsg = "could not find next log";
-        my_errno = ER_MASTER_FATAL_ERROR_READING_BINLOG;
-        goto err;
+      switch (mysql_bin_log.find_next_log(&linfo, 1))
+      {
+        case LOG_INFO_EOF:
+          loop_breaker = (flags & BINLOG_DUMP_NON_BLOCK);
+          break;
+        case 0:
+          break;
+        default:
+          errmsg = "could not find next log";
+          my_errno = ER_MASTER_FATAL_ERROR_READING_BINLOG;
+          goto err;
       }
 
-      if (loop_breaker)
-        break;
+      if (loop_breaker) break;
 
       end_io_cache(&log);
       (void)my_close(file, MYF(MY_WME));
@@ -666,14 +707,13 @@ impossible position";
         read and send is Format_description_log_event.
       */
       if ((file = open_binlog(&log, log_file_name, &errmsg)) < 0 ||
-          fake_rotate_event(net, packet, log_file_name, BIN_LOG_HEADER_SIZE,
-                            &errmsg)) {
+          fake_rotate_event(net, packet, log_file_name, BIN_LOG_HEADER_SIZE, &errmsg))
+      {
         my_errno = ER_MASTER_FATAL_ERROR_READING_BINLOG;
         goto err;
       }
 
-      if (thd->variables.sync_replication)
-        ha_repl_report_sent_binlog(thd, log_file_name, 0);
+      if (thd->variables.sync_replication) ha_repl_report_sent_binlog(thd, log_file_name, 0);
 
       packet->length(0);
       packet->append('\0');
@@ -681,8 +721,7 @@ impossible position";
   }
 
 end:
-  if (thd->variables.sync_replication)
-    ha_repl_report_replication_stop(thd);
+  if (thd->variables.sync_replication) ha_repl_report_replication_stop(thd);
 
   end_io_cache(&log);
   (void)my_close(file, MYF(MY_WME));
@@ -695,8 +734,7 @@ end:
   DBUG_VOID_RETURN;
 
 err:
-  if (thd->variables.sync_replication)
-    ha_repl_report_replication_stop(thd);
+  if (thd->variables.sync_replication) ha_repl_report_replication_stop(thd);
 
   thd->proc_info = "Waiting to finalize termination";
   end_io_cache(&log);
@@ -710,20 +748,19 @@ err:
   pthread_mutex_lock(&LOCK_thread_count);
   thd->current_linfo = 0;
   pthread_mutex_unlock(&LOCK_thread_count);
-  if (file >= 0)
-    (void)my_close(file, MYF(MY_WME));
+  if (file >= 0) (void)my_close(file, MYF(MY_WME));
   my_message(my_errno, errmsg, MYF(0));
   DBUG_VOID_RETURN;
 }
 
-int start_slave(THD *thd, MASTER_INFO *mi, bool net_report) {
+int start_slave(THD *thd, MASTER_INFO *mi, bool net_report)
+{
   int slave_errno = 0;
   int thread_mask;
   DBUG_ENTER("start_slave");
 
-  if (check_access(thd, SUPER_ACL, any_db, 0, 0, 0, 0))
-    DBUG_RETURN(1);
-  lock_slave_threads(mi); // this allows us to cleanly read slave_running
+  if (check_access(thd, SUPER_ACL, any_db, 0, 0, 0, 0)) DBUG_RETURN(1);
+  lock_slave_threads(mi);  // this allows us to cleanly read slave_running
   // Get a mask of _stopped_ threads
   init_thread_mask(&thread_mask, mi, 1 /* inverse */);
   /*
@@ -732,44 +769,48 @@ int start_slave(THD *thd, MASTER_INFO *mi, bool net_report) {
     don't wan't to touch the other thread), so set the bit to 0 for the
     other thread
   */
-  if (thd->lex->slave_thd_opt)
-    thread_mask &= thd->lex->slave_thd_opt;
-  if (thread_mask) // some threads are stopped, start them
+  if (thd->lex->slave_thd_opt) thread_mask &= thd->lex->slave_thd_opt;
+  if (thread_mask)  // some threads are stopped, start them
   {
-    if (init_master_info(mi, master_info_file, relay_log_info_file, 0,
-                         thread_mask))
+    if (init_master_info(mi, master_info_file, relay_log_info_file, 0, thread_mask))
       slave_errno = ER_MASTER_INFO;
-    else if (server_id_supplied && *mi->host) {
+    else if (server_id_supplied && *mi->host)
+    {
       /*
         If we will start SQL thread we will care about UNTIL options If
         not and they are specified we will ignore them and warn user
         about this fact.
       */
-      if (thread_mask & SLAVE_SQL) {
+      if (thread_mask & SLAVE_SQL)
+      {
         pthread_mutex_lock(&mi->rli.data_lock);
 
-        if (thd->lex->mi.pos) {
+        if (thd->lex->mi.pos)
+        {
           mi->rli.until_condition = RELAY_LOG_INFO::UNTIL_MASTER_POS;
           mi->rli.until_log_pos = thd->lex->mi.pos;
           /*
              We don't check thd->lex->mi.log_file_name for NULL here
              since it is checked in sql_yacc.yy
           */
-          strmake(mi->rli.until_log_name, thd->lex->mi.log_file_name,
-                  sizeof(mi->rli.until_log_name) - 1);
-        } else if (thd->lex->mi.relay_log_pos) {
+          strmake(mi->rli.until_log_name, thd->lex->mi.log_file_name, sizeof(mi->rli.until_log_name) - 1);
+        }
+        else if (thd->lex->mi.relay_log_pos)
+        {
           mi->rli.until_condition = RELAY_LOG_INFO::UNTIL_RELAY_POS;
           mi->rli.until_log_pos = thd->lex->mi.relay_log_pos;
-          strmake(mi->rli.until_log_name, thd->lex->mi.relay_log_name,
-                  sizeof(mi->rli.until_log_name) - 1);
-        } else
+          strmake(mi->rli.until_log_name, thd->lex->mi.relay_log_name, sizeof(mi->rli.until_log_name) - 1);
+        }
+        else
           clear_until_condition(&mi->rli);
 
-        if (mi->rli.until_condition != RELAY_LOG_INFO::UNTIL_NONE) {
+        if (mi->rli.until_condition != RELAY_LOG_INFO::UNTIL_NONE)
+        {
           /* Preparing members for effective until condition checking */
           const char *p = fn_ext(mi->rli.until_log_name);
           char *p_end;
-          if (*p) {
+          if (*p)
+          {
             // p points to '.'
             mi->rli.until_log_name_extension = strtoul(++p, &p_end, 10);
             /*
@@ -777,57 +818,56 @@ int start_slave(THD *thd, MASTER_INFO *mi, bool net_report) {
               to p, no digits were found, error. If it contains '\0' it
               means  conversion went ok.
             */
-            if (p_end == p || *p_end)
-              slave_errno = ER_BAD_SLAVE_UNTIL_COND;
-          } else
+            if (p_end == p || *p_end) slave_errno = ER_BAD_SLAVE_UNTIL_COND;
+          }
+          else
             slave_errno = ER_BAD_SLAVE_UNTIL_COND;
 
           /* mark the cached result of the UNTIL comparison as "undefined" */
-          mi->rli.until_log_names_cmp_result =
-              RELAY_LOG_INFO::UNTIL_LOG_NAMES_CMP_UNKNOWN;
+          mi->rli.until_log_names_cmp_result = RELAY_LOG_INFO::UNTIL_LOG_NAMES_CMP_UNKNOWN;
 
           /* Issuing warning then started without --skip-slave-start */
           if (!opt_skip_slave_start)
-            push_warning(thd, MYSQL_ERROR::WARN_LEVEL_NOTE,
-                         ER_MISSING_SKIP_SLAVE, ER(ER_MISSING_SKIP_SLAVE));
+            push_warning(thd, MYSQL_ERROR::WARN_LEVEL_NOTE, ER_MISSING_SKIP_SLAVE, ER(ER_MISSING_SKIP_SLAVE));
         }
 
         pthread_mutex_unlock(&mi->rli.data_lock);
-      } else if (thd->lex->mi.pos || thd->lex->mi.relay_log_pos)
-        push_warning(thd, MYSQL_ERROR::WARN_LEVEL_NOTE, ER_UNTIL_COND_IGNORED,
-                     ER(ER_UNTIL_COND_IGNORED));
+      }
+      else if (thd->lex->mi.pos || thd->lex->mi.relay_log_pos)
+        push_warning(thd, MYSQL_ERROR::WARN_LEVEL_NOTE, ER_UNTIL_COND_IGNORED, ER(ER_UNTIL_COND_IGNORED));
 
       if (!slave_errno)
-        slave_errno = start_slave_threads(
-            0 /*no mutex */, 1 /* wait for start */, mi, master_info_file,
-            relay_log_info_file, thread_mask);
-    } else
+        slave_errno = start_slave_threads(0 /*no mutex */, 1 /* wait for start */, mi, master_info_file,
+                                          relay_log_info_file, thread_mask);
+    }
+    else
       slave_errno = ER_BAD_SLAVE;
-  } else {
+  }
+  else
+  {
     /* no error if all threads are already started, only a warning */
-    push_warning(thd, MYSQL_ERROR::WARN_LEVEL_NOTE, ER_SLAVE_WAS_RUNNING,
-                 ER(ER_SLAVE_WAS_RUNNING));
+    push_warning(thd, MYSQL_ERROR::WARN_LEVEL_NOTE, ER_SLAVE_WAS_RUNNING, ER(ER_SLAVE_WAS_RUNNING));
   }
 
   unlock_slave_threads(mi);
 
-  if (slave_errno) {
-    if (net_report)
-      my_message(slave_errno, ER(slave_errno), MYF(0));
+  if (slave_errno)
+  {
+    if (net_report) my_message(slave_errno, ER(slave_errno), MYF(0));
     DBUG_RETURN(1);
-  } else if (net_report)
+  }
+  else if (net_report)
     send_ok(thd);
 
   DBUG_RETURN(0);
 }
 
-int stop_slave(THD *thd, MASTER_INFO *mi, bool net_report) {
+int stop_slave(THD *thd, MASTER_INFO *mi, bool net_report)
+{
   int slave_errno;
-  if (!thd)
-    thd = current_thd;
+  if (!thd) thd = current_thd;
 
-  if (check_access(thd, SUPER_ACL, any_db, 0, 0, 0, 0))
-    return 1;
+  if (check_access(thd, SUPER_ACL, any_db, 0, 0, 0, 0)) return 1;
   thd->proc_info = "Killing slave";
   int thread_mask;
   lock_slave_threads(mi);
@@ -839,25 +879,27 @@ int stop_slave(THD *thd, MASTER_INFO *mi, bool net_report) {
     was stopped (as we don't wan't to touch the other thread), so set the
     bit to 0 for the other thread
   */
-  if (thd->lex->slave_thd_opt)
-    thread_mask &= thd->lex->slave_thd_opt;
+  if (thd->lex->slave_thd_opt) thread_mask &= thd->lex->slave_thd_opt;
 
-  if (thread_mask) {
+  if (thread_mask)
+  {
     slave_errno = terminate_slave_threads(mi, thread_mask, 1 /*skip lock */);
-  } else {
+  }
+  else
+  {
     // no error if both threads are already stopped, only a warning
     slave_errno = 0;
-    push_warning(thd, MYSQL_ERROR::WARN_LEVEL_NOTE, ER_SLAVE_WAS_NOT_RUNNING,
-                 ER(ER_SLAVE_WAS_NOT_RUNNING));
+    push_warning(thd, MYSQL_ERROR::WARN_LEVEL_NOTE, ER_SLAVE_WAS_NOT_RUNNING, ER(ER_SLAVE_WAS_NOT_RUNNING));
   }
   unlock_slave_threads(mi);
   thd->proc_info = 0;
 
-  if (slave_errno) {
-    if (net_report)
-      my_message(slave_errno, ER(slave_errno), MYF(0));
+  if (slave_errno)
+  {
+    if (net_report) my_message(slave_errno, ER(slave_errno), MYF(0));
     return 1;
-  } else if (net_report)
+  }
+  else if (net_report)
     send_ok(thd);
 
   return 0;
@@ -876,7 +918,8 @@ int stop_slave(THD *thd, MASTER_INFO *mi, bool net_report) {
     1	error
 */
 
-int reset_slave(THD *thd, MASTER_INFO *mi) {
+int reset_slave(THD *thd, MASTER_INFO *mi)
+{
   MY_STAT stat_area;
   char fname[FN_REFLEN];
   int thread_mask = 0, error = 0;
@@ -886,15 +929,14 @@ int reset_slave(THD *thd, MASTER_INFO *mi) {
 
   lock_slave_threads(mi);
   init_thread_mask(&thread_mask, mi, 0 /* not inverse */);
-  if (thread_mask) // We refuse if any slave thread is running
+  if (thread_mask)  // We refuse if any slave thread is running
   {
     sql_errno = ER_SLAVE_MUST_STOP;
     error = 1;
     goto err;
   }
   // delete relay logs, clear relay log coordinates
-  if ((error = purge_relay_logs(&mi->rli, thd, 1 /* just reset */, &errmsg)))
-    goto err;
+  if ((error = purge_relay_logs(&mi->rli, thd, 1 /* just reset */, &errmsg))) goto err;
 
   /*
     Clear master's log coordinates and reset host/user/etc to the values
@@ -915,21 +957,22 @@ int reset_slave(THD *thd, MASTER_INFO *mi) {
   end_master_info(mi);
   // and delete these two files
   fn_format(fname, master_info_file, mysql_data_home, "", 4 + 32);
-  if (my_stat(fname, &stat_area, MYF(0)) && my_delete(fname, MYF(MY_WME))) {
+  if (my_stat(fname, &stat_area, MYF(0)) && my_delete(fname, MYF(MY_WME)))
+  {
     error = 1;
     goto err;
   }
   // delete relay_log_info_file
   fn_format(fname, relay_log_info_file, mysql_data_home, "", 4 + 32);
-  if (my_stat(fname, &stat_area, MYF(0)) && my_delete(fname, MYF(MY_WME))) {
+  if (my_stat(fname, &stat_area, MYF(0)) && my_delete(fname, MYF(MY_WME)))
+  {
     error = 1;
     goto err;
   }
 
 err:
   unlock_slave_threads(mi);
-  if (error)
-    my_error(sql_errno, MYF(0), errmsg);
+  if (error) my_error(sql_errno, MYF(0), errmsg);
   DBUG_RETURN(error);
 }
 
@@ -952,19 +995,23 @@ err:
 
 */
 
-void kill_zombie_dump_threads(uint32 slave_server_id) {
+void kill_zombie_dump_threads(uint32 slave_server_id)
+{
   pthread_mutex_lock(&LOCK_thread_count);
   I_List_iterator<THD> it(threads);
   THD *tmp;
 
-  while ((tmp = it++)) {
-    if (tmp->command == COM_BINLOG_DUMP && tmp->server_id == slave_server_id) {
-      pthread_mutex_lock(&tmp->LOCK_delete); // Lock from delete
+  while ((tmp = it++))
+  {
+    if (tmp->command == COM_BINLOG_DUMP && tmp->server_id == slave_server_id)
+    {
+      pthread_mutex_lock(&tmp->LOCK_delete);  // Lock from delete
       break;
     }
   }
   pthread_mutex_unlock(&LOCK_thread_count);
-  if (tmp) {
+  if (tmp)
+  {
     /*
       Here we do not call kill_one_thread() as
       it will be slow because it will iterate through the list
@@ -975,7 +1022,8 @@ void kill_zombie_dump_threads(uint32 slave_server_id) {
   }
 }
 
-bool change_master(THD *thd, MASTER_INFO *mi) {
+bool change_master(THD *thd, MASTER_INFO *mi)
+{
   int thread_mask;
   const char *errmsg = 0;
   bool need_relay_log_purge = 1;
@@ -983,7 +1031,7 @@ bool change_master(THD *thd, MASTER_INFO *mi) {
 
   lock_slave_threads(mi);
   init_thread_mask(&thread_mask, mi, 0 /*not inverse*/);
-  if (thread_mask) // We refuse if any slave thread is running
+  if (thread_mask)  // We refuse if any slave thread is running
   {
     my_message(ER_SLAVE_MUST_STOP, ER(ER_SLAVE_MUST_STOP), MYF(0));
     unlock_slave_threads(mi);
@@ -993,8 +1041,8 @@ bool change_master(THD *thd, MASTER_INFO *mi) {
   thd->proc_info = "Changing master";
   LEX_MASTER_INFO *lex_mi = &thd->lex->mi;
   // TODO: see if needs re-write
-  if (init_master_info(mi, master_info_file, relay_log_info_file, 0,
-                       thread_mask)) {
+  if (init_master_info(mi, master_info_file, relay_log_info_file, 0, thread_mask))
+  {
     my_message(ER_MASTER_INFO, ER(ER_MASTER_INFO), MYF(0));
     unlock_slave_threads(mi);
     DBUG_RETURN(TRUE);
@@ -1011,62 +1059,47 @@ bool change_master(THD *thd, MASTER_INFO *mi) {
     reset binlog's name to FIRST and position to 4.
   */
 
-  if ((lex_mi->host || lex_mi->port) && !lex_mi->log_file_name &&
-      !lex_mi->pos) {
+  if ((lex_mi->host || lex_mi->port) && !lex_mi->log_file_name && !lex_mi->pos)
+  {
     mi->master_log_name[0] = 0;
     mi->master_log_pos = BIN_LOG_HEADER_SIZE;
   }
 
-  if (lex_mi->log_file_name)
-    strmake(mi->master_log_name, lex_mi->log_file_name,
-            sizeof(mi->master_log_name) - 1);
-  if (lex_mi->pos) {
+  if (lex_mi->log_file_name) strmake(mi->master_log_name, lex_mi->log_file_name, sizeof(mi->master_log_name) - 1);
+  if (lex_mi->pos)
+  {
     mi->master_log_pos = lex_mi->pos;
   }
   DBUG_PRINT("info", ("master_log_pos: %d", (ulong)mi->master_log_pos));
 
-  if (lex_mi->host)
-    strmake(mi->host, lex_mi->host, sizeof(mi->host) - 1);
-  if (lex_mi->user)
-    strmake(mi->user, lex_mi->user, sizeof(mi->user) - 1);
-  if (lex_mi->password)
-    strmake(mi->password, lex_mi->password, sizeof(mi->password) - 1);
-  if (lex_mi->port)
-    mi->port = lex_mi->port;
-  if (lex_mi->connect_retry)
-    mi->connect_retry = lex_mi->connect_retry;
+  if (lex_mi->host) strmake(mi->host, lex_mi->host, sizeof(mi->host) - 1);
+  if (lex_mi->user) strmake(mi->user, lex_mi->user, sizeof(mi->user) - 1);
+  if (lex_mi->password) strmake(mi->password, lex_mi->password, sizeof(mi->password) - 1);
+  if (lex_mi->port) mi->port = lex_mi->port;
+  if (lex_mi->connect_retry) mi->connect_retry = lex_mi->connect_retry;
 
-  if (lex_mi->ssl != LEX_MASTER_INFO::SSL_UNCHANGED)
-    mi->ssl = (lex_mi->ssl == LEX_MASTER_INFO::SSL_ENABLE);
-  if (lex_mi->ssl_ca)
-    strmake(mi->ssl_ca, lex_mi->ssl_ca, sizeof(mi->ssl_ca) - 1);
-  if (lex_mi->ssl_capath)
-    strmake(mi->ssl_capath, lex_mi->ssl_capath, sizeof(mi->ssl_capath) - 1);
-  if (lex_mi->ssl_cert)
-    strmake(mi->ssl_cert, lex_mi->ssl_cert, sizeof(mi->ssl_cert) - 1);
-  if (lex_mi->ssl_cipher)
-    strmake(mi->ssl_cipher, lex_mi->ssl_cipher, sizeof(mi->ssl_cipher) - 1);
-  if (lex_mi->ssl_key)
-    strmake(mi->ssl_key, lex_mi->ssl_key, sizeof(mi->ssl_key) - 1);
+  if (lex_mi->ssl != LEX_MASTER_INFO::SSL_UNCHANGED) mi->ssl = (lex_mi->ssl == LEX_MASTER_INFO::SSL_ENABLE);
+  if (lex_mi->ssl_ca) strmake(mi->ssl_ca, lex_mi->ssl_ca, sizeof(mi->ssl_ca) - 1);
+  if (lex_mi->ssl_capath) strmake(mi->ssl_capath, lex_mi->ssl_capath, sizeof(mi->ssl_capath) - 1);
+  if (lex_mi->ssl_cert) strmake(mi->ssl_cert, lex_mi->ssl_cert, sizeof(mi->ssl_cert) - 1);
+  if (lex_mi->ssl_cipher) strmake(mi->ssl_cipher, lex_mi->ssl_cipher, sizeof(mi->ssl_cipher) - 1);
+  if (lex_mi->ssl_key) strmake(mi->ssl_key, lex_mi->ssl_key, sizeof(mi->ssl_key) - 1);
 #ifndef HAVE_OPENSSL
-  if (lex_mi->ssl || lex_mi->ssl_ca || lex_mi->ssl_capath || lex_mi->ssl_cert ||
-      lex_mi->ssl_cipher || lex_mi->ssl_key)
-    push_warning(thd, MYSQL_ERROR::WARN_LEVEL_NOTE, ER_SLAVE_IGNORED_SSL_PARAMS,
-                 ER(ER_SLAVE_IGNORED_SSL_PARAMS));
+  if (lex_mi->ssl || lex_mi->ssl_ca || lex_mi->ssl_capath || lex_mi->ssl_cert || lex_mi->ssl_cipher || lex_mi->ssl_key)
+    push_warning(thd, MYSQL_ERROR::WARN_LEVEL_NOTE, ER_SLAVE_IGNORED_SSL_PARAMS, ER(ER_SLAVE_IGNORED_SSL_PARAMS));
 #endif
 
-  if (lex_mi->relay_log_name) {
+  if (lex_mi->relay_log_name)
+  {
     need_relay_log_purge = 0;
-    strmake(mi->rli.group_relay_log_name, lex_mi->relay_log_name,
-            sizeof(mi->rli.group_relay_log_name) - 1);
-    strmake(mi->rli.event_relay_log_name, lex_mi->relay_log_name,
-            sizeof(mi->rli.event_relay_log_name) - 1);
+    strmake(mi->rli.group_relay_log_name, lex_mi->relay_log_name, sizeof(mi->rli.group_relay_log_name) - 1);
+    strmake(mi->rli.event_relay_log_name, lex_mi->relay_log_name, sizeof(mi->rli.event_relay_log_name) - 1);
   }
 
-  if (lex_mi->relay_log_pos) {
+  if (lex_mi->relay_log_pos)
+  {
     need_relay_log_purge = 0;
-    mi->rli.group_relay_log_pos = mi->rli.event_relay_log_pos =
-        lex_mi->relay_log_pos;
+    mi->rli.group_relay_log_pos = mi->rli.event_relay_log_pos = lex_mi->relay_log_pos;
   }
 
   /*
@@ -1083,8 +1116,8 @@ bool change_master(THD *thd, MASTER_INFO *mi) {
     Note: coordinates of the SQL thread must be read here, before the
     'if (need_relay_log_purge)' block which resets them.
   */
-  if (!lex_mi->host && !lex_mi->port && !lex_mi->log_file_name &&
-      !lex_mi->pos && need_relay_log_purge) {
+  if (!lex_mi->host && !lex_mi->port && !lex_mi->log_file_name && !lex_mi->pos && need_relay_log_purge)
+  {
     /*
       Sometimes mi->rli.master_log_pos == 0 (it happens when the SQL thread is
       not initialized), so we use a max().
@@ -1093,30 +1126,32 @@ bool change_master(THD *thd, MASTER_INFO *mi) {
       max().
      */
     mi->master_log_pos = max(BIN_LOG_HEADER_SIZE, mi->rli.group_master_log_pos);
-    strmake(mi->master_log_name, mi->rli.group_master_log_name,
-            sizeof(mi->master_log_name) - 1);
+    strmake(mi->master_log_name, mi->rli.group_master_log_name, sizeof(mi->master_log_name) - 1);
   }
   /*
     Relay log's IO_CACHE may not be inited, if rli->inited==0 (server was never
     a slave before).
   */
   flush_master_info(mi, 0);
-  if (need_relay_log_purge) {
+  if (need_relay_log_purge)
+  {
     relay_log_purge = 1;
     thd->proc_info = "Purging old relay logs";
-    if (purge_relay_logs(&mi->rli, thd, 0 /* not only reset, but also reinit */,
-                         &errmsg)) {
+    if (purge_relay_logs(&mi->rli, thd, 0 /* not only reset, but also reinit */, &errmsg))
+    {
       my_error(ER_RELAY_LOG_FAIL, MYF(0), errmsg);
       unlock_slave_threads(mi);
       DBUG_RETURN(TRUE);
     }
-  } else {
+  }
+  else
+  {
     const char *msg;
     relay_log_purge = 0;
     /* Relay log is already initialized */
-    if (init_relay_log_pos(&mi->rli, mi->rli.group_relay_log_name,
-                           mi->rli.group_relay_log_pos, 0 /*no data lock*/,
-                           &msg, 0)) {
+    if (init_relay_log_pos(&mi->rli, mi->rli.group_relay_log_name, mi->rli.group_relay_log_pos, 0 /*no data lock*/,
+                           &msg, 0))
+    {
       my_error(ER_RELAY_LOG_INIT, MYF(0), msg);
       unlock_slave_threads(mi);
       DBUG_RETURN(TRUE);
@@ -1136,10 +1171,9 @@ bool change_master(THD *thd, MASTER_INFO *mi) {
     That's why we always save good coords in rli.
   */
   mi->rli.group_master_log_pos = mi->master_log_pos;
-  strmake(mi->rli.group_master_log_name, mi->master_log_name,
-          sizeof(mi->rli.group_master_log_name) - 1);
+  strmake(mi->rli.group_master_log_name, mi->master_log_name, sizeof(mi->rli.group_master_log_name) - 1);
 
-  if (!mi->rli.group_master_log_name[0]) // uninitialized case
+  if (!mi->rli.group_master_log_name[0])  // uninitialized case
     mi->rli.group_master_log_pos = 0;
 
   pthread_mutex_lock(&mi->rli.data_lock);
@@ -1164,31 +1198,33 @@ bool change_master(THD *thd, MASTER_INFO *mi) {
   DBUG_RETURN(FALSE);
 }
 
-int reset_master(THD *thd) {
-  if (!mysql_bin_log.is_open()) {
-    my_message(ER_FLUSH_MASTER_BINLOG_CLOSED, ER(ER_FLUSH_MASTER_BINLOG_CLOSED),
-               MYF(ME_BELL + ME_WAITTANG));
+int reset_master(THD *thd)
+{
+  if (!mysql_bin_log.is_open())
+  {
+    my_message(ER_FLUSH_MASTER_BINLOG_CLOSED, ER(ER_FLUSH_MASTER_BINLOG_CLOSED), MYF(ME_BELL + ME_WAITTANG));
     return 1;
   }
   return mysql_bin_log.reset_logs(thd);
 }
 
-int cmp_master_pos(const char *log_file_name1, ulonglong log_pos1,
-                   const char *log_file_name2, ulonglong log_pos2) {
+int cmp_master_pos(const char *log_file_name1, ulonglong log_pos1, const char *log_file_name2, ulonglong log_pos2)
+{
   int res;
   uint log_file_name1_len = strlen(log_file_name1);
   uint log_file_name2_len = strlen(log_file_name2);
 
   //  We assume that both log names match up to '.'
-  if (log_file_name1_len == log_file_name2_len) {
-    if ((res = strcmp(log_file_name1, log_file_name2)))
-      return res;
+  if (log_file_name1_len == log_file_name2_len)
+  {
+    if ((res = strcmp(log_file_name1, log_file_name2))) return res;
     return (log_pos1 < log_pos2) ? -1 : (log_pos1 == log_pos2) ? 0 : 1;
   }
   return ((log_file_name1_len < log_file_name2_len) ? -1 : 1);
 }
 
-bool mysql_show_binlog_events(THD *thd) {
+bool mysql_show_binlog_events(THD *thd)
+{
   Protocol *protocol = thd->protocol;
   DBUG_ENTER("mysql_show_binlog_events");
   List<Item> field_list;
@@ -1196,19 +1232,17 @@ bool mysql_show_binlog_events(THD *thd) {
   bool ret = TRUE;
   IO_CACHE log;
   File file = -1;
-  Format_description_log_event *description_event =
-      new Format_description_log_event(3); /* MySQL 4.0 by default */
+  Format_description_log_event *description_event = new Format_description_log_event(3); /* MySQL 4.0 by default */
 
   Log_event::init_show_field_list(&field_list);
-  if (protocol->send_fields(&field_list,
-                            Protocol::SEND_NUM_ROWS | Protocol::SEND_EOF))
-    DBUG_RETURN(TRUE);
+  if (protocol->send_fields(&field_list, Protocol::SEND_NUM_ROWS | Protocol::SEND_EOF)) DBUG_RETURN(TRUE);
 
-  if (mysql_bin_log.is_open()) {
+  if (mysql_bin_log.is_open())
+  {
     LEX_MASTER_INFO *lex_mi = &thd->lex->mi;
     SELECT_LEX_UNIT *unit = &thd->lex->unit;
     ha_rows event_count, limit_start, limit_end;
-    my_off_t pos = max(BIN_LOG_HEADER_SIZE, lex_mi->pos); // user-friendly
+    my_off_t pos = max(BIN_LOG_HEADER_SIZE, lex_mi->pos);  // user-friendly
     char search_file_name[FN_REFLEN], *name;
     const char *log_file_name = lex_mi->log_file_name;
     pthread_mutex_t *log_lock = mysql_bin_log.get_log_lock();
@@ -1223,18 +1257,18 @@ bool mysql_show_binlog_events(THD *thd) {
     if (log_file_name)
       mysql_bin_log.make_log_name(search_file_name, log_file_name);
     else
-      name = 0; // Find first log
+      name = 0;  // Find first log
 
     linfo.index_file_offset = 0;
     thd->current_linfo = &linfo;
 
-    if (mysql_bin_log.find_log_pos(&linfo, name, 1)) {
+    if (mysql_bin_log.find_log_pos(&linfo, name, 1))
+    {
       errmsg = "Could not find target log";
       goto err;
     }
 
-    if ((file = open_binlog(&log, linfo.log_file_name, &errmsg)) < 0)
-      goto err;
+    if ((file = open_binlog(&log, linfo.log_file_name, &errmsg)) < 0) goto err;
 
     pthread_mutex_lock(log_lock);
 
@@ -1247,28 +1281,30 @@ bool mysql_show_binlog_events(THD *thd) {
        Rotate then Format_desc).
     */
 
-    ev = Log_event::read_log_event(&log, (pthread_mutex_t *)0,
-                                   description_event);
-    if (ev) {
-      if (ev->get_type_code() == FORMAT_DESCRIPTION_EVENT) {
+    ev = Log_event::read_log_event(&log, (pthread_mutex_t *)0, description_event);
+    if (ev)
+    {
+      if (ev->get_type_code() == FORMAT_DESCRIPTION_EVENT)
+      {
         delete description_event;
         description_event = (Format_description_log_event *)ev;
-      } else
+      }
+      else
         delete ev;
     }
 
     my_b_seek(&log, pos);
 
-    if (!description_event->is_valid()) {
+    if (!description_event->is_valid())
+    {
       errmsg = "Invalid Format_description event; could be out of memory";
       goto err;
     }
 
-    for (event_count = 0;
-         (ev = Log_event::read_log_event(&log, (pthread_mutex_t *)0,
-                                         description_event));) {
-      if (event_count >= limit_start &&
-          ev->net_send(protocol, linfo.log_file_name, pos)) {
+    for (event_count = 0; (ev = Log_event::read_log_event(&log, (pthread_mutex_t *)0, description_event));)
+    {
+      if (event_count >= limit_start && ev->net_send(protocol, linfo.log_file_name, pos))
+      {
         errmsg = "Net error";
         delete ev;
         pthread_mutex_unlock(log_lock);
@@ -1278,11 +1314,11 @@ bool mysql_show_binlog_events(THD *thd) {
       pos = my_b_tell(&log);
       delete ev;
 
-      if (++event_count >= limit_end)
-        break;
+      if (++event_count >= limit_end) break;
     }
 
-    if (event_count < limit_end && log.error) {
+    if (event_count < limit_end && log.error)
+    {
       errmsg = "Wrong offset or I/O error";
       pthread_mutex_unlock(log_lock);
       goto err;
@@ -1295,14 +1331,15 @@ bool mysql_show_binlog_events(THD *thd) {
 
 err:
   delete description_event;
-  if (file >= 0) {
+  if (file >= 0)
+  {
     end_io_cache(&log);
     (void)my_close(file, MYF(MY_WME));
   }
 
-  if (errmsg) {
-    my_error(ER_ERROR_WHEN_EXECUTING_COMMAND, MYF(0), "SHOW BINLOG EVENTS",
-             errmsg);
+  if (errmsg)
+  {
+    my_error(ER_ERROR_WHEN_EXECUTING_COMMAND, MYF(0), "SHOW BINLOG EVENTS", errmsg);
     DBUG_RETURN(TRUE);
   }
 
@@ -1313,22 +1350,21 @@ err:
   DBUG_RETURN(ret);
 }
 
-bool show_binlog_info(THD *thd) {
+bool show_binlog_info(THD *thd)
+{
   Protocol *protocol = thd->protocol;
   DBUG_ENTER("show_binlog_info");
   List<Item> field_list;
   field_list.push_back(new Item_empty_string("File", FN_REFLEN));
-  field_list.push_back(
-      new Item_return_int("Position", 20, MYSQL_TYPE_LONGLONG));
+  field_list.push_back(new Item_return_int("Position", 20, MYSQL_TYPE_LONGLONG));
   field_list.push_back(new Item_empty_string("Binlog_Do_DB", 255));
   field_list.push_back(new Item_empty_string("Binlog_Ignore_DB", 255));
 
-  if (protocol->send_fields(&field_list,
-                            Protocol::SEND_NUM_ROWS | Protocol::SEND_EOF))
-    DBUG_RETURN(TRUE);
+  if (protocol->send_fields(&field_list, Protocol::SEND_NUM_ROWS | Protocol::SEND_EOF)) DBUG_RETURN(TRUE);
   protocol->prepare_for_resend();
 
-  if (mysql_bin_log.is_open()) {
+  if (mysql_bin_log.is_open())
+  {
     LOG_INFO li;
     mysql_bin_log.get_current_log(&li);
     int dir_len = dirname_length(li.log_file_name);
@@ -1336,8 +1372,7 @@ bool show_binlog_info(THD *thd) {
     protocol->store((ulonglong)li.pos);
     protocol->store(&binlog_do_db);
     protocol->store(&binlog_ignore_db);
-    if (protocol->write())
-      DBUG_RETURN(TRUE);
+    if (protocol->write()) DBUG_RETURN(TRUE);
   }
   send_eof(thd);
   DBUG_RETURN(FALSE);
@@ -1355,7 +1390,8 @@ bool show_binlog_info(THD *thd) {
     TRUE  error
 */
 
-bool show_binlogs(THD *thd) {
+bool show_binlogs(THD *thd)
+{
   IO_CACHE *index_file;
   LOG_INFO cur;
   File file;
@@ -1366,17 +1402,15 @@ bool show_binlogs(THD *thd) {
   Protocol *protocol = thd->protocol;
   DBUG_ENTER("show_binlogs");
 
-  if (!mysql_bin_log.is_open()) {
+  if (!mysql_bin_log.is_open())
+  {
     my_message(ER_NO_BINARY_LOGGING, ER(ER_NO_BINARY_LOGGING), MYF(0));
     return 1;
   }
 
   field_list.push_back(new Item_empty_string("Log_name", 255));
-  field_list.push_back(
-      new Item_return_int("File_size", 20, MYSQL_TYPE_LONGLONG));
-  if (protocol->send_fields(&field_list,
-                            Protocol::SEND_NUM_ROWS | Protocol::SEND_EOF))
-    DBUG_RETURN(TRUE);
+  field_list.push_back(new Item_return_int("File_size", 20, MYSQL_TYPE_LONGLONG));
+  if (protocol->send_fields(&field_list, Protocol::SEND_NUM_ROWS | Protocol::SEND_EOF)) DBUG_RETURN(TRUE);
   mysql_bin_log.lock_index();
   index_file = mysql_bin_log.get_index_file();
 
@@ -1386,10 +1420,11 @@ bool show_binlogs(THD *thd) {
   reinit_io_cache(index_file, READ_CACHE, (my_off_t)0, 0, 0);
 
   /* The file ends with EOF or empty line */
-  while ((length = my_b_gets(index_file, fname, sizeof(fname))) > 1) {
+  while ((length = my_b_gets(index_file, fname, sizeof(fname))) > 1)
+  {
     int dir_len;
-    ulonglong file_length = 0; // Length if open fails
-    fname[--length] = '\0';    // remove the newline
+    ulonglong file_length = 0;  // Length if open fails
+    fname[--length] = '\0';     // remove the newline
 
     protocol->prepare_for_resend();
     dir_len = dirname_length(fname);
@@ -1398,16 +1433,17 @@ bool show_binlogs(THD *thd) {
 
     if (!(strncmp(fname + dir_len, cur.log_file_name + cur_dir_len, length)))
       file_length = cur.pos; /* The active log, use the active position */
-    else {
+    else
+    {
       /* this is an old log, open it and find the size */
-      if ((file = my_open(fname, O_RDONLY | O_SHARE | O_BINARY, MYF(0))) >= 0) {
+      if ((file = my_open(fname, O_RDONLY | O_SHARE | O_BINARY, MYF(0))) >= 0)
+      {
         file_length = (ulonglong)my_seek(file, 0L, MY_SEEK_END, MYF(0));
         my_close(file, MYF(0));
       }
     }
     protocol->store(file_length);
-    if (protocol->write())
-      goto err;
+    if (protocol->write()) goto err;
   }
   mysql_bin_log.unlock_index();
   send_eof(thd);
@@ -1418,26 +1454,25 @@ err:
   DBUG_RETURN(TRUE);
 }
 
-int log_loaded_block(IO_CACHE *file) {
+int log_loaded_block(IO_CACHE *file)
+{
   LOAD_FILE_INFO *lf_info;
   uint block_len;
 
   /* file->request_pos contains position where we started last read */
   char *buffer = (char *)file->request_pos;
-  if (!(block_len = (char *)file->read_end - (char *)buffer))
-    return 0;
+  if (!(block_len = (char *)file->read_end - (char *)buffer)) return 0;
   lf_info = (LOAD_FILE_INFO *)file->arg;
-  if (lf_info->last_pos_in_file != HA_POS_ERROR &&
-      lf_info->last_pos_in_file >= file->pos_in_file)
-    return 0;
+  if (lf_info->last_pos_in_file != HA_POS_ERROR && lf_info->last_pos_in_file >= file->pos_in_file) return 0;
   lf_info->last_pos_in_file = file->pos_in_file;
-  if (lf_info->wrote_create_file) {
-    Append_block_log_event a(lf_info->thd, lf_info->thd->db, buffer, block_len,
-                             lf_info->log_delayed);
+  if (lf_info->wrote_create_file)
+  {
+    Append_block_log_event a(lf_info->thd, lf_info->thd->db, buffer, block_len, lf_info->log_delayed);
     mysql_bin_log.write(&a);
-  } else {
-    Begin_load_query_log_event b(lf_info->thd, lf_info->thd->db, buffer,
-                                 block_len, lf_info->log_delayed);
+  }
+  else
+  {
+    Begin_load_query_log_event b(lf_info->thd, lf_info->thd->db, buffer, block_len, lf_info->log_delayed);
     mysql_bin_log.write(&b);
     lf_info->wrote_create_file = 1;
     DBUG_SYNC_POINT("debug_lock.created_file_event", 10);

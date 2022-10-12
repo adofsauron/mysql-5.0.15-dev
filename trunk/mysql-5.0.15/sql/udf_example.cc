@@ -126,9 +126,9 @@ typedef long long longlong;
 #include <my_global.h>
 #include <my_sys.h>
 #endif
-#include <mysql.h>
 #include <m_ctype.h>
-#include <m_string.h> // To get strmov()
+#include <m_string.h>  // To get strmov()
+#include <mysql.h>
 
 static pthread_mutex_t LOCK_hostname;
 
@@ -136,26 +136,23 @@ static pthread_mutex_t LOCK_hostname;
 
 /* These must be right or mysqld will not find the symbol! */
 
-extern "C" {
-my_bool metaphon_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
-void metaphon_deinit(UDF_INIT *initid);
-char *metaphon(UDF_INIT *initid, UDF_ARGS *args, char *result,
-               unsigned long *length, char *is_null, char *error);
-my_bool myfunc_double_init(UDF_INIT *, UDF_ARGS *args, char *message);
-double myfunc_double(UDF_INIT *initid, UDF_ARGS *args, char *is_null,
-                     char *error);
-longlong myfunc_int(UDF_INIT *initid, UDF_ARGS *args, char *is_null,
-                    char *error);
-my_bool sequence_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
-void sequence_deinit(UDF_INIT *initid);
-longlong sequence(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error);
-my_bool avgcost_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
-void avgcost_deinit(UDF_INIT *initid);
-void avgcost_reset(UDF_INIT *initid, UDF_ARGS *args, char *is_null,
-                   char *error);
-void avgcost_clear(UDF_INIT *initid, char *is_null, char *error);
-void avgcost_add(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error);
-double avgcost(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error);
+extern "C"
+{
+  my_bool metaphon_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+  void metaphon_deinit(UDF_INIT *initid);
+  char *metaphon(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length, char *is_null, char *error);
+  my_bool myfunc_double_init(UDF_INIT *, UDF_ARGS *args, char *message);
+  double myfunc_double(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error);
+  longlong myfunc_int(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error);
+  my_bool sequence_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+  void sequence_deinit(UDF_INIT *initid);
+  longlong sequence(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error);
+  my_bool avgcost_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+  void avgcost_deinit(UDF_INIT *initid);
+  void avgcost_reset(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error);
+  void avgcost_clear(UDF_INIT *initid, char *is_null, char *error);
+  void avgcost_add(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error);
+  double avgcost(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error);
 }
 
 /*************************************************************************
@@ -198,8 +195,10 @@ double avgcost(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error);
 
 #define MAXMETAPH 8
 
-my_bool metaphon_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
-  if (args->arg_count != 1 || args->arg_type[0] != STRING_RESULT) {
+my_bool metaphon_init(UDF_INIT *initid, UDF_ARGS *args, char *message)
+{
+  if (args->arg_count != 1 || args->arg_type[0] != STRING_RESULT)
+  {
     strcpy(message, "Wrong arguments to metaphon;  Use the source");
     return 1;
   }
@@ -237,9 +236,9 @@ void metaphon_deinit(UDF_INIT *initid) {}
 
 /* Character coding array */
 static char codes[26] = {
-  1, 16, 4, 16, 9, 2, 4, 16, 9, 2, 0, 2, 2, 2,
-  1, 4,  0, 2,  4, 4, 1, 0,  0, 0, 8, 0
-  /* A  B C  D E F G  H I J K L M N O P Q R S T U V W X Y Z*/
+    1, 16, 4, 16, 9, 2, 4, 16, 9, 2, 0, 2, 2, 2,
+    1, 4,  0, 2,  4, 4, 1, 0,  0, 0, 8, 0
+    /* A  B C  D E F G  H I J K L M N O P Q R S T U V W X Y Z*/
 };
 
 /*--- Macros to access character coding array -------------*/
@@ -258,10 +257,10 @@ static char codes[26] = {
 /* These prevent GH from becoming F */
 #define NOGHTOF(x) (codes[(x) - 'A'] & 16) /* BDH */
 
-char *metaphon(UDF_INIT *initid, UDF_ARGS *args, char *result,
-               unsigned long *length, char *is_null, char *error) {
+char *metaphon(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length, char *is_null, char *error)
+{
   const char *word = args->args[0];
-  if (!word) // Null argument
+  if (!word)  // Null argument
   {
     *is_null = 1;
     return 0;
@@ -280,10 +279,8 @@ char *metaphon(UDF_INIT *initid, UDF_ARGS *args, char *result,
    *  characters and converting to uppercase.
    *-------------------------------------------------------*/
 
-  for (n = ntrans + 1, n_end = ntrans + sizeof(ntrans) - 2;
-       word != w_end && n < n_end; word++)
-    if (my_isalpha(&my_charset_latin1, *word))
-      *n++ = my_toupper(&my_charset_latin1, *word);
+  for (n = ntrans + 1, n_end = ntrans + sizeof(ntrans) - 2; word != w_end && n < n_end; word++)
+    if (my_isalpha(&my_charset_latin1, *word)) *n++ = my_toupper(&my_charset_latin1, *word);
 
   if (n == ntrans + 1) /* return empty string if 0 bytes */
   {
@@ -300,28 +297,28 @@ char *metaphon(UDF_INIT *initid, UDF_ARGS *args, char *result,
    *		PN KN GN AE WR WH and X at start.
    *----------------------------------------------------------*/
 
-  switch (*n) {
-  case 'P':
-  case 'K':
-  case 'G':
-    if (n[1] == 'N')
-      *n++ = 0;
-    break;
-  case 'A':
-    if (n[1] == 'E')
-      *n++ = 0;
-    break;
-  case 'W':
-    if (n[1] == 'R')
-      *n++ = 0;
-    else if (*(n + 1) == 'H') {
-      n[1] = *n;
-      *n++ = 0;
-    }
-    break;
-  case 'X':
-    *n = 'S';
-    break;
+  switch (*n)
+  {
+    case 'P':
+    case 'K':
+    case 'G':
+      if (n[1] == 'N') *n++ = 0;
+      break;
+    case 'A':
+      if (n[1] == 'E') *n++ = 0;
+      break;
+    case 'W':
+      if (n[1] == 'R')
+        *n++ = 0;
+      else if (*(n + 1) == 'H')
+      {
+        n[1] = *n;
+        *n++ = 0;
+      }
+      break;
+    case 'X':
+      *n = 'S';
+      break;
   }
 
   /*------------------------------------------------------------
@@ -331,119 +328,112 @@ char *metaphon(UDF_INIT *initid, UDF_ARGS *args, char *result,
 
   KSflag = 0; /* state flag for KS translation */
 
-  for (metaph_end = result + MAXMETAPH, n_start = n;
-       n <= n_end && result < metaph_end; n++) {
-
-    if (KSflag) {
+  for (metaph_end = result + MAXMETAPH, n_start = n; n <= n_end && result < metaph_end; n++)
+  {
+    if (KSflag)
+    {
       KSflag = 0;
       *result++ = *n;
-    } else {
+    }
+    else
+    {
       /* drop duplicates except for CC */
-      if (*(n - 1) == *n && *n != 'C')
-        continue;
+      if (*(n - 1) == *n && *n != 'C') continue;
 
       /* check for F J L M N R or first letter vowel */
       if (NOCHANGE(*n) || (n == n_start && ISVOWEL(*n)))
         *result++ = *n;
       else
-        switch (*n) {
-        case 'B': /* check for -MB */
-          if (n < n_end || *(n - 1) != 'M')
-            *result++ = *n;
-          break;
+        switch (*n)
+        {
+          case 'B': /* check for -MB */
+            if (n < n_end || *(n - 1) != 'M') *result++ = *n;
+            break;
 
-        case 'C': /* C = X ("sh" sound) in CH and CIA */
-          /*   = S in CE CI and CY	      */
-          /*	 dropped in SCI SCE SCY       */
-          /* else K			      */
-          if (*(n - 1) != 'S' || !MAKESOFT(n[1])) {
-            if (n[1] == 'I' && n[2] == 'A')
-              *result++ = 'X';
-            else if (MAKESOFT(n[1]))
-              *result++ = 'S';
-            else if (n[1] == 'H')
-              *result++ = ((n == n_start && !ISVOWEL(n[2])) || *(n - 1) == 'S')
-                              ? (char)'K'
-                              : (char)'X';
-            else
-              *result++ = 'K';
-          }
-          break;
+          case 'C': /* C = X ("sh" sound) in CH and CIA */
+            /*   = S in CE CI and CY	      */
+            /*	 dropped in SCI SCE SCY       */
+            /* else K			      */
+            if (*(n - 1) != 'S' || !MAKESOFT(n[1]))
+            {
+              if (n[1] == 'I' && n[2] == 'A')
+                *result++ = 'X';
+              else if (MAKESOFT(n[1]))
+                *result++ = 'S';
+              else if (n[1] == 'H')
+                *result++ = ((n == n_start && !ISVOWEL(n[2])) || *(n - 1) == 'S') ? (char)'K' : (char)'X';
+              else
+                *result++ = 'K';
+            }
+            break;
 
-        case 'D': /* J before DGE, DGI, DGY, else T */
-          *result++ = (n[1] == 'G' && MAKESOFT(n[2])) ? (char)'J' : (char)'T';
-          break;
+          case 'D': /* J before DGE, DGI, DGY, else T */
+            *result++ = (n[1] == 'G' && MAKESOFT(n[2])) ? (char)'J' : (char)'T';
+            break;
 
-        case 'G': /* complicated, see table in text */
-          if ((n[1] != 'H' || ISVOWEL(n[2])) &&
-              (n[1] != 'N' ||
-               ((n + 1) < n_end && (n[2] != 'E' || *(n + 3) != 'D'))) &&
-              (*(n - 1) != 'D' || !MAKESOFT(n[1])))
-            *result++ =
-                (MAKESOFT(*(n + 1)) && n[2] != 'G') ? (char)'J' : (char)'K';
-          else if (n[1] == 'H' && !NOGHTOF(*(n - 3)) && *(n - 4) != 'H')
-            *result++ = 'F';
-          break;
+          case 'G': /* complicated, see table in text */
+            if ((n[1] != 'H' || ISVOWEL(n[2])) &&
+                (n[1] != 'N' || ((n + 1) < n_end && (n[2] != 'E' || *(n + 3) != 'D'))) &&
+                (*(n - 1) != 'D' || !MAKESOFT(n[1])))
+              *result++ = (MAKESOFT(*(n + 1)) && n[2] != 'G') ? (char)'J' : (char)'K';
+            else if (n[1] == 'H' && !NOGHTOF(*(n - 3)) && *(n - 4) != 'H')
+              *result++ = 'F';
+            break;
 
-        case 'H': /* H if before a vowel and not after */
-          /* C, G, P, S, T */
+          case 'H': /* H if before a vowel and not after */
+            /* C, G, P, S, T */
 
-          if (!AFFECTH(*(n - 1)) && (!ISVOWEL(*(n - 1)) || ISVOWEL(n[1])))
-            *result++ = 'H';
-          break;
+            if (!AFFECTH(*(n - 1)) && (!ISVOWEL(*(n - 1)) || ISVOWEL(n[1]))) *result++ = 'H';
+            break;
 
-        case 'K': /* K = K, except dropped after C */
-          if (*(n - 1) != 'C')
+          case 'K': /* K = K, except dropped after C */
+            if (*(n - 1) != 'C') *result++ = 'K';
+            break;
+
+          case 'P': /* PH = F, else P = P */
+            *result++ = *(n + 1) == 'H' ? (char)'F' : (char)'P';
+            break;
+          case 'Q': /* Q = K (U after Q is already gone */
             *result++ = 'K';
-          break;
+            break;
 
-        case 'P': /* PH = F, else P = P */
-          *result++ = *(n + 1) == 'H' ? (char)'F' : (char)'P';
-          break;
-        case 'Q': /* Q = K (U after Q is already gone */
-          *result++ = 'K';
-          break;
+          case 'S': /* SH, SIO, SIA = X ("sh" sound) */
+            *result++ = (n[1] == 'H' || (*(n + 1) == 'I' && (n[2] == 'O' || n[2] == 'A'))) ? (char)'X' : (char)'S';
+            break;
 
-        case 'S': /* SH, SIO, SIA = X ("sh" sound) */
-          *result++ =
-              (n[1] == 'H' || (*(n + 1) == 'I' && (n[2] == 'O' || n[2] == 'A')))
-                  ? (char)'X'
-                  : (char)'S';
-          break;
+          case 'T': /* TIO, TIA = X ("sh" sound) */
+            /* TH = 0, ("th" sound ) */
+            if (*(n + 1) == 'I' && (n[2] == 'O' || n[2] == 'A'))
+              *result++ = 'X';
+            else if (n[1] == 'H')
+              *result++ = '0';
+            else if (*(n + 1) != 'C' || n[2] != 'H')
+              *result++ = 'T';
+            break;
 
-        case 'T': /* TIO, TIA = X ("sh" sound) */
-          /* TH = 0, ("th" sound ) */
-          if (*(n + 1) == 'I' && (n[2] == 'O' || n[2] == 'A'))
-            *result++ = 'X';
-          else if (n[1] == 'H')
-            *result++ = '0';
-          else if (*(n + 1) != 'C' || n[2] != 'H')
-            *result++ = 'T';
-          break;
+          case 'V': /* V = F */
+            *result++ = 'F';
+            break;
 
-        case 'V': /* V = F */
-          *result++ = 'F';
-          break;
+          case 'W': /* only exist if a vowel follows */
+          case 'Y':
+            if (ISVOWEL(n[1])) *result++ = *n;
+            break;
 
-        case 'W': /* only exist if a vowel follows */
-        case 'Y':
-          if (ISVOWEL(n[1]))
-            *result++ = *n;
-          break;
+          case 'X': /* X = KS, except at start */
+            if (n == n_start)
+              *result++ = 'S';
+            else
+            {
+              *result++ = 'K'; /* insert K, then S */
+              KSflag = 1;      /* this flag will cause S to be
+                             inserted on next pass thru loop */
+            }
+            break;
 
-        case 'X': /* X = KS, except at start */
-          if (n == n_start)
+          case 'Z':
             *result++ = 'S';
-          else {
-            *result++ = 'K'; /* insert K, then S */
-            KSflag = 1;      /* this flag will cause S to be
-                           inserted on next pass thru loop */
-          }
-          break;
-
-        case 'Z':
-          *result++ = 'S';
-          break;
+            break;
         }
     }
   }
@@ -466,8 +456,10 @@ char *metaphon(UDF_INIT *initid, UDF_ARGS *args, char *result,
 ** This function should return the result.
 ***************************************************************************/
 
-my_bool myfunc_double_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
-  if (!args->arg_count) {
+my_bool myfunc_double_init(UDF_INIT *initid, UDF_ARGS *args, char *message)
+{
+  if (!args->arg_count)
+  {
     strcpy(message, "myfunc_double must have at least on argument");
     return 1;
   }
@@ -475,28 +467,25 @@ my_bool myfunc_double_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
   ** As this function wants to have everything as strings, force all arguments
   ** to strings.
   */
-  for (uint i = 0; i < args->arg_count; i++)
-    args->arg_type[i] = STRING_RESULT;
-  initid->maybe_null = 1; // The result may be null
-  initid->decimals = 2;   // We want 2 decimals in the result
-  initid->max_length = 6; // 3 digits + . + 2 decimals
+  for (uint i = 0; i < args->arg_count; i++) args->arg_type[i] = STRING_RESULT;
+  initid->maybe_null = 1;  // The result may be null
+  initid->decimals = 2;    // We want 2 decimals in the result
+  initid->max_length = 6;  // 3 digits + . + 2 decimals
   return 0;
 }
 
-double myfunc_double(UDF_INIT *initid, UDF_ARGS *args, char *is_null,
-                     char *error) {
+double myfunc_double(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error)
+{
   unsigned long val = 0;
   unsigned long v = 0;
 
-  for (uint i = 0; i < args->arg_count; i++) {
-    if (args->args[i] == NULL)
-      continue;
+  for (uint i = 0; i < args->arg_count; i++)
+  {
+    if (args->args[i] == NULL) continue;
     val += args->lengths[i];
-    for (uint j = args->lengths[i]; j-- > 0;)
-      v += args->args[i][j];
+    for (uint j = args->lengths[i]; j-- > 0;) v += args->args[i][j];
   }
-  if (val)
-    return (double)v / (double)val;
+  if (val) return (double)v / (double)val;
   *is_null = 1;
   return 0.0;
 }
@@ -518,24 +507,25 @@ double myfunc_double(UDF_INIT *initid, UDF_ARGS *args, char *is_null,
 
 /* This function returns the sum of all arguments */
 
-longlong myfunc_int(UDF_INIT *initid, UDF_ARGS *args, char *is_null,
-                    char *error) {
+longlong myfunc_int(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error)
+{
   longlong val = 0;
-  for (uint i = 0; i < args->arg_count; i++) {
-    if (args->args[i] == NULL)
-      continue;
-    switch (args->arg_type[i]) {
-    case STRING_RESULT: // Add string lengths
-      val += args->lengths[i];
-      break;
-    case INT_RESULT: // Add numbers
-      val += *((longlong *)args->args[i]);
-      break;
-    case REAL_RESULT: // Add numers as longlong
-      val += (longlong) * ((double *)args->args[i]);
-      break;
-    default:
-      break;
+  for (uint i = 0; i < args->arg_count; i++)
+  {
+    if (args->args[i] == NULL) continue;
+    switch (args->arg_type[i])
+    {
+      case STRING_RESULT:  // Add string lengths
+        val += args->lengths[i];
+        break;
+      case INT_RESULT:  // Add numbers
+        val += *((longlong *)args->args[i]);
+        break;
+      case REAL_RESULT:  // Add numers as longlong
+        val += (longlong) * ((double *)args->args[i]);
+        break;
+      default:
+        break;
     }
   }
   return val;
@@ -546,15 +536,17 @@ longlong myfunc_int(UDF_INIT *initid, UDF_ARGS *args, char *is_null,
   or 1 if no arguments have been given
 */
 
-my_bool sequence_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
-  if (args->arg_count > 1) {
+my_bool sequence_init(UDF_INIT *initid, UDF_ARGS *args, char *message)
+{
+  if (args->arg_count > 1)
+  {
     strmov(message, "This function takes none or 1 argument");
     return 1;
   }
-  if (args->arg_count)
-    args->arg_type[0] = INT_RESULT; // Force argument to int
+  if (args->arg_count) args->arg_type[0] = INT_RESULT;  // Force argument to int
 
-  if (!(initid->ptr = (char *)malloc(sizeof(longlong)))) {
+  if (!(initid->ptr = (char *)malloc(sizeof(longlong))))
+  {
     strmov(message, "Couldn't allocate memory");
     return 1;
   }
@@ -569,16 +561,15 @@ my_bool sequence_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
   return 0;
 }
 
-void sequence_deinit(UDF_INIT *initid) {
-  if (initid->ptr)
-    free(initid->ptr);
+void sequence_deinit(UDF_INIT *initid)
+{
+  if (initid->ptr) free(initid->ptr);
 }
 
-longlong sequence(UDF_INIT *initid, UDF_ARGS *args, char *is_null,
-                  char *error) {
+longlong sequence(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error)
+{
   ulonglong val = 0;
-  if (args->arg_count)
-    val = *((longlong *)args->args[0]);
+  if (args->arg_count) val = *((longlong *)args->args[0]);
   return ++*((longlong *)initid->ptr) + val;
 }
 
@@ -591,20 +582,20 @@ longlong sequence(UDF_INIT *initid, UDF_ARGS *args, char *is_null,
 **
 ****************************************************************************/
 
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
-extern "C" {
-my_bool lookup_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
-void lookup_deinit(UDF_INIT *initid);
-char *lookup(UDF_INIT *initid, UDF_ARGS *args, char *result,
-             unsigned long *length, char *null_value, char *error);
-my_bool reverse_lookup_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
-void reverse_lookup_deinit(UDF_INIT *initid);
-char *reverse_lookup(UDF_INIT *initid, UDF_ARGS *args, char *result,
-                     unsigned long *length, char *null_value, char *error);
+extern "C"
+{
+  my_bool lookup_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+  void lookup_deinit(UDF_INIT *initid);
+  char *lookup(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length, char *null_value, char *error);
+  my_bool reverse_lookup_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+  void reverse_lookup_deinit(UDF_INIT *initid);
+  char *reverse_lookup(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length, char *null_value,
+                       char *error);
 }
 
 /****************************************************************************
@@ -614,8 +605,10 @@ char *reverse_lookup(UDF_INIT *initid, UDF_ARGS *args, char *result,
 ** safe (As it is in Solaris)
 ****************************************************************************/
 
-my_bool lookup_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
-  if (args->arg_count != 1 || args->arg_type[0] != STRING_RESULT) {
+my_bool lookup_init(UDF_INIT *initid, UDF_ARGS *args, char *message)
+{
+  if (args->arg_count != 1 || args->arg_type[0] != STRING_RESULT)
+  {
     strmov(message, "Wrong arguments to lookup;  Use the source");
     return 1;
   }
@@ -627,36 +620,38 @@ my_bool lookup_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
   return 0;
 }
 
-void lookup_deinit(UDF_INIT *initid) {
+void lookup_deinit(UDF_INIT *initid)
+{
 #if !defined(HAVE_GETHOSTBYADDR_R) || !defined(HAVE_SOLARIS_STYLE_GETHOST)
   (void)pthread_mutex_destroy(&LOCK_hostname);
 #endif
 }
 
-char *lookup(UDF_INIT *initid, UDF_ARGS *args, char *result,
-             unsigned long *res_length, char *null_value, char *error) {
+char *lookup(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *res_length, char *null_value, char *error)
+{
   uint length;
   int tmp_errno;
   char name_buff[256], hostname_buff[2048];
   struct hostent tmp_hostent, *hostent;
 
-  if (!args->args[0] || !(length = args->lengths[0])) {
+  if (!args->args[0] || !(length = args->lengths[0]))
+  {
     *null_value = 1;
     return 0;
   }
-  if (length >= sizeof(name_buff))
-    length = sizeof(name_buff) - 1;
+  if (length >= sizeof(name_buff)) length = sizeof(name_buff) - 1;
   memcpy(name_buff, args->args[0], length);
   name_buff[length] = 0;
 #if defined(HAVE_GETHOSTBYADDR_R) && defined(HAVE_SOLARIS_STYLE_GETHOST)
-  if (!(hostent = gethostbyname_r(name_buff, &tmp_hostent, hostname_buff,
-                                  sizeof(hostname_buff), &tmp_errno))) {
+  if (!(hostent = gethostbyname_r(name_buff, &tmp_hostent, hostname_buff, sizeof(hostname_buff), &tmp_errno)))
+  {
     *null_value = 1;
     return 0;
   }
 #else
   VOID(pthread_mutex_lock(&LOCK_hostname));
-  if (!(hostent = gethostbyname((char *)name_buff))) {
+  if (!(hostent = gethostbyname((char *)name_buff)))
+  {
     VOID(pthread_mutex_unlock(&LOCK_hostname));
     *null_value = 1;
     return 0;
@@ -675,15 +670,15 @@ char *lookup(UDF_INIT *initid, UDF_ARGS *args, char *result,
 ** four numbers.
 ****************************************************************************/
 
-my_bool reverse_lookup_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
+my_bool reverse_lookup_init(UDF_INIT *initid, UDF_ARGS *args, char *message)
+{
   if (args->arg_count == 1)
     args->arg_type[0] = STRING_RESULT;
   else if (args->arg_count == 4)
-    args->arg_type[0] = args->arg_type[1] = args->arg_type[2] =
-        args->arg_type[3] = INT_RESULT;
-  else {
-    strmov(message,
-           "Wrong number of arguments to reverse_lookup;  Use the source");
+    args->arg_type[0] = args->arg_type[1] = args->arg_type[2] = args->arg_type[3] = INT_RESULT;
+  else
+  {
+    strmov(message, "Wrong number of arguments to reverse_lookup;  Use the source");
     return 1;
   }
   initid->max_length = 32;
@@ -694,57 +689,62 @@ my_bool reverse_lookup_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
   return 0;
 }
 
-void reverse_lookup_deinit(UDF_INIT *initid) {
+void reverse_lookup_deinit(UDF_INIT *initid)
+{
 #if !defined(HAVE_GETHOSTBYADDR_R) || !defined(HAVE_SOLARIS_STYLE_GETHOST)
   (void)pthread_mutex_destroy(&LOCK_hostname);
 #endif
 }
 
-char *reverse_lookup(UDF_INIT *initid, UDF_ARGS *args, char *result,
-                     unsigned long *res_length, char *null_value, char *error) {
+char *reverse_lookup(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *res_length, char *null_value,
+                     char *error)
+{
   char name_buff[256];
   struct hostent tmp_hostent;
   uint length;
 
-  if (args->arg_count == 4) {
-    if (!args->args[0] || !args->args[1] || !args->args[2] || !args->args[3]) {
+  if (args->arg_count == 4)
+  {
+    if (!args->args[0] || !args->args[1] || !args->args[2] || !args->args[3])
+    {
       *null_value = 1;
       return 0;
     }
-    sprintf(result, "%d.%d.%d.%d", (int)*((longlong *)args->args[0]),
-            (int)*((longlong *)args->args[1]),
-            (int)*((longlong *)args->args[2]),
-            (int)*((longlong *)args->args[3]));
-  } else {              // string argument
-    if (!args->args[0]) // Return NULL for NULL values
+    sprintf(result, "%d.%d.%d.%d", (int)*((longlong *)args->args[0]), (int)*((longlong *)args->args[1]),
+            (int)*((longlong *)args->args[2]), (int)*((longlong *)args->args[3]));
+  }
+  else
+  {                      // string argument
+    if (!args->args[0])  // Return NULL for NULL values
     {
       *null_value = 1;
       return 0;
     }
     length = args->lengths[0];
-    if (length >= (uint) * res_length - 1)
-      length = (uint) * res_length;
+    if (length >= (uint)*res_length - 1) length = (uint)*res_length;
     memcpy(result, args->args[0], length);
     result[length] = 0;
   }
 
   unsigned long taddr = inet_addr(result);
-  if (taddr == (unsigned long)-1L) {
+  if (taddr == (unsigned long)-1L)
+  {
     *null_value = 1;
     return 0;
   }
   struct hostent *hp;
 #if defined(HAVE_GETHOSTBYADDR_R) && defined(HAVE_SOLARIS_STYLE_GETHOST)
   int tmp_errno;
-  if (!(hp = gethostbyaddr_r((char *)&taddr, sizeof(taddr), AF_INET,
-                             &tmp_hostent, name_buff, sizeof(name_buff),
-                             &tmp_errno))) {
+  if (!(hp = gethostbyaddr_r((char *)&taddr, sizeof(taddr), AF_INET, &tmp_hostent, name_buff, sizeof(name_buff),
+                             &tmp_errno)))
+  {
     *null_value = 1;
     return 0;
   }
 #else
   VOID(pthread_mutex_lock(&LOCK_hostname));
-  if (!(hp = gethostbyaddr((char *)&taddr, sizeof(taddr), AF_INET))) {
+  if (!(hp = gethostbyaddr((char *)&taddr, sizeof(taddr), AF_INET)))
+  {
     VOID(pthread_mutex_unlock(&LOCK_hostname));
     *null_value = 1;
     return 0;
@@ -765,7 +765,8 @@ char *reverse_lookup(UDF_INIT *initid, UDF_ARGS *args, char *result,
 ** (this example is provided by Andreas F. Bobak <bobak@relog.ch>)
 */
 
-struct avgcost_data {
+struct avgcost_data
+{
   ulonglong count;
   longlong totalquantity;
   double totalprice;
@@ -774,18 +775,19 @@ struct avgcost_data {
 /*
 ** Average Cost Aggregate Function.
 */
-my_bool avgcost_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
+my_bool avgcost_init(UDF_INIT *initid, UDF_ARGS *args, char *message)
+{
   struct avgcost_data *data;
 
-  if (args->arg_count != 2) {
-    strcpy(message,
-           "wrong number of arguments: AVGCOST() requires two arguments");
+  if (args->arg_count != 2)
+  {
+    strcpy(message, "wrong number of arguments: AVGCOST() requires two arguments");
     return 1;
   }
 
-  if ((args->arg_type[0] != INT_RESULT) || (args->arg_type[1] != REAL_RESULT)) {
-    strcpy(message,
-           "wrong argument type: AVGCOST() requires an INT and a REAL");
+  if ((args->arg_type[0] != INT_RESULT) || (args->arg_type[1] != REAL_RESULT))
+  {
+    strcpy(message, "wrong argument type: AVGCOST() requires an INT and a REAL");
     return 1;
   }
 
@@ -795,9 +797,9 @@ my_bool avgcost_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
   /*args->arg_type[0]	= REAL_RESULT;
     args->arg_type[1]	= REAL_RESULT;*/
 
-  initid->maybe_null = 0;  // The result may be null
-  initid->decimals = 4;    // We want 4 decimals in the result
-  initid->max_length = 20; // 6 digits + . + 10 decimals
+  initid->maybe_null = 0;   // The result may be null
+  initid->decimals = 4;     // We want 4 decimals in the result
+  initid->max_length = 20;  // 6 digits + . + 10 decimals
 
   data = new struct avgcost_data;
   data->totalquantity = 0;
@@ -811,24 +813,26 @@ my_bool avgcost_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
 void avgcost_deinit(UDF_INIT *initid) { delete initid->ptr; }
 
 /* This is only for MySQL 4.0 compability */
-void avgcost_reset(UDF_INIT *initid, UDF_ARGS *args, char *is_null,
-                   char *message) {
+void avgcost_reset(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *message)
+{
   avgcost_clear(initid, is_null, message);
   avgcost_add(initid, args, is_null, message);
 }
 
 /* This is needed to get things to work in MySQL 4.1.1 and above */
 
-void avgcost_clear(UDF_INIT *initid, char *is_null, char *message) {
+void avgcost_clear(UDF_INIT *initid, char *is_null, char *message)
+{
   struct avgcost_data *data = (struct avgcost_data *)initid->ptr;
   data->totalprice = 0.0;
   data->totalquantity = 0;
   data->count = 0;
 }
 
-void avgcost_add(UDF_INIT *initid, UDF_ARGS *args, char *is_null,
-                 char *message) {
-  if (args->args[0] && args->args[1]) {
+void avgcost_add(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *message)
+{
+  if (args->args[0] && args->args[1])
+  {
     struct avgcost_data *data = (struct avgcost_data *)initid->ptr;
     longlong quantity = *((longlong *)args->args[0]);
     longlong newquantity = data->totalquantity + quantity;
@@ -836,37 +840,41 @@ void avgcost_add(UDF_INIT *initid, UDF_ARGS *args, char *is_null,
 
     data->count++;
 
-    if (((data->totalquantity >= 0) && (quantity < 0)) ||
-        ((data->totalquantity < 0) && (quantity > 0))) {
+    if (((data->totalquantity >= 0) && (quantity < 0)) || ((data->totalquantity < 0) && (quantity > 0)))
+    {
       /*
       **	passing from + to - or from - to +
       */
-      if (((quantity < 0) && (newquantity < 0)) ||
-          ((quantity > 0) && (newquantity > 0))) {
+      if (((quantity < 0) && (newquantity < 0)) || ((quantity > 0) && (newquantity > 0)))
+      {
         data->totalprice = price * double(newquantity);
       }
       /*
       **	sub q if totalq > 0
       **	add q if totalq < 0
       */
-      else {
+      else
+      {
         price = data->totalprice / double(data->totalquantity);
         data->totalprice = price * double(newquantity);
       }
       data->totalquantity = newquantity;
-    } else {
+    }
+    else
+    {
       data->totalquantity += quantity;
       data->totalprice += price * double(quantity);
     }
 
-    if (data->totalquantity == 0)
-      data->totalprice = 0.0;
+    if (data->totalquantity == 0) data->totalprice = 0.0;
   }
 }
 
-double avgcost(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error) {
+double avgcost(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error)
+{
   struct avgcost_data *data = (struct avgcost_data *)initid->ptr;
-  if (!data->count || !data->totalquantity) {
+  if (!data->count || !data->totalquantity)
+  {
     *is_null = 1;
     return 0.0;
   }
@@ -875,17 +883,17 @@ double avgcost(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error) {
   return data->totalprice / double(data->totalquantity);
 }
 
-extern "C" {
-my_bool myfunc_argument_name_init(UDF_INIT *initid, UDF_ARGS *args,
-                                  char *message);
-char *myfunc_argument_name(UDF_INIT *initid, UDF_ARGS *args, char *result,
-                           unsigned long *length, char *null_value,
-                           char *error);
+extern "C"
+{
+  my_bool myfunc_argument_name_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+  char *myfunc_argument_name(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length, char *null_value,
+                             char *error);
 }
 
-my_bool myfunc_argument_name_init(UDF_INIT *initid, UDF_ARGS *args,
-                                  char *message) {
-  if (args->arg_count != 1) {
+my_bool myfunc_argument_name_init(UDF_INIT *initid, UDF_ARGS *args, char *message)
+{
+  if (args->arg_count != 1)
+  {
     strmov(message, "myfunc_argument_name_init accepts only one argument");
     return 1;
   }
@@ -895,16 +903,16 @@ my_bool myfunc_argument_name_init(UDF_INIT *initid, UDF_ARGS *args,
   return 0;
 }
 
-char *myfunc_argument_name(UDF_INIT *initid, UDF_ARGS *args, char *result,
-                           unsigned long *length, char *null_value,
-                           char *error) {
-  if (!args->attributes[0]) {
+char *myfunc_argument_name(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length, char *null_value,
+                           char *error)
+{
+  if (!args->attributes[0])
+  {
     null_value = 0;
     return 0;
   }
-  (*length)--; // space for ending \0 (for debugging purposes)
-  if (*length > args->attribute_lengths[0])
-    *length = args->attribute_lengths[0];
+  (*length)--;  // space for ending \0 (for debugging purposes)
+  if (*length > args->attribute_lengths[0]) *length = args->attribute_lengths[0];
   memcpy(result, args->attributes[0], *length);
   result[*length] = 0;
   return result;

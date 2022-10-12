@@ -24,13 +24,14 @@ class COND_EQUAL;
 
 /* Order clause list element */
 
-typedef struct st_order {
+typedef struct st_order
+{
   struct st_order *next;
-  Item **item;      /* Point at item in select fields */
-  Item *item_ptr;   /* Storage for initial item */
-  Item **item_copy; /* For SPs; the original item ptr */
-  int counter;      /* position in SELECT list, correct
-                  only if counter_used is true*/
+  Item **item;        /* Point at item in select fields */
+  Item *item_ptr;     /* Storage for initial item */
+  Item **item_copy;   /* For SPs; the original item ptr */
+  int counter;        /* position in SELECT list, correct
+          only if counter_used is true*/
   bool asc;           /* true if ascending */
   bool free_me;       /* true if item isn't shared  */
   bool in_field_list; /* true if in select field list */
@@ -40,34 +41,38 @@ typedef struct st_order {
   table_map used, depend_map;
 } ORDER;
 
-typedef struct st_grant_info {
+typedef struct st_grant_info
+{
   GRANT_TABLE *grant_table;
   uint version;
   ulong privilege;
   ulong want_privilege;
 } GRANT_INFO;
 
-enum tmp_table_type {
+enum tmp_table_type
+{
   NO_TMP_TABLE = 0,
   TMP_TABLE = 1,
   TRANSACTIONAL_TMP_TABLE = 2,
   SYSTEM_TMP_TABLE = 3
 };
 
-enum frm_type_enum {
+enum frm_type_enum
+{
   FRMTYPE_ERROR = 0,
   FRMTYPE_TABLE,
   FRMTYPE_VIEW
 };
 
-typedef struct st_filesort_info {
-  IO_CACHE *io_cache; /* If sorted through filebyte                */
-  byte *addon_buf;    /* Pointer to a buffer if sorted with fields */
-  uint addon_length;  /* Length of the buffer                      */
-  struct st_sort_addon_field *addon_field; /* Pointer to the fields info */
+typedef struct st_filesort_info
+{
+  IO_CACHE *io_cache;                                   /* If sorted through filebyte                */
+  byte *addon_buf;                                      /* Pointer to a buffer if sorted with fields */
+  uint addon_length;                                    /* Length of the buffer                      */
+  struct st_sort_addon_field *addon_field;              /* Pointer to the fields info */
   void (*unpack)(struct st_sort_addon_field *, byte *); /* To unpack back */
-  byte *record_pointers; /* If sorted in memory                       */
-  ha_rows found_records; /* How many records in sort                  */
+  byte *record_pointers;                                /* If sorted in memory                       */
+  ha_rows found_records;                                /* How many records in sort                  */
 } FILESORT_INFO;
 
 /*
@@ -80,13 +85,14 @@ typedef struct st_filesort_info {
   (int) TIMESTAMP_AUTO_SET_ON_INSERT | (int) TIMESTAMP_AUTO_SET_ON_UPDATE.
   We use an enum here so that the debugger can display the value names.
 */
-enum timestamp_auto_set_type {
+enum timestamp_auto_set_type
+{
   TIMESTAMP_NO_AUTO_SET = 0,
   TIMESTAMP_AUTO_SET_ON_INSERT = 1,
   TIMESTAMP_AUTO_SET_ON_UPDATE = 2,
   TIMESTAMP_AUTO_SET_ON_BOTH = 3
 };
-#define clear_timestamp_auto_bits(_target_, _bits_)                            \
+#define clear_timestamp_auto_bits(_target_, _bits_) \
   (_target_) = (enum timestamp_auto_set_type)((int)(_target_) & ~(int)(_bits_))
 
 class Field_timestamp;
@@ -98,7 +104,8 @@ class Table_triggers_list;
   instance of table share per one table in the database.
 */
 
-typedef struct st_table_share {
+typedef struct st_table_share
+{
   /* hash of field names (contains pointers to elements of field array) */
   HASH name_hash; /* hash of field names */
   MEM_ROOT mem_root;
@@ -178,7 +185,8 @@ typedef struct st_table_share {
 
 /* Information for one open table */
 
-struct st_table {
+struct st_table
+{
   TABLE_SHARE *s;
   handler *file;
 #ifdef NOT_YET
@@ -270,7 +278,8 @@ struct st_table {
   void reset_item_list(List<Item> *item_list) const;
 };
 
-typedef struct st_foreign_key_info {
+typedef struct st_foreign_key_info
+{
   LEX_STRING *forein_id;
   LEX_STRING *referenced_db;
   LEX_STRING *referenced_table;
@@ -279,7 +288,8 @@ typedef struct st_foreign_key_info {
   List<LEX_STRING> referenced_fields;
 } FOREIGN_KEY_INFO;
 
-enum enum_schema_tables {
+enum enum_schema_tables
+{
   SCH_CHARSETS = 0,
   SCH_COLLATIONS,
   SCH_COLLATION_CHARACTER_SET_APPLICABILITY,
@@ -302,7 +312,8 @@ enum enum_schema_tables {
   SCH_USER_PRIVILEGES
 };
 
-typedef struct st_field_info {
+typedef struct st_field_info
+{
   const char *field_name;
   uint field_length;
   enum enum_field_types field_type;
@@ -314,7 +325,8 @@ typedef struct st_field_info {
 struct st_table_list;
 typedef class Item COND;
 
-typedef struct st_schema_table {
+typedef struct st_schema_table
+{
   const char *table_name;
   ST_FIELD_INFO *fields_info;
   /* Create information_schema table */
@@ -323,8 +335,8 @@ typedef struct st_schema_table {
   int (*fill_table)(THD *thd, struct st_table_list *tables, COND *cond);
   /* Handle fileds for old SHOW */
   int (*old_format)(THD *thd, struct st_schema_table *schema_table);
-  int (*process_table)(THD *thd, struct st_table_list *tables, TABLE *table,
-                       bool res, const char *base_name, const char *file_name);
+  int (*process_table)(THD *thd, struct st_table_list *tables, TABLE *table, bool res, const char *base_name,
+                       const char *file_name);
   int idx_field1, idx_field2;
   bool hidden;
 } ST_SCHEMA_TABLE;
@@ -351,10 +363,10 @@ struct st_table_list;
 class select_union;
 class TMP_TABLE_PARAM;
 
-Item *create_view_field(THD *thd, st_table_list *view, Item **field_ref,
-                        const char *name);
+Item *create_view_field(THD *thd, st_table_list *view, Item **field_ref, const char *name);
 
-struct Field_translator {
+struct Field_translator
+{
   Item *item;
   const char *name;
 };
@@ -365,21 +377,22 @@ struct Field_translator {
   Field (for tables), or a Field_translator (for views).
 */
 
-class Natural_join_column : public Sql_alloc {
-public:
+class Natural_join_column : public Sql_alloc
+{
+ public:
   Field_translator *view_field; /* Column reference of merge view. */
   Field *table_field;           /* Column reference of table or temp view. */
   st_table_list *table_ref;     /* Original base table/view reference. */
                                 /*
-    True if a common join column of two NATURAL/USING join operands. Notice
-    that when we have a hierarchy of nested NATURAL/USING joins, a column can
-    be common at some level of nesting but it may not be common at higher
-    levels of nesting. Thus this flag may change depending on at which level
-    we are looking at some column.
-  */
+True if a common join column of two NATURAL/USING join operands. Notice
+that when we have a hierarchy of nested NATURAL/USING joins, a column can
+be common at some level of nesting but it may not be common at higher
+levels of nesting. Thus this flag may change depending on at which level
+we are looking at some column.
+*/
   bool is_common;
 
-public:
+ public:
   Natural_join_column(Field_translator *field_param, st_table_list *tab);
   Natural_join_column(Field *field_param, st_table_list *tab);
   const char *name();
@@ -425,7 +438,8 @@ public:
          (TABLE_LIST::join_using_fields != NULL)
 */
 
-typedef struct st_table_list {
+typedef struct st_table_list
+{
   /*
     List of tables local to a subquery (used by SQL_LIST). Considers
     views as leaves (unlike 'next_leaf' below). Created at parse time
@@ -438,21 +452,21 @@ typedef struct st_table_list {
   char *option;  /* Used by cache index  */
   Item *on_expr; /* Used with outer join */
                  /*
-    The structure of ON expression presented in the member above
-    can be changed during certain optimizations. This member
-    contains a snapshot of AND-OR structure of the ON expression
-    made after permanent transformations of the parse tree, and is
-    used to restore ON clause before every reexecution of a prepared
-    statement or stored procedure.
-  */
+The structure of ON expression presented in the member above
+can be changed during certain optimizations. This member
+contains a snapshot of AND-OR structure of the ON expression
+made after permanent transformations of the parse tree, and is
+used to restore ON clause before every reexecution of a prepared
+statement or stored procedure.
+*/
   Item *prep_on_expr;
   COND_EQUAL *cond_equal; /* Used with outer join */
                           /*
-    During parsing - left operand of NATURAL/USING join where 'this' is
-    the right operand. After parsing (this->natural_join == this) iff
-    'this' represents a NATURAL or USING join operation. Thus after
-    parsing 'this' is a NATURAL/USING join iff (natural_join != NULL).
-  */
+During parsing - left operand of NATURAL/USING join where 'this' is
+the right operand. After parsing (this->natural_join == this) iff
+'this' represents a NATURAL or USING join operation. Thus after
+parsing 'this' is a NATURAL/USING join iff (natural_join != NULL).
+*/
   struct st_table_list *natural_join;
   /*
     True if 'this' represents a nested join that is a NATURAL JOIN.
@@ -482,9 +496,9 @@ typedef struct st_table_list {
   List<String> *use_index, *ignore_index;
   TABLE *table; /* opened table */
                 /*
-    select_result for derived table to pass it from table creation to table
-    filling procedure
-  */
+select_result for derived table to pass it from table creation to table
+filling procedure
+*/
   select_union *derived_result;
   /*
     Reference from aux_tables to local list entry of main select of
@@ -535,9 +549,9 @@ typedef struct st_table_list {
   ulonglong view_suid;      /* view is suid (TRUE dy default) */
   ulonglong with_check;     /* WITH CHECK OPTION */
                             /*
-    effective value of WITH CHECK OPTION (differ for temporary table
-    algorithm)
-  */
+effective value of WITH CHECK OPTION (differ for temporary table
+algorithm)
+*/
   uint8 effective_with_check;
   uint8 effective_algorithm; /* which algorithm was really used */
   GRANT_INFO grant;
@@ -573,9 +587,9 @@ typedef struct st_table_list {
   enum frm_type_enum required_type;
   char timestamp_buffer[20]; /* buffer for timestamp (19+1) */
                              /*
-    This TABLE_LIST object is just placeholder for prelocking, it will be
-    used for implicit LOCK TABLES only and won't be used in real statement.
-  */
+This TABLE_LIST object is just placeholder for prelocking, it will be
+used for implicit LOCK TABLES only and won't be used in real statement.
+*/
   bool prelocking_placeholder;
 
   void calc_md5(char *buffer);
@@ -585,30 +599,27 @@ typedef struct st_table_list {
   void cleanup_items();
   bool placeholder() { return derived || view; }
   void print(THD *thd, String *str);
-  bool check_single_table(st_table_list **table, table_map map,
-                          st_table_list *view);
+  bool check_single_table(st_table_list **table, table_map map, st_table_list *view);
   bool set_insert_values(MEM_ROOT *mem_root);
   void hide_view_error(THD *thd);
   st_table_list *find_underlying_table(TABLE *table);
   st_table_list *first_leaf_for_name_resolution();
   st_table_list *last_leaf_for_name_resolution();
   bool is_leaf_for_name_resolution();
-  inline st_table_list *top_table() {
-    return belong_to_view ? belong_to_view : this;
-  }
-  inline bool prepare_check_option(THD *thd) {
+  inline st_table_list *top_table() { return belong_to_view ? belong_to_view : this; }
+  inline bool prepare_check_option(THD *thd)
+  {
     bool res = FALSE;
-    if (effective_with_check)
-      res = prep_check_option(thd, effective_with_check);
+    if (effective_with_check) res = prep_check_option(thd, effective_with_check);
     return res;
   }
-  inline bool prepare_where(THD *thd, Item **conds, bool no_where_clause) {
-    if (effective_algorithm == VIEW_ALGORITHM_MERGE)
-      return prep_where(thd, conds, no_where_clause);
+  inline bool prepare_where(THD *thd, Item **conds, bool no_where_clause)
+  {
+    if (effective_algorithm == VIEW_ALGORITHM_MERGE) return prep_where(thd, conds, no_where_clause);
     return FALSE;
   }
 
-private:
+ private:
   bool prep_check_option(THD *thd, uint8 check_opt_type);
   bool prep_where(THD *thd, Item **conds, bool no_where_clause);
 } TABLE_LIST;
@@ -619,8 +630,9 @@ class Item;
   Iterator over the fields of a generic table reference.
 */
 
-class Field_iterator : public Sql_alloc {
-public:
+class Field_iterator : public Sql_alloc
+{
+ public:
   virtual ~Field_iterator() {}
   virtual void set(TABLE_LIST *) = 0;
   virtual void next() = 0;
@@ -635,10 +647,11 @@ public:
   table, or subquery.
 */
 
-class Field_iterator_table : public Field_iterator {
+class Field_iterator_table : public Field_iterator
+{
   Field **ptr;
 
-public:
+ public:
   Field_iterator_table() : ptr(0) {}
   void set(TABLE_LIST *table) { ptr = table->table->field; }
   void set_table(TABLE *table) { ptr = table->field; }
@@ -651,11 +664,12 @@ public:
 
 /* Iterator over the fields of a merge view. */
 
-class Field_iterator_view : public Field_iterator {
+class Field_iterator_view : public Field_iterator
+{
   Field_translator *ptr, *array_end;
   TABLE_LIST *view;
 
-public:
+ public:
   Field_iterator_view() : ptr(0), array_end(0) {}
   void set(TABLE_LIST *table);
   void next() { ptr++; }
@@ -673,11 +687,12 @@ public:
   NATURAL/USING join.
 */
 
-class Field_iterator_natural_join : public Field_iterator {
+class Field_iterator_natural_join : public Field_iterator
+{
   List_iterator_fast<Natural_join_column> *column_ref_it;
   Natural_join_column *cur_column_ref;
 
-public:
+ public:
   Field_iterator_natural_join() : column_ref_it(NULL), cur_column_ref(NULL) {}
   ~Field_iterator_natural_join() { delete column_ref_it; }
   void set(TABLE_LIST *table);
@@ -705,7 +720,8 @@ public:
     the list TABLE_LIST::next_name_resolution_table.
 */
 
-class Field_iterator_table_ref : public Field_iterator {
+class Field_iterator_table_ref : public Field_iterator
+{
   TABLE_LIST *table_ref, *first_leaf, *last_leaf;
   Field_iterator_table table_field_it;
   Field_iterator_view view_field_it;
@@ -713,13 +729,11 @@ class Field_iterator_table_ref : public Field_iterator {
   Field_iterator *field_it;
   void set_field_iterator();
 
-public:
+ public:
   Field_iterator_table_ref() : field_it(NULL) {}
   void set(TABLE_LIST *table);
   void next();
-  bool end_of_fields() {
-    return (table_ref == last_leaf && field_it->end_of_fields());
-  }
+  bool end_of_fields() { return (table_ref == last_leaf && field_it->end_of_fields()); }
   const char *name() { return field_it->name(); }
   const char *table_name();
   const char *db_name();
@@ -729,7 +743,8 @@ public:
   Natural_join_column *get_or_create_column_ref(THD *thd, bool *is_created);
 };
 
-typedef struct st_nested_join {
+typedef struct st_nested_join
+{
   List<TABLE_LIST> join_list;         /* list of elements in the nested join */
   table_map used_tables;              /* bitmap of tables in the nested join */
   table_map not_null_tables;          /* tables that rejects nulls           */
@@ -737,13 +752,15 @@ typedef struct st_nested_join {
   uint counter;                       /* to count tables in the nested join  */
 } NESTED_JOIN;
 
-typedef struct st_changed_table_list {
+typedef struct st_changed_table_list
+{
   struct st_changed_table_list *next;
   char *key;
   uint32 key_length;
 } CHANGED_TABLE_LIST;
 
-typedef struct st_open_table_list {
+typedef struct st_open_table_list
+{
   struct st_open_table_list *next;
   char *db, *table;
   uint32 in_use, locked;

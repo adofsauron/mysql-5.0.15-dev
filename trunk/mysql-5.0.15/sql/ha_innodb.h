@@ -25,26 +25,26 @@
 #pragma interface /* gcc class implementation */
 #endif
 
-typedef struct st_innobase_share {
+typedef struct st_innobase_share
+{
   THR_LOCK lock;
   pthread_mutex_t mutex;
   char *table_name;
   uint table_name_length, use_count;
 } INNOBASE_SHARE;
 
-my_bool innobase_query_caching_of_table_permitted(THD *thd, char *full_name,
-                                                  uint full_name_len,
-                                                  ulonglong *unused);
+my_bool innobase_query_caching_of_table_permitted(THD *thd, char *full_name, uint full_name_len, ulonglong *unused);
 
 /* The class defining a handle to an Innodb table */
-class ha_innobase : public handler {
-  void *innobase_prebuilt; /* (row_prebuilt_t*) prebuilt
-                         struct in InnoDB, used to save
-                         CPU time with prebuilt data
-                         structures*/
-  THD *user_thd; /* the thread handle of the user
-                 currently using the handle; this is
-                 set in external_lock function */
+class ha_innobase : public handler
+{
+  void *innobase_prebuilt;  /* (row_prebuilt_t*) prebuilt
+                          struct in InnoDB, used to save
+                          CPU time with prebuilt data
+                          structures*/
+  THD *user_thd;            /* the thread handle of the user
+                            currently using the handle; this is
+                            set in external_lock function */
   query_id_t last_query_id; /* the latest query id where the
                             handle was used */
   THR_LOCK_DATA lock;
@@ -61,24 +61,23 @@ class ha_innobase : public handler {
   ulong int_table_flags;
   uint primary_key;
   uint last_dup_key;
-  ulong start_of_scan; /* this is set to 1 when we are
-                       starting a table scan but have not
-                       yet fetched any row, else 0 */
+  ulong start_of_scan;  /* this is set to 1 when we are
+                        starting a table scan but have not
+                        yet fetched any row, else 0 */
   uint last_match_mode; /* match mode of the latest search:
                         ROW_SEL_EXACT, ROW_SEL_EXACT_PREFIX,
                         or undefined */
-  uint num_write_row; /* number of write_row() calls */
+  uint num_write_row;   /* number of write_row() calls */
   ulong max_supported_row_length(const byte *buf);
 
-  uint store_key_val_for_row(uint keynr, char *buff, uint buff_len,
-                             const byte *record);
+  uint store_key_val_for_row(uint keynr, char *buff, uint buff_len, const byte *record);
   int update_thd(THD *thd);
   int change_active_index(uint keynr);
   int general_fetch(byte *buf, uint direction, uint match_mode);
   int innobase_read_and_init_auto_inc(longlong *ret);
 
   /* Init values for the class: */
-public:
+ public:
   ha_innobase(TABLE *table_arg);
   ~ha_innobase() {}
   /*
@@ -91,9 +90,9 @@ public:
   const char *index_type(uint key_number) { return "BTREE"; }
   const char **bas_ext() const;
   ulong table_flags() const { return int_table_flags; }
-  ulong index_flags(uint idx, uint part, bool all_parts) const {
-    return (HA_READ_NEXT | HA_READ_PREV | HA_READ_ORDER | HA_READ_RANGE |
-            HA_KEYREAD_ONLY);
+  ulong index_flags(uint idx, uint part, bool all_parts) const
+  {
+    return (HA_READ_NEXT | HA_READ_PREV | HA_READ_ORDER | HA_READ_RANGE | HA_KEYREAD_ONLY);
   }
   uint max_supported_keys() const { return MAX_KEY; }
   /* An InnoDB page must store >= 2 keys;
@@ -120,10 +119,8 @@ public:
 
   int index_init(uint index);
   int index_end();
-  int index_read(byte *buf, const byte *key, uint key_len,
-                 enum ha_rkey_function find_flag);
-  int index_read_idx(byte *buf, uint index, const byte *key, uint key_len,
-                     enum ha_rkey_function find_flag);
+  int index_read(byte *buf, const byte *key, uint key_len, enum ha_rkey_function find_flag);
+  int index_read_idx(byte *buf, uint index, const byte *key, uint key_len, enum ha_rkey_function find_flag);
   int index_read_last(byte *buf, const byte *key, uint key_len);
   int index_next(byte *buf);
   int index_next_same(byte *buf, const byte *key, uint keylen);
@@ -150,8 +147,7 @@ public:
   ha_rows records_in_range(uint inx, key_range *min_key, key_range *max_key);
   ha_rows estimate_rows_upper_bound();
 
-  int create(const char *name, register TABLE *form,
-             HA_CREATE_INFO *create_info);
+  int create(const char *name, register TABLE *form, HA_CREATE_INFO *create_info);
   int delete_all_rows();
   int delete_table(const char *name);
   int rename_table(const char *from, const char *to);
@@ -162,8 +158,7 @@ public:
   bool can_switch_engines();
   uint referenced_by_foreign_key();
   void free_foreign_key_create_info(char *str);
-  THR_LOCK_DATA **store_lock(THD *thd, THR_LOCK_DATA **to,
-                             enum thr_lock_type lock_type);
+  THR_LOCK_DATA **store_lock(THD *thd, THR_LOCK_DATA **to, enum thr_lock_type lock_type);
   void init_table_handle_for_HANDLER();
   ulonglong get_auto_increment();
   int reset_auto_increment(ulonglong value);
@@ -174,13 +169,12 @@ public:
   /*
     ask handler about permission to cache table during query registration
   */
-  my_bool register_query_cache_table(THD *thd, char *table_key, uint key_length,
-                                     qc_engine_callback *call_back,
-                                     ulonglong *engine_data) {
+  my_bool register_query_cache_table(THD *thd, char *table_key, uint key_length, qc_engine_callback *call_back,
+                                     ulonglong *engine_data)
+  {
     *call_back = innobase_query_caching_of_table_permitted;
     *engine_data = 0;
-    return innobase_query_caching_of_table_permitted(thd, table_key, key_length,
-                                                     engine_data);
+    return innobase_query_caching_of_table_permitted(thd, table_key, key_length, engine_data);
   }
   static char *get_mysql_bin_log_name();
   static ulonglong get_mysql_bin_log_pos();
@@ -206,24 +200,23 @@ extern char *innobase_data_home_dir, *innobase_data_file_path;
 extern char *innobase_log_group_home_dir, *innobase_log_arch_dir;
 extern char *innobase_unix_file_flush_method;
 /* The following variables have to be my_bool for SHOW VARIABLES to work */
-extern my_bool innobase_log_archive, innobase_use_doublewrite,
-    innobase_use_checksums, innobase_use_large_pages, innobase_use_native_aio,
-    innobase_file_per_table, innobase_locks_unsafe_for_binlog,
-    innobase_create_status_file;
+extern my_bool innobase_log_archive, innobase_use_doublewrite, innobase_use_checksums, innobase_use_large_pages,
+    innobase_use_native_aio, innobase_file_per_table, innobase_locks_unsafe_for_binlog, innobase_create_status_file;
 extern my_bool innobase_very_fast_shutdown; /* set this to 1 just before
                                             calling innobase_end() if you want
                                             InnoDB to shut down without
                                             flushing the buffer pool: this
                                             is equivalent to a 'crash' */
-extern "C" {
-extern ulong srv_max_buf_pool_modified_pct;
-extern ulong srv_max_purge_lag;
-extern ulong srv_auto_extend_increment;
-extern ulong srv_n_spin_wait_rounds;
-extern ulong srv_n_free_tickets_to_enter;
-extern ulong srv_thread_sleep_delay;
-extern ulong srv_thread_concurrency;
-extern ulong srv_commit_concurrency;
+extern "C"
+{
+  extern ulong srv_max_buf_pool_modified_pct;
+  extern ulong srv_max_purge_lag;
+  extern ulong srv_auto_extend_increment;
+  extern ulong srv_n_spin_wait_rounds;
+  extern ulong srv_n_free_tickets_to_enter;
+  extern ulong srv_thread_sleep_delay;
+  extern ulong srv_thread_concurrency;
+  extern ulong srv_commit_concurrency;
 }
 
 extern TYPELIB innobase_lock_typelib;
@@ -254,8 +247,7 @@ void innodb_export_status(void);
 
 void innobase_release_temporary_latches(THD *thd);
 
-void innobase_store_binlog_offset_and_flush_log(char *binlog_name,
-                                                longlong offset);
+void innobase_store_binlog_offset_and_flush_log(char *binlog_name, longlong offset);
 
 int innobase_start_trx_and_assign_read_view(THD *thd);
 
@@ -265,8 +257,8 @@ This function is used to prepare X/Open XA distributed transaction   */
 int innobase_xa_prepare(
     /*====================*/
     /* out: 0 or error number */
-    THD *thd, /* in: handle to the MySQL thread of the user
-              whose XA transaction should be prepared */
+    THD *thd,  /* in: handle to the MySQL thread of the user
+               whose XA transaction should be prepared */
     bool all); /* in: TRUE - commit transaction
                FALSE - the current SQL statement ended */
 
@@ -299,8 +291,7 @@ int innobase_rollback_by_xid(
 
 int innobase_xa_end(THD *thd);
 
-int innobase_repl_report_sent_binlog(THD *thd, char *log_file_name,
-                                     my_off_t end_offset);
+int innobase_repl_report_sent_binlog(THD *thd, char *log_file_name, my_off_t end_offset);
 
 /***********************************************************************
 Create a consistent view for a cursor based on current transaction

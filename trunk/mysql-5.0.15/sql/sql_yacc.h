@@ -29,7 +29,8 @@
 #define YYTOKENTYPE
 /* Put the tokens into the symbol table, so that GDB and other debuggers
    know about them.  */
-enum yytokentype {
+enum yytokentype
+{
   END_OF_INPUT = 258,
   ABORT_SYM = 259,
   ACTION = 260,
@@ -1127,7 +1128,8 @@ enum yytokentype {
 
 #if !defined(YYSTYPE) && !defined(YYSTYPE_IS_DECLARED)
 #line 72 "sql_yacc.yy"
-typedef union YYSTYPE {
+typedef union YYSTYPE
+{
   int num;
   ulong ulong_num;
   ulonglong ulonglong_number;
@@ -1162,7 +1164,8 @@ typedef union YYSTYPE {
   st_select_lex *select_lex;
   chooser_compare_func_creator boolfunc2creator;
   struct sp_cond_type *spcondtype;
-  struct {
+  struct
+  {
     int vars, conds, hndlrs, curs;
   } spblock;
   sp_name *spname;

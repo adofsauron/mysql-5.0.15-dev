@@ -27,10 +27,10 @@
 
 #include <ndbapi_limits.h>
 
-class Ndb;            // Forward declaration
-class NdbOperation;   // Forward declaration
-class NdbTransaction; // Forward declaration
-class NdbRecAttr;     // Forward declaration
+class Ndb;             // Forward declaration
+class NdbOperation;    // Forward declaration
+class NdbTransaction;  // Forward declaration
+class NdbRecAttr;      // Forward declaration
 class NdbScanOperation;
 class NdbScanFilter;
 class NdbIndexScanOperation;
@@ -40,7 +40,8 @@ class NdbBlob;
 extern const char *ndbcluster_connectstring;
 extern ulong ndb_cache_check_time;
 
-typedef enum ndb_index_type {
+typedef enum ndb_index_type
+{
   UNDEFINED_INDEX = 0,
   PRIMARY_KEY_INDEX = 1,
   PRIMARY_KEY_ORDERED_INDEX = 2,
@@ -49,14 +50,16 @@ typedef enum ndb_index_type {
   ORDERED_INDEX = 5
 } NDB_INDEX_TYPE;
 
-typedef struct ndb_index_data {
+typedef struct ndb_index_data
+{
   NDB_INDEX_TYPE type;
   void *index;
   void *unique_index;
   unsigned char *unique_index_attrid_map;
 } NDB_INDEX_DATA;
 
-typedef struct st_ndbcluster_share {
+typedef struct st_ndbcluster_share
+{
   THR_LOCK lock;
   pthread_mutex_t mutex;
   char *table_name;
@@ -65,14 +68,16 @@ typedef struct st_ndbcluster_share {
   ulonglong commit_count;
 } NDB_SHARE;
 
-typedef enum ndb_item_type {
-  NDB_VALUE = 0,    // Qualified more with Item::Type
-  NDB_FIELD = 1,    // Qualified from table definition
-  NDB_FUNCTION = 2, // Qualified from Item_func::Functype
-  NDB_END_COND = 3  // End marker for condition group
+typedef enum ndb_item_type
+{
+  NDB_VALUE = 0,     // Qualified more with Item::Type
+  NDB_FIELD = 1,     // Qualified from table definition
+  NDB_FUNCTION = 2,  // Qualified from Item_func::Functype
+  NDB_END_COND = 3   // End marker for condition group
 } NDB_ITEM_TYPE;
 
-typedef enum ndb_func_type {
+typedef enum ndb_func_type
+{
   NDB_EQ_FUNC = 0,
   NDB_NE_FUNC = 1,
   NDB_LT_FUNC = 2,
@@ -90,24 +95,28 @@ typedef enum ndb_func_type {
   NDB_UNSUPPORTED_FUNC = 14
 } NDB_FUNC_TYPE;
 
-typedef union ndb_item_qualification {
+typedef union ndb_item_qualification
+{
   Item::Type value_type;
-  enum_field_types field_type; // Instead of Item::FIELD_ITEM
-  NDB_FUNC_TYPE function_type; // Instead of Item::FUNC_ITEM
+  enum_field_types field_type;  // Instead of Item::FIELD_ITEM
+  NDB_FUNC_TYPE function_type;  // Instead of Item::FUNC_ITEM
 } NDB_ITEM_QUALIFICATION;
 
-typedef struct ndb_item_field_value {
+typedef struct ndb_item_field_value
+{
   Field *field;
   int column_no;
 } NDB_ITEM_FIELD_VALUE;
 
-typedef union ndb_item_value {
+typedef union ndb_item_value
+{
   const Item *item;
   NDB_ITEM_FIELD_VALUE *field_value;
   uint arg_count;
 } NDB_ITEM_VALUE;
 
-struct negated_function_mapping {
+struct negated_function_mapping
+{
   NDB_FUNC_TYPE pos_fun;
   NDB_FUNC_TYPE neg_fun;
 };
@@ -116,23 +125,21 @@ struct negated_function_mapping {
   Define what functions can be negated in condition pushdown.
   Note, these HAVE to be in the same order as in definition enum
 */
-static const negated_function_mapping neg_map[] = {
-  { NDB_EQ_FUNC, NDB_NE_FUNC },
-  { NDB_NE_FUNC, NDB_EQ_FUNC },
-  { NDB_LT_FUNC, NDB_GE_FUNC },
-  { NDB_LE_FUNC, NDB_GT_FUNC },
-  { NDB_GT_FUNC, NDB_LE_FUNC },
-  { NDB_GE_FUNC, NDB_LT_FUNC },
-  { NDB_ISNULL_FUNC, NDB_ISNOTNULL_FUNC },
-  { NDB_ISNOTNULL_FUNC, NDB_ISNULL_FUNC },
-  { NDB_LIKE_FUNC, NDB_NOTLIKE_FUNC },
-  { NDB_NOTLIKE_FUNC, NDB_LIKE_FUNC },
-  { NDB_NOT_FUNC, NDB_UNSUPPORTED_FUNC },
-  { NDB_UNKNOWN_FUNC, NDB_UNSUPPORTED_FUNC },
-  { NDB_COND_AND_FUNC, NDB_UNSUPPORTED_FUNC },
-  { NDB_COND_OR_FUNC, NDB_UNSUPPORTED_FUNC },
-  { NDB_UNSUPPORTED_FUNC, NDB_UNSUPPORTED_FUNC }
-};
+static const negated_function_mapping neg_map[] = {{NDB_EQ_FUNC, NDB_NE_FUNC},
+                                                   {NDB_NE_FUNC, NDB_EQ_FUNC},
+                                                   {NDB_LT_FUNC, NDB_GE_FUNC},
+                                                   {NDB_LE_FUNC, NDB_GT_FUNC},
+                                                   {NDB_GT_FUNC, NDB_LE_FUNC},
+                                                   {NDB_GE_FUNC, NDB_LT_FUNC},
+                                                   {NDB_ISNULL_FUNC, NDB_ISNOTNULL_FUNC},
+                                                   {NDB_ISNOTNULL_FUNC, NDB_ISNULL_FUNC},
+                                                   {NDB_LIKE_FUNC, NDB_NOTLIKE_FUNC},
+                                                   {NDB_NOTLIKE_FUNC, NDB_LIKE_FUNC},
+                                                   {NDB_NOT_FUNC, NDB_UNSUPPORTED_FUNC},
+                                                   {NDB_UNKNOWN_FUNC, NDB_UNSUPPORTED_FUNC},
+                                                   {NDB_COND_AND_FUNC, NDB_UNSUPPORTED_FUNC},
+                                                   {NDB_COND_OR_FUNC, NDB_UNSUPPORTED_FUNC},
+                                                   {NDB_UNSUPPORTED_FUNC, NDB_UNSUPPORTED_FUNC}};
 
 /*
   This class is the construction element for serialization of Item tree
@@ -147,126 +154,174 @@ static const negated_function_mapping neg_map[] = {
   Ndb_item with type == NDB_END_COND.
   NOT items represent negated conditions and generate NAND/NOR groups.
 */
-class Ndb_item {
-public:
-  Ndb_item(NDB_ITEM_TYPE item_type) : type(item_type) {};
-  Ndb_item(NDB_ITEM_TYPE item_type, NDB_ITEM_QUALIFICATION item_qualification,
-           const Item *item_value)
-      : type(item_type), qualification(item_qualification) {
-    switch (item_type) {
-    case(NDB_VALUE) :
-      value.item = item_value;
-      break;
-    case(NDB_FIELD) : {
-      NDB_ITEM_FIELD_VALUE *field_value = new NDB_ITEM_FIELD_VALUE();
-      Item_field *field_item = (Item_field *)item_value;
-      field_value->field = field_item->field;
-      field_value->column_no = -1; // Will be fetched at scan filter generation
-      value.field_value = field_value;
-      break;
-    }
-    case(NDB_FUNCTION) :
-      value.item = item_value;
-      value.arg_count = ((Item_func *)item_value)->argument_count();
-      break;
-    case(NDB_END_COND) :
-      break;
+class Ndb_item
+{
+ public:
+  Ndb_item(NDB_ITEM_TYPE item_type) : type(item_type){};
+  Ndb_item(NDB_ITEM_TYPE item_type, NDB_ITEM_QUALIFICATION item_qualification, const Item *item_value)
+      : type(item_type), qualification(item_qualification)
+  {
+    switch (item_type)
+    {
+      case (NDB_VALUE):
+        value.item = item_value;
+        break;
+      case (NDB_FIELD):
+      {
+        NDB_ITEM_FIELD_VALUE *field_value = new NDB_ITEM_FIELD_VALUE();
+        Item_field *field_item = (Item_field *)item_value;
+        field_value->field = field_item->field;
+        field_value->column_no = -1;  // Will be fetched at scan filter generation
+        value.field_value = field_value;
+        break;
+      }
+      case (NDB_FUNCTION):
+        value.item = item_value;
+        value.arg_count = ((Item_func *)item_value)->argument_count();
+        break;
+      case (NDB_END_COND):
+        break;
     }
   };
-  Ndb_item(Field *field, int column_no) : type(NDB_FIELD) {
+  Ndb_item(Field *field, int column_no) : type(NDB_FIELD)
+  {
     NDB_ITEM_FIELD_VALUE *field_value = new NDB_ITEM_FIELD_VALUE();
     qualification.field_type = field->type();
     field_value->field = field;
     field_value->column_no = column_no;
     value.field_value = field_value;
   };
-  Ndb_item(Item_func::Functype func_type, const Item *item_value)
-      : type(NDB_FUNCTION) {
+  Ndb_item(Item_func::Functype func_type, const Item *item_value) : type(NDB_FUNCTION)
+  {
     qualification.function_type = item_func_to_ndb_func(func_type);
     value.item = item_value;
     value.arg_count = ((Item_func *)item_value)->argument_count();
   };
-  Ndb_item(Item_func::Functype func_type, uint no_args) : type(NDB_FUNCTION) {
+  Ndb_item(Item_func::Functype func_type, uint no_args) : type(NDB_FUNCTION)
+  {
     qualification.function_type = item_func_to_ndb_func(func_type);
     value.arg_count = no_args;
   };
-  ~Ndb_item() {
-    if (type == NDB_FIELD) {
+  ~Ndb_item()
+  {
+    if (type == NDB_FIELD)
+    {
       delete value.field_value;
       value.field_value = NULL;
     }
   };
 
-  uint32 pack_length() {
-    switch (type) {
-    case(NDB_VALUE) :
-      if (qualification.value_type == Item::STRING_ITEM)
-        return value.item->str_value.length();
-      break;
-    case(NDB_FIELD) :
-      return value.field_value->field->pack_length();
-    default:
-      break;
+  uint32 pack_length()
+  {
+    switch (type)
+    {
+      case (NDB_VALUE):
+        if (qualification.value_type == Item::STRING_ITEM) return value.item->str_value.length();
+        break;
+      case (NDB_FIELD):
+        return value.field_value->field->pack_length();
+      default:
+        break;
     }
 
     return 0;
   };
 
-  Field *get_field() {
-    return value.field_value->field;
-  };
+  Field *get_field() { return value.field_value->field; };
 
-  int get_field_no() {
-    return value.field_value->column_no;
-  };
+  int get_field_no() { return value.field_value->column_no; };
 
-  int argument_count() {
-    return value.arg_count;
-  };
+  int argument_count() { return value.arg_count; };
 
-  const char *get_val() {
-    switch (type) {
-    case(NDB_VALUE) :
-      if (qualification.value_type == Item::STRING_ITEM)
-        return value.item->str_value.ptr();
-      break;
-    case(NDB_FIELD) :
-      return value.field_value->field->ptr;
-    default:
-      break;
+  const char *get_val()
+  {
+    switch (type)
+    {
+      case (NDB_VALUE):
+        if (qualification.value_type == Item::STRING_ITEM) return value.item->str_value.ptr();
+        break;
+      case (NDB_FIELD):
+        return value.field_value->field->ptr;
+      default:
+        break;
     }
 
     return NULL;
   };
 
-  void save_in_field(Ndb_item *field_item) {
+  void save_in_field(Ndb_item *field_item)
+  {
     Field *field = field_item->value.field_value->field;
     const Item *item = value.item;
 
-    if (item && field)
-      ((Item *)item)->save_in_field(field, false);
+    if (item && field) ((Item *)item)->save_in_field(field, false);
   };
 
-  static NDB_FUNC_TYPE item_func_to_ndb_func(Item_func::Functype fun) {
-    switch (fun) {
-    case(Item_func::EQ_FUNC) : { return NDB_EQ_FUNC; }
-    case(Item_func::NE_FUNC) : { return NDB_NE_FUNC; }
-    case(Item_func::LT_FUNC) : { return NDB_LT_FUNC; }
-    case(Item_func::LE_FUNC) : { return NDB_LE_FUNC; }
-    case(Item_func::GT_FUNC) : { return NDB_GT_FUNC; }
-    case(Item_func::GE_FUNC) : { return NDB_GE_FUNC; }
-    case(Item_func::ISNULL_FUNC) : { return NDB_ISNULL_FUNC; }
-    case(Item_func::ISNOTNULL_FUNC) : { return NDB_ISNOTNULL_FUNC; }
-    case(Item_func::LIKE_FUNC) : { return NDB_LIKE_FUNC; }
-    case(Item_func::NOT_FUNC) : { return NDB_NOT_FUNC; }
-    case(Item_func::UNKNOWN_FUNC) : { return NDB_UNKNOWN_FUNC; }
-    case(Item_func::COND_AND_FUNC) : { return NDB_COND_AND_FUNC; }
-    case(Item_func::COND_OR_FUNC) : { return NDB_COND_OR_FUNC; }
-    default: { return NDB_UNSUPPORTED_FUNC; }
+  static NDB_FUNC_TYPE item_func_to_ndb_func(Item_func::Functype fun)
+  {
+    switch (fun)
+    {
+      case (Item_func::EQ_FUNC):
+      {
+        return NDB_EQ_FUNC;
+      }
+      case (Item_func::NE_FUNC):
+      {
+        return NDB_NE_FUNC;
+      }
+      case (Item_func::LT_FUNC):
+      {
+        return NDB_LT_FUNC;
+      }
+      case (Item_func::LE_FUNC):
+      {
+        return NDB_LE_FUNC;
+      }
+      case (Item_func::GT_FUNC):
+      {
+        return NDB_GT_FUNC;
+      }
+      case (Item_func::GE_FUNC):
+      {
+        return NDB_GE_FUNC;
+      }
+      case (Item_func::ISNULL_FUNC):
+      {
+        return NDB_ISNULL_FUNC;
+      }
+      case (Item_func::ISNOTNULL_FUNC):
+      {
+        return NDB_ISNOTNULL_FUNC;
+      }
+      case (Item_func::LIKE_FUNC):
+      {
+        return NDB_LIKE_FUNC;
+      }
+      case (Item_func::NOT_FUNC):
+      {
+        return NDB_NOT_FUNC;
+      }
+      case (Item_func::UNKNOWN_FUNC):
+      {
+        return NDB_UNKNOWN_FUNC;
+      }
+      case (Item_func::COND_AND_FUNC):
+      {
+        return NDB_COND_AND_FUNC;
+      }
+      case (Item_func::COND_OR_FUNC):
+      {
+        return NDB_COND_OR_FUNC;
+      }
+      default:
+      {
+        return NDB_UNSUPPORTED_FUNC;
+      }
     }
   };
 
-  static NDB_FUNC_TYPE negate(NDB_FUNC_TYPE fun) {
+  static NDB_FUNC_TYPE negate(NDB_FUNC_TYPE fun)
+  {
     uint i = (uint)fun;
     DBUG_ASSERT(fun == neg_map[i].pos_fun);
     return neg_map[i].neg_fun;
@@ -275,7 +330,7 @@ public:
   NDB_ITEM_TYPE type;
   NDB_ITEM_QUALIFICATION qualification;
 
-private:
+ private:
   NDB_ITEM_VALUE value;
 };
 
@@ -283,15 +338,15 @@ private:
   This class implements a linked list used for storing a
   serialization of the Item tree for condition pushdown.
  */
-class Ndb_cond {
-public:
-  Ndb_cond() : ndb_item(NULL), next(NULL), prev(NULL) {};
-  ~Ndb_cond() {
-    if (ndb_item)
-      delete ndb_item;
+class Ndb_cond
+{
+ public:
+  Ndb_cond() : ndb_item(NULL), next(NULL), prev(NULL){};
+  ~Ndb_cond()
+  {
+    if (ndb_item) delete ndb_item;
     ndb_item = NULL;
-    if (next)
-      delete next;
+    if (next) delete next;
     next = prev = NULL;
   };
   Ndb_item *ndb_item;
@@ -306,28 +361,28 @@ public:
   prepared for handling several (C1 AND C2 ...) if the logic for
   pushing conditions is extended in sql_select.
 */
-class Ndb_cond_stack {
-public:
-  Ndb_cond_stack() : ndb_cond(NULL), next(NULL) {};
-  ~Ndb_cond_stack() {
-    if (ndb_cond)
-      delete ndb_cond;
+class Ndb_cond_stack
+{
+ public:
+  Ndb_cond_stack() : ndb_cond(NULL), next(NULL){};
+  ~Ndb_cond_stack()
+  {
+    if (ndb_cond) delete ndb_cond;
     ndb_cond = NULL;
-    if (next)
-      delete next;
+    if (next) delete next;
     next = NULL;
   };
   Ndb_cond *ndb_cond;
   Ndb_cond_stack *next;
 };
 
-class Ndb_rewrite_context {
-public:
-  Ndb_rewrite_context(Item_func *func)
-      : func_item(func), left_hand_item(NULL), count(0) {};
-  ~Ndb_rewrite_context() {
-    if (next)
-      delete next;
+class Ndb_rewrite_context
+{
+ public:
+  Ndb_rewrite_context(Item_func *func) : func_item(func), left_hand_item(NULL), count(0){};
+  ~Ndb_rewrite_context()
+  {
+    if (next) delete next;
   }
   const Item_func *func_item;
   const Item *left_hand_item;
@@ -342,53 +397,48 @@ public:
   if the condition found is supported, and information what is
   expected next in the tree inorder for the condition to be supported.
 */
-class Ndb_cond_traverse_context {
-public:
+class Ndb_cond_traverse_context
+{
+ public:
   Ndb_cond_traverse_context(TABLE *tab, void *ndb_tab, Ndb_cond_stack *stack)
-      : table(tab), ndb_table(ndb_tab), supported(TRUE), stack_ptr(stack),
-        cond_ptr(NULL), expect_mask(0), expect_field_result_mask(0), skip(0),
-        collation(NULL), rewrite_stack(NULL) {
-    if (stack)
-      cond_ptr = stack->ndb_cond;
+      : table(tab),
+        ndb_table(ndb_tab),
+        supported(TRUE),
+        stack_ptr(stack),
+        cond_ptr(NULL),
+        expect_mask(0),
+        expect_field_result_mask(0),
+        skip(0),
+        collation(NULL),
+        rewrite_stack(NULL)
+  {
+    if (stack) cond_ptr = stack->ndb_cond;
   };
-  ~Ndb_cond_traverse_context() {
-    if (rewrite_stack)
-      delete rewrite_stack;
+  ~Ndb_cond_traverse_context()
+  {
+    if (rewrite_stack) delete rewrite_stack;
   }
-  void expect(Item::Type type) {
-    expect_mask |= (1 << type);
-  };
-  void dont_expect(Item::Type type) {
-    expect_mask &= ~(1 << type);
-  };
-  bool expecting(Item::Type type) {
-    return (expect_mask & (1 << type));
-  };
-  void expect_nothing() {
-    expect_mask = 0;
-  };
-  void expect_only(Item::Type type) {
+  void expect(Item::Type type) { expect_mask |= (1 << type); };
+  void dont_expect(Item::Type type) { expect_mask &= ~(1 << type); };
+  bool expecting(Item::Type type) { return (expect_mask & (1 << type)); };
+  void expect_nothing() { expect_mask = 0; };
+  void expect_only(Item::Type type)
+  {
     expect_mask = 0;
     expect(type);
   };
 
-  void expect_field_result(Item_result result) {
-    expect_field_result_mask |= (1 << result);
-  };
-  bool expecting_field_result(Item_result result) {
-    return (expect_field_result_mask & (1 << result));
-  };
-  void expect_no_field_result() {
-    expect_field_result_mask = 0;
-  };
-  void expect_only_field_result(Item_result result) {
+  void expect_field_result(Item_result result) { expect_field_result_mask |= (1 << result); };
+  bool expecting_field_result(Item_result result) { return (expect_field_result_mask & (1 << result)); };
+  void expect_no_field_result() { expect_field_result_mask = 0; };
+  void expect_only_field_result(Item_result result)
+  {
     expect_field_result_mask = 0;
     expect_field_result(result);
   };
-  void expect_collation(CHARSET_INFO *col) {
-    collation = col;
-  };
-  bool expecting_collation(CHARSET_INFO *col) {
+  void expect_collation(CHARSET_INFO *col) { collation = col; };
+  bool expecting_collation(CHARSET_INFO *col)
+  {
     bool matching = (!collation) ? true : (collation == col);
     collation = NULL;
 
@@ -411,8 +461,9 @@ public:
   Place holder for ha_ndbcluster thread specific data
 */
 
-class Thd_ndb {
-public:
+class Thd_ndb
+{
+ public:
   Thd_ndb();
   ~Thd_ndb();
   Ndb *ndb;
@@ -424,8 +475,9 @@ public:
   List<NDB_SHARE> changed_tables;
 };
 
-class ha_ndbcluster : public handler {
-public:
+class ha_ndbcluster : public handler
+{
+ public:
   ha_ndbcluster(TABLE *table);
   ~ha_ndbcluster();
 
@@ -437,10 +489,8 @@ public:
   int delete_row(const byte *buf);
   int index_init(uint index);
   int index_end();
-  int index_read(byte *buf, const byte *key, uint key_len,
-                 enum ha_rkey_function find_flag);
-  int index_read_idx(byte *buf, uint index, const byte *key, uint key_len,
-                     enum ha_rkey_function find_flag);
+  int index_read(byte *buf, const byte *key, uint key_len, enum ha_rkey_function find_flag);
+  int index_read_idx(byte *buf, uint index, const byte *key, uint key_len, enum ha_rkey_function find_flag);
   int index_next(byte *buf);
   int index_prev(byte *buf);
   int index_first(byte *buf);
@@ -451,19 +501,16 @@ public:
   int rnd_next(byte *buf);
   int rnd_pos(byte *buf, byte *pos);
   void position(const byte *record);
-  int read_range_first(const key_range *start_key, const key_range *end_key,
-                       bool eq_range, bool sorted);
-  int read_range_first_to_buf(const key_range *start_key,
-                              const key_range *end_key, bool eq_range,
-                              bool sorted, byte *buf);
+  int read_range_first(const key_range *start_key, const key_range *end_key, bool eq_range, bool sorted);
+  int read_range_first_to_buf(const key_range *start_key, const key_range *end_key, bool eq_range, bool sorted,
+                              byte *buf);
   int read_range_next();
 
   /**
    * Multi range stuff
    */
-  int read_multi_range_first(KEY_MULTI_RANGE **found_range_p,
-                             KEY_MULTI_RANGE *ranges, uint range_count,
-                             bool sorted, HANDLER_BUFFER *buffer);
+  int read_multi_range_first(KEY_MULTI_RANGE **found_range_p, KEY_MULTI_RANGE *ranges, uint range_count, bool sorted,
+                             HANDLER_BUFFER *buffer);
   int read_multi_range_next(KEY_MULTI_RANGE **found_range_p);
 
   bool get_error_message(int error, String *buf);
@@ -484,8 +531,7 @@ public:
   int rename_table(const char *from, const char *to);
   int delete_table(const char *name);
   int create(const char *name, TABLE *form, HA_CREATE_INFO *info);
-  THR_LOCK_DATA **store_lock(THD *thd, THR_LOCK_DATA **to,
-                             enum thr_lock_type lock_type);
+  THR_LOCK_DATA **store_lock(THD *thd, THR_LOCK_DATA **to, enum thr_lock_type lock_type);
 
   bool low_byte_first() const;
   bool has_transactions();
@@ -542,21 +588,21 @@ public:
   void cond_pop();
 
   uint8 table_cache_type();
-  my_bool register_query_cache_table(THD *thd, char *table_key, uint key_length,
-                                     qc_engine_callback *engine_callback,
+  my_bool register_query_cache_table(THD *thd, char *table_key, uint key_length, qc_engine_callback *engine_callback,
                                      ulonglong *engine_data);
 
-private:
+ private:
   int alter_table_name(const char *to);
   int drop_table();
   int create_index(const char *name, KEY *key_info, bool unique);
   int create_ordered_index(const char *name, KEY *key_info);
   int create_unique_index(const char *name, KEY *key_info);
   int initialize_autoincrement(const void *table);
-  enum ILBP {
+  enum ILBP
+  {
     ILBP_CREATE = 0,
     ILBP_OPEN = 1
-  }; // Index List Build Phase
+  };  // Index List Build Phase
   int build_index_list(Ndb *ndb, TABLE *tab, enum ILBP phase);
   int get_metadata(const char *path);
   void release_metadata();
@@ -568,14 +614,12 @@ private:
   int complemented_pk_read(const byte *old_data, byte *new_data);
   int peek_row(const byte *record);
   int unique_index_read(const byte *key, uint key_len, byte *buf);
-  int ordered_index_scan(const key_range *start_key, const key_range *end_key,
-                         bool sorted, bool descending, byte *buf);
+  int ordered_index_scan(const key_range *start_key, const key_range *end_key, bool sorted, bool descending, byte *buf);
   int full_table_scan(byte *buf);
   int fetch_next(NdbScanOperation *op);
   int next_result(byte *buf);
   int define_read_attrs(byte *buf, NdbOperation *op);
-  int filtered_scan(const byte *key, uint key_len, byte *buf,
-                    enum ha_rkey_function find_flag);
+  int filtered_scan(const byte *key, uint key_len, byte *buf, enum ha_rkey_function find_flag);
   int close_scan();
   void unpack_record(byte *buf);
   int get_ndb_lock_type(enum thr_lock_type type);
@@ -584,10 +628,8 @@ private:
   void set_tabname(const char *pathname);
 
   bool set_hidden_key(NdbOperation *, uint fieldnr, const byte *field_ptr);
-  int set_ndb_key(NdbOperation *, Field *field, uint fieldnr,
-                  const byte *field_ptr);
-  int set_ndb_value(NdbOperation *, Field *field, uint fieldnr,
-                    bool *set_blob_value = 0);
+  int set_ndb_key(NdbOperation *, Field *field, uint fieldnr, const byte *field_ptr);
+  int set_ndb_value(NdbOperation *, Field *field, uint fieldnr, bool *set_blob_value = 0);
   int get_ndb_value(NdbOperation *, Field *field, uint fieldnr, byte *);
   friend int g_get_ndb_blobs_value(NdbBlob *ndb_blob, void *arg);
   int get_ndb_blobs_value(NdbBlob *last_ndb_blob);
@@ -621,8 +663,7 @@ private:
   */
   void cond_clear();
   bool serialize_cond(const COND *cond, Ndb_cond_stack *ndb_cond);
-  int build_scan_filter_predicate(Ndb_cond *&cond, NdbScanFilter *filter,
-                                  bool negated = false);
+  int build_scan_filter_predicate(Ndb_cond *&cond, NdbScanFilter *filter, bool negated = false);
   int build_scan_filter_group(Ndb_cond *&cond, NdbScanFilter *filter);
   int build_scan_filter(Ndb_cond *&cond, NdbScanFilter *filter);
   int generate_scan_filter(Ndb_cond_stack *cond_stack, NdbScanOperation *op);
@@ -644,7 +685,8 @@ private:
   NDB_SHARE *m_share;
   NDB_INDEX_DATA m_index[MAX_KEY];
   // NdbRecAttr has no reference to blob
-  typedef union {
+  typedef union
+  {
     const NdbRecAttr *rec;
     NdbBlob *blob;
     void *ptr;
@@ -689,12 +731,9 @@ extern struct show_var_st ndb_status_variables[];
 bool ndbcluster_init(void);
 bool ndbcluster_end(void);
 
-int ndbcluster_discover(THD *thd, const char *dbname, const char *name,
-                        const void **frmblob, uint *frmlen);
-int ndbcluster_find_files(THD *thd, const char *db, const char *path,
-                          const char *wild, bool dir, List<char> *files);
-int ndbcluster_table_exists_in_engine(THD *thd, const char *db,
-                                      const char *name);
+int ndbcluster_discover(THD *thd, const char *dbname, const char *name, const void **frmblob, uint *frmlen);
+int ndbcluster_find_files(THD *thd, const char *db, const char *path, const char *wild, bool dir, List<char> *files);
+int ndbcluster_table_exists_in_engine(THD *thd, const char *db, const char *name);
 int ndbcluster_drop_database(const char *path);
 
 void ndbcluster_print_error(int error, const NdbOperation *error_op);

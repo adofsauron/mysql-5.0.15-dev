@@ -64,19 +64,13 @@ int sp_show_status_function(THD *thd, const char *wild);
   Procedures for pre-caching of stored routines and building table list
   for prelocking.
 */
-void sp_get_prelocking_info(THD *thd, bool *need_prelocking,
-                            bool *first_no_prelocking);
-void sp_add_used_routine(LEX *lex, Query_arena *arena, sp_name *rt,
-                         char rt_type);
+void sp_get_prelocking_info(THD *thd, bool *need_prelocking, bool *first_no_prelocking);
+void sp_add_used_routine(LEX *lex, Query_arena *arena, sp_name *rt, char rt_type);
 void sp_remove_not_own_routines(LEX *lex);
 void sp_update_sp_used_routines(HASH *dst, HASH *src);
-bool sp_cache_routines_and_add_tables(THD *thd, LEX *lex,
-                                      bool first_no_prelock);
-void sp_cache_routines_and_add_tables_for_view(THD *thd, LEX *lex,
-                                               LEX *aux_lex);
-void
-sp_cache_routines_and_add_tables_for_triggers(THD *thd, LEX *lex,
-                                              Table_triggers_list *triggers);
+bool sp_cache_routines_and_add_tables(THD *thd, LEX *lex, bool first_no_prelock);
+void sp_cache_routines_and_add_tables_for_view(THD *thd, LEX *lex, LEX *aux_lex);
+void sp_cache_routines_and_add_tables_for_triggers(THD *thd, LEX *lex, Table_triggers_list *triggers);
 
 extern "C" byte *sp_sroutine_key(const byte *ptr, uint *plen, my_bool first);
 
@@ -94,7 +88,6 @@ void close_proc_table(THD *thd, Open_tables_state *backup);
 // Do a "use newdb". The current db is stored at olddb.
 // If newdb is the same as the current one, nothing is changed.
 // dbchangedp is set to true if the db was actually changed.
-int sp_use_new_db(THD *thd, char *newdb, char *olddb, uint olddbmax,
-                  bool no_access_check, bool *dbchangedp);
+int sp_use_new_db(THD *thd, char *newdb, char *olddb, uint olddbmax, bool no_access_check, bool *dbchangedp);
 
 #endif /* _SP_H_ */

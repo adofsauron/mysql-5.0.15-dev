@@ -22,15 +22,17 @@
 
 #include <queues.h>
 
-class Item_func_unique_users : public Item_real_func {
-public:
-  Item_func_unique_users(Item *name_arg, int start, int end, List<Item> &list)
-      : Item_real_func(list) {}
-  double val_real() {
+class Item_func_unique_users : public Item_real_func
+{
+ public:
+  Item_func_unique_users(Item *name_arg, int start, int end, List<Item> &list) : Item_real_func(list) {}
+  double val_real()
+  {
     DBUG_ASSERT(fixed == 1);
     return 0.0;
   }
-  void fix_length_and_dec() {
+  void fix_length_and_dec()
+  {
     decimals = 0;
     max_length = 6;
   }
@@ -38,13 +40,13 @@ public:
   const char *func_name() const { return "unique_users"; }
 };
 
-class Item_sum_unique_users : public Item_sum_num {
-public:
-  Item_sum_unique_users(Item *name_arg, int start, int end, Item *item_arg)
-      : Item_sum_num(item_arg) {}
-  Item_sum_unique_users(THD *thd, Item_sum_unique_users *item)
-      : Item_sum_num(thd, item) {}
-  double val_real() {
+class Item_sum_unique_users : public Item_sum_num
+{
+ public:
+  Item_sum_unique_users(Item *name_arg, int start, int end, Item *item_arg) : Item_sum_num(item_arg) {}
+  Item_sum_unique_users(THD *thd, Item_sum_unique_users *item) : Item_sum_num(thd, item) {}
+  double val_real()
+  {
     DBUG_ASSERT(fixed == 1);
     return 0.0;
   }
@@ -53,7 +55,8 @@ public:
   bool add() { return 0; }
   void reset_field() {}
   void update_field() {}
-  bool fix_fields(THD *thd, Item **ref) {
+  bool fix_fields(THD *thd, Item **ref)
+  {
     DBUG_ASSERT(fixed == 0);
     fixed = 1;
     return FALSE;

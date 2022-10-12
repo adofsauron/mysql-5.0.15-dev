@@ -24,7 +24,8 @@
 
 #define BDB_HIDDEN_PRIMARY_KEY_LENGTH 5
 
-typedef struct st_berkeley_share {
+typedef struct st_berkeley_share
+{
   ulonglong auto_ident;
   ha_rows rows, org_rows;
   ulong *rec_per_key;
@@ -39,7 +40,8 @@ typedef struct st_berkeley_share {
   bool fixed_length_primary_key, fixed_length_row;
 } BDB_SHARE;
 
-class ha_berkeley : public handler {
+class ha_berkeley : public handler
+{
   THR_LOCK_DATA lock;
   DBT last_key, current_row;
   gptr alloc_ptr;
@@ -62,24 +64,19 @@ class ha_berkeley : public handler {
   int pack_row(DBT *row, const byte *record, bool new_row);
   void unpack_row(char *record, DBT *row);
   void unpack_key(char *record, DBT *key, uint index);
-  DBT *create_key(DBT *key, uint keynr, char *buff, const byte *record,
-                  int key_length = MAX_KEY_LENGTH);
-  DBT *pack_key(DBT *key, uint keynr, char *buff, const byte *key_ptr,
-                uint key_length);
+  DBT *create_key(DBT *key, uint keynr, char *buff, const byte *record, int key_length = MAX_KEY_LENGTH);
+  DBT *pack_key(DBT *key, uint keynr, char *buff, const byte *key_ptr, uint key_length);
   int remove_key(DB_TXN *trans, uint keynr, const byte *record, DBT *prim_key);
-  int remove_keys(DB_TXN *trans, const byte *record, DBT *new_record,
-                  DBT *prim_key, key_map *keys);
-  int restore_keys(DB_TXN *trans, key_map *changed_keys, uint primary_key,
-                   const byte *old_row, DBT *old_key, const byte *new_row,
-                   DBT *new_key);
+  int remove_keys(DB_TXN *trans, const byte *record, DBT *new_record, DBT *prim_key, key_map *keys);
+  int restore_keys(DB_TXN *trans, key_map *changed_keys, uint primary_key, const byte *old_row, DBT *old_key,
+                   const byte *new_row, DBT *new_key);
   int key_cmp(uint keynr, const byte *old_row, const byte *new_row);
-  int update_primary_key(DB_TXN *trans, bool primary_key_changed,
-                         const byte *old_row, DBT *old_key, const byte *new_row,
-                         DBT *prim_key, bool local_using_ignore);
+  int update_primary_key(DB_TXN *trans, bool primary_key_changed, const byte *old_row, DBT *old_key,
+                         const byte *new_row, DBT *prim_key, bool local_using_ignore);
   int read_row(int error, char *buf, uint keynr, DBT *row, DBT *key, bool);
   DBT *get_pos(DBT *to, byte *pos);
 
-public:
+ public:
   ha_berkeley(TABLE *table_arg);
   ~ha_berkeley() {}
   const char *table_type() const { return "BerkeleyDB"; }
@@ -101,10 +98,8 @@ public:
   int delete_row(const byte *buf);
   int index_init(uint index);
   int index_end();
-  int index_read(byte *buf, const byte *key, uint key_len,
-                 enum ha_rkey_function find_flag);
-  int index_read_idx(byte *buf, uint index, const byte *key, uint key_len,
-                     enum ha_rkey_function find_flag);
+  int index_read(byte *buf, const byte *key, uint key_len, enum ha_rkey_function find_flag);
+  int index_read_idx(byte *buf, uint index, const byte *key, uint key_len, enum ha_rkey_function find_flag);
   int index_read_last(byte *buf, const byte *key, uint key_len);
   int index_next(byte *buf);
   int index_next_same(byte *buf, const byte *key, uint keylen);
@@ -127,15 +122,14 @@ public:
   int check(THD *thd, HA_CHECK_OPT *check_opt);
 
   ha_rows records_in_range(uint inx, key_range *min_key, key_range *max_key);
-  int create(const char *name, register TABLE *form,
-             HA_CREATE_INFO *create_info);
+  int create(const char *name, register TABLE *form, HA_CREATE_INFO *create_info);
   int delete_table(const char *name);
   int rename_table(const char *from, const char *to);
-  THR_LOCK_DATA **store_lock(THD *thd, THR_LOCK_DATA **to,
-                             enum thr_lock_type lock_type);
+  THR_LOCK_DATA **store_lock(THD *thd, THR_LOCK_DATA **to, enum thr_lock_type lock_type);
 
   void get_status();
-  inline void get_auto_primary_key(byte *to) {
+  inline void get_auto_primary_key(byte *to)
+  {
     pthread_mutex_lock(&share->mutex);
     share->auto_ident++;
     int5store(to, share->auto_ident);
@@ -149,8 +143,7 @@ public:
 };
 
 extern bool berkeley_shared_data;
-extern u_int32_t berkeley_init_flags, berkeley_env_flags, berkeley_lock_type,
-    berkeley_lock_types[];
+extern u_int32_t berkeley_init_flags, berkeley_env_flags, berkeley_lock_type, berkeley_lock_types[];
 extern ulong berkeley_cache_size, berkeley_max_lock, berkeley_log_buffer_size;
 extern char *berkeley_home, *berkeley_tmpdir, *berkeley_logdir;
 extern long berkeley_lock_scan_time;

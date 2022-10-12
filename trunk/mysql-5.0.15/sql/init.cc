@@ -16,10 +16,11 @@
 
 /* Init and dummy functions for interface with unireg */
 
-#include "mysql_priv.h"
 #include <m_ctype.h>
+#include "mysql_priv.h"
 
-void unireg_init(ulong options) {
+void unireg_init(ulong options)
+{
   uint i;
   double nr;
   DBUG_ENTER("unireg_init");
@@ -41,8 +42,8 @@ void unireg_init(ulong options) {
   VOID(strmov(reg_ext, ".frm"));
   specialflag = SPECIAL_SAME_DB_NAME | options; /* Set options from argv */
   /* Make a tab of powers of 10 */
-  for (i = 0, nr = 1.0; i < array_elements(log_10);
-       i++) { /* It's used by filesort... */
+  for (i = 0, nr = 1.0; i < array_elements(log_10); i++)
+  { /* It's used by filesort... */
     log_10[i] = nr;
     nr *= 10.0;
   }

@@ -22,8 +22,8 @@
  *   o Berkeley DB: removing unneeded log files.
  */
 
-#include "mysql_priv.h"
 #include "sql_manager.h"
+#include "mysql_priv.h"
 
 ulong volatile manager_status;
 bool volatile manager_thread_in_use;
@@ -32,7 +32,8 @@ pthread_t manager_thread;
 pthread_mutex_t LOCK_manager;
 pthread_cond_t COND_manager;
 
-pthread_handler_t handle_manager(void *arg __attribute__((unused))) {
+pthread_handler_t handle_manager(void *arg __attribute__((unused)))
+{
   int error = 0;
   ulong status;
   struct timespec abstime;
@@ -45,18 +46,23 @@ pthread_handler_t handle_manager(void *arg __attribute__((unused))) {
   manager_status = 0;
   manager_thread_in_use = 1;
 
-  for (;;) {
+  for (;;)
+  {
     pthread_mutex_lock(&LOCK_manager);
     /* XXX: This will need to be made more general to handle different
      * polling needs. */
-    if (flush_time) {
-      if (reset_flush_time) {
+    if (flush_time)
+    {
+      if (reset_flush_time)
+      {
         set_timespec(abstime, flush_time);
         reset_flush_time = FALSE;
       }
       while (!manager_status && (!error || error == EINTR) && !abort_loop)
         error = pthread_cond_timedwait(&COND_manager, &LOCK_manager, &abstime);
-    } else {
+    }
+    else
+    {
       while (!manager_status && (!error || error == EINTR) && !abort_loop)
         error = pthread_cond_wait(&COND_manager, &LOCK_manager);
     }
@@ -64,24 +70,24 @@ pthread_handler_t handle_manager(void *arg __attribute__((unused))) {
     manager_status = 0;
     pthread_mutex_unlock(&LOCK_manager);
 
-    if (abort_loop)
-      break;
+    if (abort_loop) break;
 
-    if (error == ETIMEDOUT || error == ETIME) {
+    if (error == ETIMEDOUT || error == ETIME)
+    {
       flush_tables();
       error = 0;
       reset_flush_time = TRUE;
     }
 
 #ifdef HAVE_BERKELEY_DB
-    if (status & MANAGER_BERKELEY_LOG_CLEANUP) {
+    if (status & MANAGER_BERKELEY_LOG_CLEANUP)
+    {
       berkeley_cleanup_log_files();
       status &= ~MANAGER_BERKELEY_LOG_CLEANUP;
     }
 #endif
 
-    if (status)
-      DBUG_PRINT("error", ("manager did not handle something: %lx", status));
+    if (status) DBUG_PRINT("error", ("manager did not handle something: %lx", status));
   }
   manager_thread_in_use = 0;
   my_thread_end();

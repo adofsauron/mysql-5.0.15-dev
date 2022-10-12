@@ -17,7 +17,8 @@
 #ifdef HAVE_REPLICATION
 #include "slave.h"
 
-typedef struct st_slave_info {
+typedef struct st_slave_info
+{
   uint32 server_id;
   uint32 rpl_recovery_rank, master_id;
   char host[HOSTNAME_LENGTH + 1];
@@ -35,19 +36,19 @@ extern I_List<i_string> binlog_do_db, binlog_ignore_db;
 extern int max_binlog_dump_events;
 extern my_bool opt_sporadic_binlog_dump_fail;
 
-#define KICK_SLAVE(thd)                                                        \
-  do {                                                                         \
-    pthread_mutex_lock(&(thd)->LOCK_delete);                                   \
-    (thd)->awake(THD::NOT_KILLED);                                             \
-    pthread_mutex_unlock(&(thd)->LOCK_delete);                                 \
+#define KICK_SLAVE(thd)                        \
+  do                                           \
+  {                                            \
+    pthread_mutex_lock(&(thd)->LOCK_delete);   \
+    (thd)->awake(THD::NOT_KILLED);             \
+    pthread_mutex_unlock(&(thd)->LOCK_delete); \
   } while (0)
 
 int start_slave(THD *thd, MASTER_INFO *mi, bool net_report);
 int stop_slave(THD *thd, MASTER_INFO *mi, bool net_report);
 bool change_master(THD *thd, MASTER_INFO *mi);
 bool mysql_show_binlog_events(THD *thd);
-int cmp_master_pos(const char *log_file_name1, ulonglong log_pos1,
-                   const char *log_file_name2, ulonglong log_pos2);
+int cmp_master_pos(const char *log_file_name1, ulonglong log_pos1, const char *log_file_name2, ulonglong log_pos2);
 int reset_slave(THD *thd, MASTER_INFO *mi);
 int reset_master(THD *thd);
 bool purge_master_logs(THD *thd, const char *to_log);
@@ -59,7 +60,8 @@ extern int init_master_info(MASTER_INFO *mi);
 void kill_zombie_dump_threads(uint32 slave_server_id);
 int check_binlog_magic(IO_CACHE *log, const char **errmsg);
 
-typedef struct st_load_file_info {
+typedef struct st_load_file_info
+{
   THD *thd;
   my_off_t last_pos_in_file;
   bool wrote_create_file, log_delayed;

@@ -33,11 +33,12 @@ class sp_instr_cpush;
 #define SP_HANDLER_CONTINUE 2
 #define SP_HANDLER_UNDO 3
 
-typedef struct {
+typedef struct
+{
   struct sp_cond_type *cond;
-  uint handler; // Location of handler
+  uint handler;  // Location of handler
   int type;
-  uint foffset; // Frame offset for the handlers declare level
+  uint foffset;  // Frame offset for the handlers declare level
 } sp_handler_t;
 
 /*
@@ -49,11 +50,12 @@ typedef struct {
    - a stack of instruction locations in SP?
 */
 
-class sp_rcontext : public Sql_alloc {
+class sp_rcontext : public Sql_alloc
+{
   sp_rcontext(const sp_rcontext &); /* Prevent use of these */
   void operator=(sp_rcontext &);
 
-public:
+ public:
   /*
     Arena used to (re) allocate items on . E.g. reallocate INOUT/OUT
     SP parameters when they don't fit into prealloced items. This
@@ -64,20 +66,21 @@ public:
 
   sp_rcontext(uint fsize, uint hmax, uint cmax);
 
-  ~sp_rcontext() {
+  ~sp_rcontext()
+  {
     // Not needed?
     // sql_element_free(m_frame);
     // m_saved.empty();
   }
 
-  inline void push_item(Item *i) {
-    if (m_count < m_fsize)
-      m_frame[m_count++] = i;
+  inline void push_item(Item *i)
+  {
+    if (m_count < m_fsize) m_frame[m_count++] = i;
   }
 
-  inline void set_item(uint idx, Item *i) {
-    if (idx < m_count)
-      m_frame[idx] = i;
+  inline void set_item(uint idx, Item *i)
+  {
+    if (idx < m_count) m_frame[idx] = i;
   }
 
   /* Returns 0 on success, -1 on (eval) failure */
@@ -91,8 +94,8 @@ public:
 
   inline Item *get_result() { return m_result; }
 
-  inline void push_handler(struct sp_cond_type *cond, uint h, int type,
-                           uint f) {
+  inline void push_handler(struct sp_cond_type *cond, uint h, int type, uint f)
+  {
     m_handler[m_hcount].cond = cond;
     m_handler[m_hcount].handler = h;
     m_handler[m_hcount].type = type;
@@ -106,9 +109,9 @@ public:
   bool find_handler(uint sql_errno, MYSQL_ERROR::enum_warning_level level);
 
   // Returns handler type and sets *ip to location if one was found
-  inline int found_handler(uint *ip, uint *fp) {
-    if (m_hfound < 0)
-      return SP_HANDLER_NONE;
+  inline int found_handler(uint *ip, uint *fp)
+  {
+    if (m_hfound < 0) return SP_HANDLER_NONE;
     *ip = m_handler[m_hfound].handler;
     *fp = m_handler[m_hfound].foffset;
     return m_handler[m_hfound].type;
@@ -139,37 +142,38 @@ public:
 
   inline sp_cursor *get_cursor(uint i) { return m_cstack[i]; }
 
-private:
+ private:
   uint m_count;
   uint m_fsize;
   Item **m_frame;
 
-  Item *m_result; // For FUNCTIONs
+  Item *m_result;  // For FUNCTIONs
 
-  sp_handler_t *m_handler; // Visible handlers
-  uint m_hcount;           // Stack pointer for m_handler
-  uint *m_hstack;          // Return stack for continue handlers
-  uint m_hsp;              // Stack pointer for m_hstack
-  uint *m_in_handler;      // Active handler, for recursion check
-  uint m_ihsp;             // Stack pointer for m_in_handler
-  int m_hfound;            // Set by find_handler; -1 if not found
-  List<Item> m_saved;      // Saved variables during handler exec.
+  sp_handler_t *m_handler;  // Visible handlers
+  uint m_hcount;            // Stack pointer for m_handler
+  uint *m_hstack;           // Return stack for continue handlers
+  uint m_hsp;               // Stack pointer for m_hstack
+  uint *m_in_handler;       // Active handler, for recursion check
+  uint m_ihsp;              // Stack pointer for m_in_handler
+  int m_hfound;             // Set by find_handler; -1 if not found
+  List<Item> m_saved;       // Saved variables during handler exec.
 
   sp_cursor **m_cstack;
   uint m_ccount;
 
-}; // class sp_rcontext : public Sql_alloc
+};  // class sp_rcontext : public Sql_alloc
 
 /*
   An interceptor of cursor result set used to implement
   FETCH <cname> INTO <varlist>.
 */
 
-class Select_fetch_into_spvars : public select_result_interceptor {
+class Select_fetch_into_spvars : public select_result_interceptor
+{
   List<struct sp_pvar> *spvar_list;
   uint field_count;
 
-public:
+ public:
   uint get_field_count() { return field_count; }
   void set_spvar_list(List<struct sp_pvar> *vars) { spvar_list = vars; }
 
@@ -180,8 +184,9 @@ public:
 
 /* A mediator between stored procedures and server side cursors */
 
-class sp_cursor : public Sql_alloc {
-public:
+class sp_cursor : public Sql_alloc
+{
+ public:
   sp_cursor(sp_lex_keeper *lex_keeper, sp_instr_cpush *i);
 
   virtual ~sp_cursor() { destroy(); }
@@ -198,13 +203,13 @@ public:
 
   inline sp_instr_cpush *get_instr() { return m_i; }
 
-private:
+ private:
   Select_fetch_into_spvars result;
   sp_lex_keeper *m_lex_keeper;
   Server_side_cursor *server_side_cursor;
-  sp_instr_cpush *m_i; // My push instruction
+  sp_instr_cpush *m_i;  // My push instruction
   void destroy();
 
-}; // class sp_cursor : public Sql_alloc
+};  // class sp_cursor : public Sql_alloc
 
 #endif /* _SP_RCONTEXT_H_ */

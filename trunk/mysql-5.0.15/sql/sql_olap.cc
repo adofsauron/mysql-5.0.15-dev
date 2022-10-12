@@ -28,7 +28,7 @@
 #ifdef DISABLED_UNTIL_REWRITTEN_IN_4_1
 
 #ifdef USE_PRAGMA_IMPLEMENTATION
-#pragma implementation // gcc: Class implementation
+#pragma implementation  // gcc: Class implementation
 #endif
 
 #include "mysql_priv.h"
@@ -39,16 +39,14 @@
   Returns 0 if OK, 1 if error, -1 if error already printed to client
 ****************************************************************************/
 
-static int make_new_olap_select(LEX *lex, SELECT_LEX *select_lex,
-                                List<Item> new_fields) {
+static int make_new_olap_select(LEX *lex, SELECT_LEX *select_lex, List<Item> new_fields)
+{
   THD *thd = current_thd;
   Item *item, *new_item;
   Item_null *constant = new Item_null("ALL");
 
-  SELECT_LEX *new_select =
-      (SELECT_LEX *)thd->memdup((char *)select_lex, sizeof(*select_lex));
-  if (!new_select)
-    return 1;
+  SELECT_LEX *new_select = (SELECT_LEX *)thd->memdup((char *)select_lex, sizeof(*select_lex));
+  if (!new_select) return 1;
   lex->last_selects->next = new_select;
   new_select->linkage = OLAP_TYPE;
   new_select->olap = NON_EXISTING_ONE;
@@ -60,28 +58,29 @@ static int make_new_olap_select(LEX *lex, SELECT_LEX *select_lex,
   List_iterator<Item> list_it(select_lex->item_list);
   List_iterator<Item> new_it(new_fields);
 
-  while ((item = list_it++)) {
+  while ((item = list_it++))
+  {
     bool not_found = TRUE;
-    if (item->type() == Item::FIELD_ITEM) {
+    if (item->type() == Item::FIELD_ITEM)
+    {
       Item_field *iif = (Item_field *)item;
       new_it.rewind();
-      while ((new_item = new_it++)) {
-        if (new_item->type() == Item::FIELD_ITEM &&
-            !strcmp(((Item_field *)new_item)->table_name, iif->table_name) &&
-            !strcmp(((Item_field *)new_item)->field_name, iif->field_name)) {
+      while ((new_item = new_it++))
+      {
+        if (new_item->type() == Item::FIELD_ITEM && !strcmp(((Item_field *)new_item)->table_name, iif->table_name) &&
+            !strcmp(((Item_field *)new_item)->field_name, iif->field_name))
+        {
           not_found = 0;
           ((Item_field *)new_item)->db_name = iif->db_name;
-          Item_field *new_one =
-              new Item_field(&select_lex->context, iif->db_name,
-                             iif->table_name, iif->field_name);
+          Item_field *new_one = new Item_field(&select_lex->context, iif->db_name, iif->table_name, iif->field_name);
           privlist.push_back(new_one);
-          if (add_to_list(new_select->group_list, new_one, 1))
-            return 1;
+          if (add_to_list(new_select->group_list, new_one, 1)) return 1;
           break;
         }
       }
     }
-    if (not_found) {
+    if (not_found)
+    {
       if (item->type() == Item::FIELD_ITEM)
         privlist.push_back(constant);
       else
@@ -99,23 +98,23 @@ static int make_new_olap_select(LEX *lex, SELECT_LEX *select_lex,
   Returns 0 if OK, 1 if error, -1 if error already printed to client
 ****************************************************************************/
 
-static int olap_combos(List<Item> old_fields, List<Item> new_fields, Item *item,
-                       LEX *lex, SELECT_LEX *select_lex, int position,
-                       int selection, int num_fields, int num_new_fields) {
+static int olap_combos(List<Item> old_fields, List<Item> new_fields, Item *item, LEX *lex, SELECT_LEX *select_lex,
+                       int position, int selection, int num_fields, int num_new_fields)
+{
   int sl_return = 0;
-  if (position == num_new_fields) {
-    if (item)
-      new_fields.push_front(item);
+  if (position == num_new_fields)
+  {
+    if (item) new_fields.push_front(item);
     sl_return = make_new_olap_select(lex, select_lex, new_fields);
-  } else {
-    if (item)
-      new_fields.push_front(item);
-    while ((num_fields - num_new_fields >= selection - position) &&
-           !sl_return) {
+  }
+  else
+  {
+    if (item) new_fields.push_front(item);
+    while ((num_fields - num_new_fields >= selection - position) && !sl_return)
+    {
       item = old_fields.pop();
-      sl_return =
-          olap_combos(old_fields, new_fields, item, lex, select_lex,
-                      position + 1, ++selection, num_fields, num_new_fields);
+      sl_return = olap_combos(old_fields, new_fields, item, lex, select_lex, position + 1, ++selection, num_fields,
+                              num_new_fields);
     }
   }
   return sl_return;
@@ -127,7 +126,8 @@ static int olap_combos(List<Item> old_fields, List<Item> new_fields, Item *item,
   Returns 0 if OK, 1 if error, -1 if error already printed to client
 ****************************************************************************/
 
-int handle_olaps(LEX *lex, SELECT_LEX *select_lex) {
+int handle_olaps(LEX *lex, SELECT_LEX *select_lex)
+{
   List<Item> item_list_copy, new_item_list;
   item_list_copy.empty();
   new_item_list.empty();
@@ -136,36 +136,36 @@ int handle_olaps(LEX *lex, SELECT_LEX *select_lex) {
 
   lex->last_selects = select_lex;
 
-  for (ORDER *order = (ORDER *)select_lex->group_list.first; order;
-       order = order->next)
+  for (ORDER *order = (ORDER *)select_lex->group_list.first; order; order = order->next)
     item_list_copy.push_back(*(order->item));
 
   List<Item> all_fields(select_lex->item_list);
 
   if (setup_tables(lex->thd, &select_lex->context, &select_lex->top_join_list,
-                   (TABLE_LIST *)select_lex->table_list.first &
-                       select_lex->where,
-                   &select_lex->leaf_tables, FALSE) ||
+                   (TABLE_LIST *)select_lex->table_list.first & select_lex->where, &select_lex->leaf_tables, FALSE) ||
       setup_fields(lex->thd, 0, select_lex->item_list, 1, &all_fields, 1) ||
       setup_fields(lex->thd, 0, item_list_copy, 1, &all_fields, 1))
     return -1;
 
-  if (select_lex->olap == CUBE_TYPE) {
+  if (select_lex->olap == CUBE_TYPE)
+  {
     for (int i = count - 1; i >= 0 && !sl_return; i--)
-      sl_return = olap_combos(item_list_copy, new_item_list, (Item *)0, lex,
-                              select_lex, 0, 0, count, i);
-  } else if (select_lex->olap == ROLLUP_TYPE) {
-    for (int i = count - 1; i >= 0 && !sl_return; i--) {
+      sl_return = olap_combos(item_list_copy, new_item_list, (Item *)0, lex, select_lex, 0, 0, count, i);
+  }
+  else if (select_lex->olap == ROLLUP_TYPE)
+  {
+    for (int i = count - 1; i >= 0 && !sl_return; i--)
+    {
       Item *item;
       item_list_copy.pop();
       List_iterator<Item> it(item_list_copy);
       new_item_list.empty();
-      while ((item = it++))
-        new_item_list.push_front(item);
+      while ((item = it++)) new_item_list.push_front(item);
       sl_return = make_new_olap_select(lex, select_lex, new_item_list);
     }
-  } else
-    sl_return = 1; // impossible
+  }
+  else
+    sl_return = 1;  // impossible
   return sl_return;
 }
 

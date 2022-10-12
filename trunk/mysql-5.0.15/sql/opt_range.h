@@ -23,27 +23,30 @@
 #pragma interface /* gcc class implementation */
 #endif
 
-typedef struct st_key_part {
+typedef struct st_key_part
+{
   uint16 key, part, store_length, length;
   uint8 null_bit;
   Field *field;
   Field::imagetype image_type;
 } KEY_PART;
 
-class QUICK_RANGE : public Sql_alloc {
-public:
+class QUICK_RANGE : public Sql_alloc
+{
+ public:
   char *min_key, *max_key;
   uint16 min_length, max_length, flag;
 #ifdef HAVE_purify
   uint16 dummy; /* Avoid warnings on 'flag' */
 #endif
   QUICK_RANGE(); /* Full range */
-  QUICK_RANGE(const char *min_key_arg, uint min_length_arg,
-              const char *max_key_arg, uint max_length_arg, uint flag_arg)
+  QUICK_RANGE(const char *min_key_arg, uint min_length_arg, const char *max_key_arg, uint max_length_arg, uint flag_arg)
       : min_key((char *)sql_memdup(min_key_arg, min_length_arg + 1)),
         max_key((char *)sql_memdup(max_key_arg, max_length_arg + 1)),
-        min_length((uint16)min_length_arg), max_length((uint16)max_length_arg),
-        flag((uint16)flag_arg) {
+        min_length((uint16)min_length_arg),
+        max_length((uint16)max_length_arg),
+        flag((uint16)flag_arg)
+  {
 #ifdef HAVE_purify
     dummy = 0;
 #endif
@@ -93,8 +96,9 @@ public:
 
 */
 
-class QUICK_SELECT_I {
-public:
+class QUICK_SELECT_I
+{
+ public:
   bool sorted;
   ha_rows records;  /* estimate of # of records to be retrieved */
   double read_time; /* time to perform this retrieval          */
@@ -119,7 +123,7 @@ public:
   uint used_key_parts;
 
   QUICK_SELECT_I();
-  virtual ~QUICK_SELECT_I() {};
+  virtual ~QUICK_SELECT_I(){};
 
   /*
     Do post-constructor initialization.
@@ -166,7 +170,8 @@ public:
   virtual bool reverse_sorted() = 0;
   virtual bool unique_key_range() { return false; }
 
-  enum {
+  enum
+  {
     QS_TYPE_RANGE = 0,
     QS_TYPE_INDEX_MERGE = 1,
     QS_TYPE_RANGE_DESC = 2,
@@ -192,7 +197,8 @@ public:
       0     Ok
       other Error
   */
-  virtual int init_ror_merged_scan(bool reuse_handler) {
+  virtual int init_ror_merged_scan(bool reuse_handler)
+  {
     DBUG_ASSERT(0);
     return 1;
   }
@@ -200,15 +206,14 @@ public:
   /*
     Save ROWID of last retrieved row in file->ref. This used in ROR-merging.
   */
-  virtual void save_last_pos() {};
+  virtual void save_last_pos(){};
 
   /*
     Append comma-separated list of keys this quick select uses to key_names;
     append comma-separated list of corresponding used lengths to used_lengths.
     This is used by select_describe.
   */
-  virtual void add_keys_and_lengths(String *key_names,
-                                    String *used_lengths) = 0;
+  virtual void add_keys_and_lengths(String *key_names, String *used_lengths) = 0;
 
   /*
     Append text representation of quick select structure (what and how is
@@ -216,7 +221,7 @@ public:
     This function is implemented only by quick selects that merge other quick
     selects output and/or can produce output suitable for merging.
   */
-  virtual void add_info_string(String *str) {};
+  virtual void add_info_string(String *str){};
   /*
     Return 1 if any index used by this quick select
      a) uses field that is listed in passed field list or
@@ -250,14 +255,15 @@ class SEL_ARG;
   Quick select that does a range scan on a single key. The records are
   returned in key order.
 */
-class QUICK_RANGE_SELECT : public QUICK_SELECT_I {
-protected:
+class QUICK_RANGE_SELECT : public QUICK_SELECT_I
+{
+ protected:
   bool next, dont_free;
 
-public:
+ public:
   int error;
 
-protected:
+ protected:
   handler *file;
   /*
     If true, this quick select has its "own" handler object which should be
@@ -265,27 +271,21 @@ protected:
   */
   bool free_file;
   bool in_range;
-  uint multi_range_count;  /* copy from thd->variables.multi_range_count */
-  uint multi_range_length; /* the allocated length for the array */
-  uint multi_range_bufsiz; /* copy from thd->variables.read_rnd_buff_size */
-  KEY_MULTI_RANGE *multi_range; /* the multi-range array (allocated and
-                                       freed by QUICK_RANGE_SELECT) */
+  uint multi_range_count;           /* copy from thd->variables.multi_range_count */
+  uint multi_range_length;          /* the allocated length for the array */
+  uint multi_range_bufsiz;          /* copy from thd->variables.read_rnd_buff_size */
+  KEY_MULTI_RANGE *multi_range;     /* the multi-range array (allocated and
+                                           freed by QUICK_RANGE_SELECT) */
   HANDLER_BUFFER *multi_range_buff; /* the handler buffer (allocated and
                                        freed by QUICK_RANGE_SELECT) */
 
-protected:
+ protected:
   friend class TRP_ROR_INTERSECT;
-  friend QUICK_RANGE_SELECT *get_quick_select_for_ref(THD *thd, TABLE *table,
-                                                      struct st_table_ref *ref,
+  friend QUICK_RANGE_SELECT *get_quick_select_for_ref(THD *thd, TABLE *table, struct st_table_ref *ref,
                                                       ha_rows records);
-  friend bool get_quick_keys(struct st_qsel_param *param,
-                             QUICK_RANGE_SELECT *quick, KEY_PART *key,
-                             SEL_ARG *key_tree, char *min_key,
-                             uint min_key_flag, char *max_key,
-                             uint max_key_flag);
-  friend QUICK_RANGE_SELECT *get_quick_select(struct st_qsel_param *, uint idx,
-                                              SEL_ARG *key_tree,
-                                              MEM_ROOT *alloc);
+  friend bool get_quick_keys(struct st_qsel_param *param, QUICK_RANGE_SELECT *quick, KEY_PART *key, SEL_ARG *key_tree,
+                             char *min_key, uint min_key_flag, char *max_key, uint max_key_flag);
+  friend QUICK_RANGE_SELECT *get_quick_select(struct st_qsel_param *, uint idx, SEL_ARG *key_tree, MEM_ROOT *alloc);
   friend class QUICK_SELECT_DESC;
   friend class QUICK_INDEX_MERGE_SELECT;
   friend class QUICK_ROR_INTERSECT_SELECT;
@@ -300,11 +300,10 @@ protected:
   int cmp_prev(QUICK_RANGE *range);
   bool row_in_ranges();
 
-public:
+ public:
   MEM_ROOT alloc;
 
-  QUICK_RANGE_SELECT(THD *thd, TABLE *table, uint index_arg, bool no_alloc = 0,
-                     MEM_ROOT *parent_alloc = NULL);
+  QUICK_RANGE_SELECT(THD *thd, TABLE *table, uint index_arg, bool no_alloc = 0, MEM_ROOT *parent_alloc = NULL);
   ~QUICK_RANGE_SELECT();
 
   int init();
@@ -322,9 +321,10 @@ public:
 #ifndef DBUG_OFF
   void dbug_dump(int indent, bool verbose);
 #endif
-private:
+ private:
   /* Used only by QUICK_SELECT_DESC */
-  QUICK_RANGE_SELECT(const QUICK_RANGE_SELECT &org) : QUICK_SELECT_I() {
+  QUICK_RANGE_SELECT(const QUICK_RANGE_SELECT &org) : QUICK_SELECT_I()
+  {
     bcopy(&org, this, sizeof(*this));
     multi_range_length = 0;
     multi_range = NULL;
@@ -332,11 +332,11 @@ private:
   }
 };
 
-class QUICK_RANGE_SELECT_GEOM : public QUICK_RANGE_SELECT {
-public:
-  QUICK_RANGE_SELECT_GEOM(THD *thd, TABLE *table, uint index_arg, bool no_alloc,
-                          MEM_ROOT *parent_alloc)
-      : QUICK_RANGE_SELECT(thd, table, index_arg, no_alloc, parent_alloc) {};
+class QUICK_RANGE_SELECT_GEOM : public QUICK_RANGE_SELECT
+{
+ public:
+  QUICK_RANGE_SELECT_GEOM(THD *thd, TABLE *table, uint index_arg, bool no_alloc, MEM_ROOT *parent_alloc)
+      : QUICK_RANGE_SELECT(thd, table, index_arg, no_alloc, parent_alloc){};
   virtual int get_next();
 };
 
@@ -399,8 +399,9 @@ public:
     }
 */
 
-class QUICK_INDEX_MERGE_SELECT : public QUICK_SELECT_I {
-public:
+class QUICK_INDEX_MERGE_SELECT : public QUICK_SELECT_I
+{
+ public:
   QUICK_INDEX_MERGE_SELECT(THD *thd, TABLE *table);
   ~QUICK_INDEX_MERGE_SELECT();
 
@@ -454,10 +455,10 @@ public:
   used only to filter rowid sequence produced by other merged quick selects.
 */
 
-class QUICK_ROR_INTERSECT_SELECT : public QUICK_SELECT_I {
-public:
-  QUICK_ROR_INTERSECT_SELECT(THD *thd, TABLE *table, bool retrieve_full_rows,
-                             MEM_ROOT *parent_alloc);
+class QUICK_ROR_INTERSECT_SELECT : public QUICK_SELECT_I
+{
+ public:
+  QUICK_ROR_INTERSECT_SELECT(THD *thd, TABLE *table, bool retrieve_full_rows, MEM_ROOT *parent_alloc);
   ~QUICK_ROR_INTERSECT_SELECT();
 
   int init();
@@ -487,8 +488,8 @@ public:
   */
   QUICK_RANGE_SELECT *cpk_quick;
 
-  MEM_ROOT alloc; /* Memory pool for this and merged quick selects data. */
-  THD *thd;       /* current thread */
+  MEM_ROOT alloc;         /* Memory pool for this and merged quick selects data. */
+  THD *thd;               /* current thread */
   bool need_to_fetch_row; /* if true, do retrieve full table records. */
   /* in top-level quick select, true if merged scans where initialized */
   bool scans_inited;
@@ -507,8 +508,9 @@ public:
 
 */
 
-class QUICK_ROR_UNION_SELECT : public QUICK_SELECT_I {
-public:
+class QUICK_ROR_UNION_SELECT : public QUICK_SELECT_I
+{
+ public:
   QUICK_ROR_UNION_SELECT(THD *thd, TABLE *table);
   ~QUICK_ROR_UNION_SELECT();
 
@@ -537,7 +539,7 @@ public:
   byte *prev_rowid;     /* rowid of last row returned by get_next() */
   bool have_prev_rowid; /* true if prev_rowid has valid data */
   uint rowid_length;    /* table rowid length */
-private:
+ private:
   static int queue_cmp(void *arg, byte *val1, byte *val2);
   bool scans_inited;
 };
@@ -575,40 +577,41 @@ private:
   index, this class produces only index keys, and not complete records.
 */
 
-class QUICK_GROUP_MIN_MAX_SELECT : public QUICK_SELECT_I {
-private:
-  handler *file;         /* The handler used to get data. */
-  JOIN *join;            /* Descriptor of the current query */
-  KEY *index_info;       /* The index chosen for data access */
-  byte *record;          /* Buffer where the next record is returned. */
-  byte *tmp_record;      /* Temporary storage for next_min(), next_max(). */
-  byte *group_prefix;    /* Key prefix consisting of the GROUP fields. */
-  uint group_prefix_len; /* Length of the group prefix. */
-  byte *last_prefix;     /* Prefix of the last group for detecting EOF. */
-  bool have_min;         /* Specify whether we are computing */
-  bool have_max;         /*   a MIN, a MAX, or both.         */
-  bool seen_first_key;   /* Denotes whether the first key was retrieved.*/
+class QUICK_GROUP_MIN_MAX_SELECT : public QUICK_SELECT_I
+{
+ private:
+  handler *file;                   /* The handler used to get data. */
+  JOIN *join;                      /* Descriptor of the current query */
+  KEY *index_info;                 /* The index chosen for data access */
+  byte *record;                    /* Buffer where the next record is returned. */
+  byte *tmp_record;                /* Temporary storage for next_min(), next_max(). */
+  byte *group_prefix;              /* Key prefix consisting of the GROUP fields. */
+  uint group_prefix_len;           /* Length of the group prefix. */
+  byte *last_prefix;               /* Prefix of the last group for detecting EOF. */
+  bool have_min;                   /* Specify whether we are computing */
+  bool have_max;                   /*   a MIN, a MAX, or both.         */
+  bool seen_first_key;             /* Denotes whether the first key was retrieved.*/
   KEY_PART_INFO *min_max_arg_part; /* The keypart of the only argument field */
                                    /* of all MIN/MAX functions.              */
-  uint min_max_arg_len; /* The length of the MIN/MAX argument field */
-  byte *key_infix;      /* Infix of constants from equality predicates. */
+  uint min_max_arg_len;            /* The length of the MIN/MAX argument field */
+  byte *key_infix;                 /* Infix of constants from equality predicates. */
   uint key_infix_len;
   DYNAMIC_ARRAY min_max_ranges; /* Array of range ptrs for the MIN/MAX field. */
-  uint real_prefix_len; /* Length of key prefix extended with key_infix. */
+  uint real_prefix_len;         /* Length of key prefix extended with key_infix. */
   List<Item_sum> *min_functions;
   List<Item_sum> *max_functions;
   List_iterator<Item_sum> *min_functions_it;
   List_iterator<Item_sum> *max_functions_it;
 
-public:
+ public:
   /*
     The following two members are public to allow easy access from
     TRP_GROUP_MIN_MAX::make_quick()
   */
-  MEM_ROOT alloc; /* Memory pool for this and quick_prefix_select data. */
+  MEM_ROOT alloc;                          /* Memory pool for this and quick_prefix_select data. */
   QUICK_RANGE_SELECT *quick_prefix_select; /* For retrieval of group prefixes.
-                                              */
-private:
+                                            */
+ private:
   int next_prefix();
   int next_min_in_range();
   int next_max_in_range();
@@ -617,13 +620,11 @@ private:
   void update_min_result();
   void update_max_result();
 
-public:
-  QUICK_GROUP_MIN_MAX_SELECT(TABLE *table, JOIN *join, bool have_min,
-                             bool have_max, KEY_PART_INFO *min_max_arg_part,
-                             uint group_prefix_len, uint used_key_parts,
-                             KEY *index_info, uint use_index, double read_cost,
-                             ha_rows records, uint key_infix_len,
-                             byte *key_infix, MEM_ROOT *parent_alloc);
+ public:
+  QUICK_GROUP_MIN_MAX_SELECT(TABLE *table, JOIN *join, bool have_min, bool have_max, KEY_PART_INFO *min_max_arg_part,
+                             uint group_prefix_len, uint used_key_parts, KEY *index_info, uint use_index,
+                             double read_cost, ha_rows records, uint key_infix_len, byte *key_infix,
+                             MEM_ROOT *parent_alloc);
   ~QUICK_GROUP_MIN_MAX_SELECT();
   bool add_range(SEL_ARG *sel_range);
   void update_key_stat();
@@ -640,19 +641,21 @@ public:
 #endif
 };
 
-class QUICK_SELECT_DESC : public QUICK_RANGE_SELECT {
-public:
+class QUICK_SELECT_DESC : public QUICK_RANGE_SELECT
+{
+ public:
   QUICK_SELECT_DESC(QUICK_RANGE_SELECT *q, uint used_key_parts);
   int get_next();
   bool reverse_sorted() { return 1; }
   int get_type() { return QS_TYPE_RANGE_DESC; }
 
-private:
+ private:
   bool range_reads_after_key(QUICK_RANGE *range);
 #ifdef NOT_USED
   bool test_if_null_range(QUICK_RANGE *range, uint used_key_parts);
 #endif
-  int reset(void) {
+  int reset(void)
+  {
     next = 0;
     rev_it.rewind();
     return 0;
@@ -661,38 +664,37 @@ private:
   List_iterator<QUICK_RANGE> rev_it;
 };
 
-class SQL_SELECT : public Sql_alloc {
-public:
-  QUICK_SELECT_I *quick; // If quick-select used
-  COND *cond;            // where condition
+class SQL_SELECT : public Sql_alloc
+{
+ public:
+  QUICK_SELECT_I *quick;  // If quick-select used
+  COND *cond;             // where condition
   TABLE *head;
-  IO_CACHE file;      // Positions to used records
-  ha_rows records;    // Records in use if read from file
-  double read_time;   // Time to read rows
-  key_map quick_keys; // Possible quick keys
-  key_map needed_reg; // Possible quick keys after prev tables.
+  IO_CACHE file;       // Positions to used records
+  ha_rows records;     // Records in use if read from file
+  double read_time;    // Time to read rows
+  key_map quick_keys;  // Possible quick keys
+  key_map needed_reg;  // Possible quick keys after prev tables.
   table_map const_tables, read_tables;
   bool free_cond;
 
   SQL_SELECT();
   ~SQL_SELECT();
   void cleanup();
-  bool check_quick(THD *thd, bool force_quick_range, ha_rows limit) {
+  bool check_quick(THD *thd, bool force_quick_range, ha_rows limit)
+  {
     key_map tmp;
     tmp.set_all();
     return test_quick_select(thd, tmp, 0, limit, force_quick_range) < 0;
   }
   inline bool skip_record() { return cond ? cond->val_int() == 0 : 0; }
-  int test_quick_select(THD *thd, key_map keys, table_map prev_tables,
-                        ha_rows limit, bool force_quick_range);
+  int test_quick_select(THD *thd, key_map keys, table_map prev_tables, ha_rows limit, bool force_quick_range);
 };
 
-class FT_SELECT : public QUICK_RANGE_SELECT {
-public:
-  FT_SELECT(THD *thd, TABLE *table, uint key)
-      : QUICK_RANGE_SELECT(thd, table, key, 1) {
-    init();
-  }
+class FT_SELECT : public QUICK_RANGE_SELECT
+{
+ public:
+  FT_SELECT(THD *thd, TABLE *table, uint key) : QUICK_RANGE_SELECT(thd, table, key, 1) { init(); }
   ~FT_SELECT() { file->ft_end(); }
   int init() { return error = file->ft_init(); }
   int reset() { return 0; }
@@ -700,7 +702,5 @@ public:
   int get_type() { return QS_TYPE_FULLTEXT; }
 };
 
-QUICK_RANGE_SELECT *get_quick_select_for_ref(THD *thd, TABLE *table,
-                                             struct st_table_ref *ref,
-                                             ha_rows records);
+QUICK_RANGE_SELECT *get_quick_select_for_ref(THD *thd, TABLE *table, struct st_table_ref *ref, ha_rows records);
 #endif

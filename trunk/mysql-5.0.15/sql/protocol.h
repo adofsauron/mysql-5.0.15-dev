@@ -23,8 +23,9 @@ class THD;
 typedef struct st_mysql_field MYSQL_FIELD;
 typedef struct st_mysql_rows MYSQL_ROWS;
 
-class Protocol {
-protected:
+class Protocol
+{
+ protected:
   THD *thd;
   String *packet;
   String *convert;
@@ -41,16 +42,16 @@ protected:
   MYSQL_FIELD *next_mysql_field;
   MEM_ROOT *alloc;
 #endif
-  bool store_string_aux(const char *from, uint length, CHARSET_INFO *fromcs,
-                        CHARSET_INFO *tocs);
+  bool store_string_aux(const char *from, uint length, CHARSET_INFO *fromcs, CHARSET_INFO *tocs);
 
-public:
+ public:
   Protocol() {}
   Protocol(THD *thd_arg) { init(thd_arg); }
   virtual ~Protocol() {}
   void init(THD *thd_arg);
 
-  enum {
+  enum
+  {
     SEND_NUM_ROWS = 1,
     SEND_DEFAULTS = 2,
     SEND_EOF = 4
@@ -64,14 +65,11 @@ public:
   virtual bool write();
   inline bool store(uint32 from) { return store_long((longlong)from); }
   inline bool store(longlong from) { return store_longlong((longlong)from, 0); }
-  inline bool store(ulonglong from) {
-    return store_longlong((longlong)from, 1);
-  }
-  inline bool store(String *str) {
-    return store((char *)str->ptr(), str->length(), str->charset());
-  }
+  inline bool store(ulonglong from) { return store_longlong((longlong)from, 1); }
+  inline bool store(String *str) { return store((char *)str->ptr(), str->length(), str->charset()); }
 
-  virtual bool prepare_for_send(List<Item> *item_list) {
+  virtual bool prepare_for_send(List<Item> *item_list)
+  {
     field_count = item_list->elements;
     return 0;
   }
@@ -85,8 +83,7 @@ public:
   virtual bool store_longlong(longlong from, bool unsigned_flag) = 0;
   virtual bool store_decimal(const my_decimal *) = 0;
   virtual bool store(const char *from, uint length, CHARSET_INFO *cs) = 0;
-  virtual bool store(const char *from, uint length, CHARSET_INFO *fromcs,
-                     CHARSET_INFO *tocs) = 0;
+  virtual bool store(const char *from, uint length, CHARSET_INFO *fromcs, CHARSET_INFO *tocs) = 0;
   virtual bool store(float from, uint32 decimals, String *buffer) = 0;
   virtual bool store(double from, uint32 decimals, String *buffer) = 0;
   virtual bool store(TIME *time) = 0;
@@ -97,8 +94,9 @@ public:
 
 /* Class used for the old (MySQL 4.0 protocol) */
 
-class Protocol_simple : public Protocol {
-public:
+class Protocol_simple : public Protocol
+{
+ public:
   Protocol_simple() {}
   Protocol_simple(THD *thd_arg) : Protocol(thd_arg) {}
   virtual void prepare_for_resend();
@@ -109,8 +107,7 @@ public:
   virtual bool store_longlong(longlong from, bool unsigned_flag);
   virtual bool store_decimal(const my_decimal *);
   virtual bool store(const char *from, uint length, CHARSET_INFO *cs);
-  virtual bool store(const char *from, uint length, CHARSET_INFO *fromcs,
-                     CHARSET_INFO *tocs);
+  virtual bool store(const char *from, uint length, CHARSET_INFO *fromcs, CHARSET_INFO *tocs);
   virtual bool store(TIME *time);
   virtual bool store_date(TIME *time);
   virtual bool store_time(TIME *time);
@@ -119,11 +116,12 @@ public:
   virtual bool store(Field *field);
 };
 
-class Protocol_prep : public Protocol {
-private:
+class Protocol_prep : public Protocol
+{
+ private:
   uint bit_fields;
 
-public:
+ public:
   Protocol_prep() {}
   Protocol_prep(THD *thd_arg) : Protocol(thd_arg) {}
   virtual bool prepare_for_send(List<Item> *item_list);
@@ -139,8 +137,7 @@ public:
   virtual bool store_longlong(longlong from, bool unsigned_flag);
   virtual bool store_decimal(const my_decimal *);
   virtual bool store(const char *from, uint length, CHARSET_INFO *cs);
-  virtual bool store(const char *from, uint length, CHARSET_INFO *fromcs,
-                     CHARSET_INFO *tocs);
+  virtual bool store(const char *from, uint length, CHARSET_INFO *fromcs, CHARSET_INFO *tocs);
   virtual bool store(TIME *time);
   virtual bool store_date(TIME *time);
   virtual bool store_time(TIME *time);
@@ -152,8 +149,7 @@ public:
 void send_warning(THD *thd, uint sql_errno, const char *err = 0);
 void net_printf_error(THD *thd, uint sql_errno, ...);
 void net_send_error(THD *thd, uint sql_errno = 0, const char *err = 0);
-void send_ok(THD *thd, ha_rows affected_rows = 0L, ulonglong id = 0L,
-             const char *info = 0);
+void send_ok(THD *thd, ha_rows affected_rows = 0L, ulonglong id = 0L, const char *info = 0);
 void send_eof(THD *thd);
 bool send_old_password_request(THD *thd);
 char *net_store_length(char *packet, uint length);

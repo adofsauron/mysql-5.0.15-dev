@@ -26,7 +26,8 @@
   ha_example.h.
 */
 
-typedef struct st_archive_share {
+typedef struct st_archive_share
+{
   char *table_name;
   char data_file_name[FN_REFLEN];
   uint table_name_length, use_count;
@@ -45,7 +46,8 @@ typedef struct st_archive_share {
 */
 #define ARCHIVE_VERSION 1
 
-class ha_archive : public handler {
+class ha_archive : public handler
+{
   THR_LOCK_DATA lock;        /* MySQL lock */
   ARCHIVE_SHARE *share;      /* Shared lock info */
   gzFile archive;            /* Archive file we are working with */
@@ -56,15 +58,15 @@ class ha_archive : public handler {
   bool delayed_insert;       /* If the insert is delayed */
   bool bulk_insert;          /* If we are performing a bulk insert */
 
-public:
+ public:
   ha_archive(TABLE *table_arg);
   ~ha_archive() {}
   const char *table_type() const { return "ARCHIVE"; }
   const char *index_type(uint inx) { return "NONE"; }
   const char **bas_ext() const;
-  ulong table_flags() const {
-    return (HA_REC_NOT_IN_SEQ | HA_NOT_EXACT_COUNT | HA_NO_AUTO_INCREMENT |
-            HA_FILE_BASED | HA_CAN_INSERT_DELAYED);
+  ulong table_flags() const
+  {
+    return (HA_REC_NOT_IN_SEQ | HA_NOT_EXACT_COUNT | HA_NO_AUTO_INCREMENT | HA_FILE_BASED | HA_CAN_INSERT_DELAYED);
   }
   ulong index_flags(uint idx, uint part, bool all_parts) const { return 0; }
   int open(const char *name, int mode, uint test_if_locked);
@@ -80,7 +82,7 @@ public:
   int write_meta_file(File meta_file, ha_rows rows, bool dirty);
   ARCHIVE_SHARE *get_share(const char *table_name, TABLE *table);
   int free_share(ARCHIVE_SHARE *share);
-  bool auto_repair() const { return 1; } // For the moment we just do this
+  bool auto_repair() const { return 1; }  // For the moment we just do this
   int read_data_header(gzFile file_to_read);
   int write_data_header(gzFile file_to_write);
   void position(const byte *record);
@@ -91,8 +93,7 @@ public:
   void start_bulk_insert(ha_rows rows);
   int end_bulk_insert();
   enum row_type get_row_type() const { return ROW_TYPE_COMPRESSED; }
-  THR_LOCK_DATA **store_lock(THD *thd, THR_LOCK_DATA **to,
-                             enum thr_lock_type lock_type);
+  THR_LOCK_DATA **store_lock(THD *thd, THR_LOCK_DATA **to, enum thr_lock_type lock_type);
 };
 
 bool archive_db_init(void);

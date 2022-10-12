@@ -22,32 +22,29 @@
 
 #include <heap.h>
 
-class ha_heap : public handler {
+class ha_heap : public handler
+{
   HP_INFO *file;
   key_map btree_keys;
   /* number of records changed since last statistics update */
   uint records_changed;
   bool key_stats_ok;
 
-public:
+ public:
   ha_heap(TABLE *table);
   ~ha_heap() {}
-  const char *table_type() const {
-    return (table->in_use->variables.sql_mode & MODE_MYSQL323) ? "HEAP"
-                                                               : "MEMORY";
-  }
-  const char *index_type(uint inx) {
-    return ((table->key_info[inx].algorithm == HA_KEY_ALG_BTREE) ? "BTREE"
-                                                                 : "HASH");
-  }
+  const char *table_type() const { return (table->in_use->variables.sql_mode & MODE_MYSQL323) ? "HEAP" : "MEMORY"; }
+  const char *index_type(uint inx) { return ((table->key_info[inx].algorithm == HA_KEY_ALG_BTREE) ? "BTREE" : "HASH"); }
   /* Rows also use a fixed-size format */
   enum row_type get_row_type() const { return ROW_TYPE_FIXED; }
   const char **bas_ext() const;
-  ulong table_flags() const {
-    return (HA_FAST_KEY_READ | HA_NO_BLOBS | HA_NULL_IN_KEY |
-            HA_REC_NOT_IN_SEQ | HA_READ_RND_SAME | HA_CAN_INSERT_DELAYED);
+  ulong table_flags() const
+  {
+    return (HA_FAST_KEY_READ | HA_NO_BLOBS | HA_NULL_IN_KEY | HA_REC_NOT_IN_SEQ | HA_READ_RND_SAME |
+            HA_CAN_INSERT_DELAYED);
   }
-  ulong index_flags(uint inx, uint part, bool all_parts) const {
+  ulong index_flags(uint inx, uint part, bool all_parts) const
+  {
     return ((table->key_info[inx].algorithm == HA_KEY_ALG_BTREE)
                 ? HA_READ_NEXT | HA_READ_PREV | HA_READ_ORDER | HA_READ_RANGE
                 : HA_ONLY_WHOLE_INDEX);
@@ -56,9 +53,7 @@ public:
   uint max_supported_keys() const { return MAX_KEY; }
   uint max_supported_key_part_length() const { return MAX_KEY_LENGTH; }
   double scan_time() { return (double)(records + deleted) / 20.0 + 10; }
-  double read_time(uint index, uint ranges, ha_rows rows) {
-    return (double)rows / 20.0 + 1;
-  }
+  double read_time(uint index, uint ranges, ha_rows rows) { return (double)rows / 20.0 + 1; }
 
   int open(const char *name, int mode, uint test_if_locked);
   int close(void);
@@ -67,10 +62,8 @@ public:
   int update_row(const byte *old_data, byte *new_data);
   int delete_row(const byte *buf);
   ulonglong get_auto_increment();
-  int index_read(byte *buf, const byte *key, uint key_len,
-                 enum ha_rkey_function find_flag);
-  int index_read_idx(byte *buf, uint idx, const byte *key, uint key_len,
-                     enum ha_rkey_function find_flag);
+  int index_read(byte *buf, const byte *key, uint key_len, enum ha_rkey_function find_flag);
+  int index_read_idx(byte *buf, uint idx, const byte *key, uint key_len, enum ha_rkey_function find_flag);
   int index_read_last(byte *buf, const byte *key, uint key_len);
   int index_next(byte *buf);
   int index_prev(byte *buf);
@@ -93,14 +86,14 @@ public:
   int create(const char *name, TABLE *form, HA_CREATE_INFO *create_info);
   void update_create_info(HA_CREATE_INFO *create_info);
 
-  THR_LOCK_DATA **store_lock(THD *thd, THR_LOCK_DATA **to,
-                             enum thr_lock_type lock_type);
-  int cmp_ref(const byte *ref1, const byte *ref2) {
+  THR_LOCK_DATA **store_lock(THD *thd, THR_LOCK_DATA **to, enum thr_lock_type lock_type);
+  int cmp_ref(const byte *ref1, const byte *ref2)
+  {
     HEAP_PTR ptr1 = *(HEAP_PTR *)ref1;
     HEAP_PTR ptr2 = *(HEAP_PTR *)ref2;
     return ptr1 < ptr2 ? -1 : (ptr1 > ptr2 ? 1 : 0);
   }
 
-private:
+ private:
   void update_key_stats();
 };

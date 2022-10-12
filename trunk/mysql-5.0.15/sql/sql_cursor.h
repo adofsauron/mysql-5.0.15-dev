@@ -33,14 +33,17 @@
   Server_side_cursor, not to its base class.
 */
 
-class Server_side_cursor : protected Query_arena, public Sql_alloc {
-protected:
+class Server_side_cursor : protected Query_arena, public Sql_alloc
+{
+ protected:
   /* Row destination used for fetch */
   select_result *result;
 
-public:
+ public:
   Server_side_cursor(MEM_ROOT *mem_root_arg, select_result *result_arg)
-      : Query_arena(mem_root_arg, INITIALIZED), result(result_arg) {}
+      : Query_arena(mem_root_arg, INITIALIZED), result(result_arg)
+  {
+  }
 
   virtual bool is_open() const = 0;
 
@@ -52,12 +55,12 @@ public:
   static void operator delete(void *ptr, size_t size);
 };
 
-int mysql_open_cursor(THD *thd, uint flags, select_result *result,
-                      Server_side_cursor **res);
+int mysql_open_cursor(THD *thd, uint flags, select_result *result, Server_side_cursor **res);
 
 /* Possible values for flags */
 
-enum {
+enum
+{
   ANY_CURSOR = 1,
   ALWAYS_MATERIALIZED_CURSOR = 2
 };

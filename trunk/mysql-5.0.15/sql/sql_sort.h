@@ -35,23 +35,26 @@
    the callback function 'unpack_addon_fields'.
 */
 
-typedef struct st_sort_addon_field { /* Sort addon packed field */
-  Field *field;                      /* Original field */
-  uint offset;                       /* Offset from the last sorted field */
+typedef struct st_sort_addon_field
+{                   /* Sort addon packed field */
+  Field *field;     /* Original field */
+  uint offset;      /* Offset from the last sorted field */
   uint null_offset; /* Offset to to null bit from the last sorted field */
   uint length;      /* Length in the sort buffer */
   uint8 null_bit;   /* Null bit mask for the field */
 } SORT_ADDON_FIELD;
 
-typedef struct st_buffpek { /* Struktur om sorteringsbuffrarna */
-  my_off_t file_pos;        /* Where we are in the sort file */
-  uchar *base, *key;        /* key pointers */
-  ha_rows count;            /* Number of rows in table */
-  ulong mem_count;          /* numbers of keys in memory */
-  ulong max_keys;           /* Max keys in buffert */
+typedef struct st_buffpek
+{                    /* Struktur om sorteringsbuffrarna */
+  my_off_t file_pos; /* Where we are in the sort file */
+  uchar *base, *key; /* key pointers */
+  ha_rows count;     /* Number of rows in table */
+  ulong mem_count;   /* numbers of keys in memory */
+  ulong max_keys;    /* Max keys in buffert */
 } BUFFPEK;
 
-typedef struct st_sort_param {
+typedef struct st_sort_param
+{
   uint rec_length;   /* Length of sorted records */
   uint sort_length;  /* Length of sorted columns */
   uint ref_length;   /* Length of record ref. */
@@ -68,10 +71,8 @@ typedef struct st_sort_param {
   char *tmp_buffer;
 } SORTPARAM;
 
-int merge_many_buff(SORTPARAM *param, uchar *sort_buffer, BUFFPEK *buffpek,
-                    uint *maxbuffer, IO_CACHE *t_file);
+int merge_many_buff(SORTPARAM *param, uchar *sort_buffer, BUFFPEK *buffpek, uint *maxbuffer, IO_CACHE *t_file);
 uint read_to_buffer(IO_CACHE *fromfile, BUFFPEK *buffpek, uint sort_length);
-int merge_buffers(SORTPARAM *param, IO_CACHE *from_file, IO_CACHE *to_file,
-                  uchar *sort_buffer, BUFFPEK *lastbuff, BUFFPEK *Fb,
-                  BUFFPEK *Tb, int flag);
+int merge_buffers(SORTPARAM *param, IO_CACHE *from_file, IO_CACHE *to_file, uchar *sort_buffer, BUFFPEK *lastbuff,
+                  BUFFPEK *Fb, BUFFPEK *Tb, int flag);
 void reuse_freed_buff(QUEUE *queue, BUFFPEK *reuse, uint key_length);

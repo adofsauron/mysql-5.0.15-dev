@@ -21,7 +21,8 @@
 
 struct st_sym_group;
 
-typedef struct st_symbol {
+typedef struct st_symbol
+{
   const char *name;
   uint tok;
   uint length;
@@ -29,13 +30,15 @@ typedef struct st_symbol {
   struct st_sym_group *group;
 } SYMBOL;
 
-typedef struct st_lex_symbol {
+typedef struct st_lex_symbol
+{
   SYMBOL *symbol;
   char *str;
   uint length;
 } LEX_SYMBOL;
 
-typedef struct st_sym_group {
+typedef struct st_sym_group
+{
   const char *name;
   const char *needed_define;
 } SYM_GROUP;

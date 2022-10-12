@@ -15,43 +15,47 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
 #ifdef USE_PRAGMA_IMPLEMENTATION
-#pragma implementation // gcc: Class implementation
+#pragma implementation  // gcc: Class implementation
 #endif
 
-#include "mysql_priv.h"
 #include <sys/stat.h>
+#include "mysql_priv.h"
 #ifdef HAVE_SYS_MMAN_H
 #include <sys/mman.h>
 #endif
 
 #ifndef MAP_NORESERVE
-#define MAP_NORESERVE 0 // For IRIX
+#define MAP_NORESERVE 0  // For IRIX
 #endif
 
-mapped_files::mapped_files(const my_string filename, byte *magic,
-                           uint magic_length) {
+mapped_files::mapped_files(const my_string filename, byte *magic, uint magic_length)
+{
 #ifdef HAVE_MMAP
   name = my_strdup(filename, MYF(0));
   use_count = 1;
   error = 0;
   map = 0;
   size = 0;
-  if ((file = my_open(name, O_RDONLY, MYF(MY_WME))) >= 0) {
+  if ((file = my_open(name, O_RDONLY, MYF(MY_WME))) >= 0)
+  {
     struct stat stat_buf;
-    if (!fstat(file, &stat_buf)) {
+    if (!fstat(file, &stat_buf))
+    {
       if (!(map =
-                (byte *)my_mmap(0, (size = (ulong)stat_buf.st_size), PROT_READ,
-                                MAP_SHARED | MAP_NORESERVE, file, 0L))) {
+                (byte *)my_mmap(0, (size = (ulong)stat_buf.st_size), PROT_READ, MAP_SHARED | MAP_NORESERVE, file, 0L)))
+      {
         error = errno;
         my_error(ER_NO_FILE_MAPPING, MYF(0), (my_string)name, error);
       }
     }
-    if (map && memcmp(map, magic, magic_length)) {
+    if (map && memcmp(map, magic, magic_length))
+    {
       my_error(ER_WRONG_MAGIC, MYF(0), name);
       VOID(my_munmap(map, size));
       map = 0;
     }
-    if (!map) {
+    if (!map)
+    {
       VOID(my_close(file, MYF(0)));
       file = -1;
     }
@@ -59,9 +63,11 @@ mapped_files::mapped_files(const my_string filename, byte *magic,
 #endif
 }
 
-mapped_files::~mapped_files() {
+mapped_files::~mapped_files()
+{
 #ifdef HAVE_MMAP
-  if (file >= 0) {
+  if (file >= 0)
+  {
     VOID(my_munmap(map, size));
     VOID(my_close(file, MYF(0)));
     file = -1;
@@ -78,7 +84,8 @@ static I_List<mapped_files> maps_in_use;
 **  else alloc new object
 */
 
-mapped_files *map_file(const my_string name, byte *magic, uint magic_length) {
+mapped_files *map_file(const my_string name, byte *magic, uint magic_length)
+{
 #ifdef HAVE_MMAP
   VOID(pthread_mutex_lock(&LOCK_mapped_file));
   I_List_iterator<mapped_files> list(maps_in_use);
@@ -87,17 +94,19 @@ mapped_files *map_file(const my_string name, byte *magic, uint magic_length) {
   sprintf(path, "%s/%s/%s.uniq", mysql_data_home, current_thd->db, name);
   (void)unpack_filename(path, path);
 
-  while ((map = list++)) {
-    if (!strcmp(path, map->name))
-      break;
+  while ((map = list++))
+  {
+    if (!strcmp(path, map->name)) break;
   }
-  if (!map) {
+  if (!map)
+  {
     map = new mapped_files(path, magic, magic_length);
     maps_in_use.append(map);
-  } else {
+  }
+  else
+  {
     map->use_count++;
-    if (!map->map)
-      my_error(ER_NO_FILE_MAPPING, MYF(0), path, map->error);
+    if (!map->map) my_error(ER_NO_FILE_MAPPING, MYF(0), path, map->error);
   }
   VOID(pthread_mutex_unlock(&LOCK_mapped_file));
   return map;
@@ -110,11 +119,11 @@ mapped_files *map_file(const my_string name, byte *magic, uint magic_length) {
 ** free the map if there are no more users for it
 */
 
-void unmap_file(mapped_files *map) {
+void unmap_file(mapped_files *map)
+{
 #ifdef HAVE_MMAP
   VOID(pthread_mutex_lock(&LOCK_mapped_file));
-  if (!map->use_count--)
-    delete map;
+  if (!map->use_count--) delete map;
   VOID(pthread_mutex_unlock(&LOCK_mapped_file));
 #endif
 }

@@ -28,26 +28,31 @@ static ulong volatile Cversion = 0;
   Cache of stored routines.
 */
 
-class sp_cache {
-public:
+class sp_cache
+{
+ public:
   ulong version;
 
   sp_cache();
   ~sp_cache();
 
-  inline void insert(sp_head *sp) {
+  inline void insert(sp_head *sp)
+  {
     /* TODO: why don't we check return value? */
     my_hash_insert(&m_hashtable, (const byte *)sp);
   }
 
-  inline sp_head *lookup(char *name, uint namelen) {
+  inline sp_head *lookup(char *name, uint namelen)
+  {
     return (sp_head *)hash_search(&m_hashtable, (const byte *)name, namelen);
   }
 
 #ifdef NOT_USED
-  inline bool remove(char *name, uint namelen) {
+  inline bool remove(char *name, uint namelen)
+  {
     sp_head *sp = lookup(name, namelen);
-    if (sp) {
+    if (sp)
+    {
       hash_delete(&m_hashtable, (byte *)sp);
       return TRUE;
     }
@@ -55,18 +60,19 @@ public:
   }
 #endif
 
-  inline void remove_all() {
+  inline void remove_all()
+  {
     cleanup();
     init();
   }
 
-private:
+ private:
   void init();
   void cleanup();
 
   /* All routines in this cache */
   HASH m_hashtable;
-}; // class sp_cache
+};  // class sp_cache
 
 /* Initialize the SP caching once at startup */
 
@@ -83,10 +89,12 @@ void sp_cache_init() { pthread_mutex_init(&Cversion_lock, MY_MUTEX_INIT_FAST); }
     This function doesn't invalidate other caches.
 */
 
-void sp_cache_clear(sp_cache **cp) {
+void sp_cache_clear(sp_cache **cp)
+{
   sp_cache *c = *cp;
 
-  if (c) {
+  if (c)
+  {
     delete c;
     *cp = NULL;
   }
@@ -106,19 +114,19 @@ void sp_cache_clear(sp_cache **cp) {
         error to be reported at some later time)
 */
 
-void sp_cache_insert(sp_cache **cp, sp_head *sp) {
+void sp_cache_insert(sp_cache **cp, sp_head *sp)
+{
   sp_cache *c;
   ulong v;
 
-  if (!(c = *cp)) {
-    if (!(c = new sp_cache()))
-      return;              // End of memory error
-    c->version = Cversion; // No need to lock when reading long variable
+  if (!(c = *cp))
+  {
+    if (!(c = new sp_cache())) return;  // End of memory error
+    c->version = Cversion;              // No need to lock when reading long variable
   }
-  DBUG_PRINT("info", ("sp_cache: inserting: %.*s", sp->m_qname.length,
-                      sp->m_qname.str));
+  DBUG_PRINT("info", ("sp_cache: inserting: %.*s", sp->m_qname.length, sp->m_qname.str));
   c->insert(sp);
-  *cp = c; // Update *cp if it was NULL
+  *cp = c;  // Update *cp if it was NULL
 }
 
 /*
@@ -137,10 +145,10 @@ void sp_cache_insert(sp_cache **cp, sp_head *sp) {
     NULL if the routine not found.
 */
 
-sp_head *sp_cache_lookup(sp_cache **cp, sp_name *name) {
+sp_head *sp_cache_lookup(sp_cache **cp, sp_name *name)
+{
   sp_cache *c = *cp;
-  if (!c)
-    return NULL;
+  if (!c) return NULL;
   return c->lookup(name->m_qname.str, name->m_qname.length);
 }
 
@@ -155,7 +163,8 @@ sp_head *sp_cache_lookup(sp_cache **cp, sp_name *name) {
     objects here as one may modify VIEW definitions from prelocking-free SPs.
 */
 
-void sp_cache_invalidate() {
+void sp_cache_invalidate()
+{
   DBUG_PRINT("info", ("sp_cache: invalidating"));
   thread_safe_increment(Cversion, &Cversion_lock);
 }
@@ -172,12 +181,15 @@ void sp_cache_invalidate() {
     In practice that means 'dont call this function when inside SP'.
 */
 
-void sp_cache_flush_obsolete(sp_cache **cp) {
+void sp_cache_flush_obsolete(sp_cache **cp)
+{
   sp_cache *c = *cp;
-  if (c) {
+  if (c)
+  {
     ulong v;
-    v = Cversion; // No need to lock when reading long variable
-    if (c->version < v) {
+    v = Cversion;  // No need to lock when reading long variable
+    if (c->version < v)
+    {
       DBUG_PRINT("info", ("sp_cache: deleting all functions"));
       /* We need to delete all elements. */
       c->remove_all();
@@ -190,14 +202,15 @@ void sp_cache_flush_obsolete(sp_cache **cp) {
   Internal functions
  *************************************************************************/
 
-static byte *hash_get_key_for_sp_head(const byte *ptr, uint *plen,
-                                      my_bool first) {
+static byte *hash_get_key_for_sp_head(const byte *ptr, uint *plen, my_bool first)
+{
   sp_head *sp = (sp_head *)ptr;
   *plen = sp->m_qname.length;
   return (byte *)sp->m_qname.str;
 }
 
-static void hash_free_sp_head(void *p) {
+static void hash_free_sp_head(void *p)
+{
   sp_head *sp = (sp_head *)p;
   delete sp;
 }
@@ -206,9 +219,9 @@ sp_cache::sp_cache() { init(); }
 
 sp_cache::~sp_cache() { hash_free(&m_hashtable); }
 
-void sp_cache::init() {
-  hash_init(&m_hashtable, system_charset_info, 0, 0, 0,
-            hash_get_key_for_sp_head, hash_free_sp_head, 0);
+void sp_cache::init()
+{
+  hash_init(&m_hashtable, system_charset_info, 0, 0, 0, hash_get_key_for_sp_head, hash_free_sp_head, 0);
   version = 0;
 }
 

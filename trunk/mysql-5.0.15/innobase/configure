@@ -21275,22 +21275,22 @@ esac
 if test "$ac_cv_c_compiler_gnu" = "yes"
 then
   DEBUG_CFLAGS="-g"
-  DEBUG_OPTIMIZE_CC="-O0"
+  DEBUG_OPTIMIZE_CC="-O"
   OPTIMIZE_CFLAGS="$MAX_C_OPTIMIZE"
 else
   DEBUG_CFLAGS="-g"
   DEBUG_OPTIMIZE_CC=""
-  OPTIMIZE_CFLAGS="-O0"
+  OPTIMIZE_CFLAGS="-O"
 fi
 if test "$ac_cv_prog_cxx_g" = "yes"
 then
   DEBUG_CXXFLAGS="-g"
-  DEBUG_OPTIMIZE_CXX="-O0"
+  DEBUG_OPTIMIZE_CXX="-O"
   OPTIMIZE_CXXFLAGS="-O3"
 else
   DEBUG_CXXFLAGS="-g"
   DEBUG_OPTIMIZE_CXX=""
-  OPTIMIZE_CXXFLAGS="-O0"
+  OPTIMIZE_CXXFLAGS="-O"
 fi
 
 # Check whether --with-debug or --without-debug was given.

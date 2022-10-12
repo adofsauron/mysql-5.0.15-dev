@@ -15,7 +15,7 @@ chmod +x ./bdb/dist/configure
 
 make clean
 
-make -j4
+make -j2
 
 make install
 

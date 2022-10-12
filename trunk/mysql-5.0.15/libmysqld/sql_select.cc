@@ -4157,242 +4157,242 @@ find_best(JOIN *join,table_map rest_tables,uint idx,double record_count,
 
       if (s->keyuse)
       {						/* Use key if possible */
-	TABLE *table=s->table;
-	KEYUSE *keyuse,*start_key=0;
-	double best_records=DBL_MAX;
-	uint max_key_part=0;
+	    TABLE *table=s->table;
+	    KEYUSE *keyuse,*start_key=0;
+	    double best_records=DBL_MAX;
+	    uint max_key_part=0;
 
-	/* Test how we can use keys */
-	rec= s->records/MATCHING_ROWS_IN_OTHER_TABLE;  // Assumed records/key
-	for (keyuse=s->keyuse ; keyuse->table == table ;)
-	{
-	  key_part_map found_part=0;
-	  table_map found_ref=0;
-	  uint key=keyuse->key;
-	  KEY *keyinfo=table->key_info+key;
-          bool ft_key=(keyuse->keypart == FT_KEYPART);
-	  uint found_ref_or_null= 0;
-
-	  /* Calculate how many key segments of the current key we can use */
-	  start_key=keyuse;
-	  do
-	  {
-            uint keypart=keyuse->keypart;
-            table_map best_part_found_ref= 0;
-            double best_prev_record_reads= DBL_MAX;
-	    do
+	    /* Test how we can use keys */
+	    rec= s->records/MATCHING_ROWS_IN_OTHER_TABLE;  // Assumed records/key
+	    for (keyuse=s->keyuse ; keyuse->table == table ;)
 	    {
-	      if (!(rest_tables & keyuse->used_tables) &&
-		  !(found_ref_or_null & keyuse->optimize))
-	      {
-		found_part|=keyuse->keypart_map;
-                double tmp= prev_record_reads(join,
-					      (found_ref |
-					       keyuse->used_tables));
-                if (tmp < best_prev_record_reads)
-                {
-                  best_part_found_ref= keyuse->used_tables;
-                  best_prev_record_reads= tmp;
-                }
-		if (rec > keyuse->ref_table_rows)
-		  rec= keyuse->ref_table_rows;
-		/*
-		  If there is one 'key_column IS NULL' expression, we can
-		  use this ref_or_null optimisation of this field
-		*/
-		found_ref_or_null|= (keyuse->optimize &
-				     KEY_OPTIMIZE_REF_OR_NULL);
-              }
-	      keyuse++;
-	    } while (keyuse->table == table && keyuse->key == key &&
-		     keyuse->keypart == keypart);
-	    found_ref|= best_part_found_ref;
-	  } while (keyuse->table == table && keyuse->key == key);
+	      key_part_map found_part=0;
+	      table_map found_ref=0;
+	      uint key=keyuse->key;
+	      KEY *keyinfo=table->key_info+key;
+              bool ft_key=(keyuse->keypart == FT_KEYPART);
+	      uint found_ref_or_null= 0;
 
-	  /*
-	    Assume that that each key matches a proportional part of table.
-	  */
+	      /* Calculate how many key segments of the current key we can use */
+	      start_key=keyuse;
+	      do
+	      {
+            uint keypart = keyuse->keypart;
+            table_map best_part_found_ref = 0;
+            double best_prev_record_reads = DBL_MAX;
+	        do
+	        {
+	          if (!(rest_tables & keyuse->used_tables) &&
+		            !(found_ref_or_null & keyuse->optimize))
+	          {
+		        found_part|=keyuse->keypart_map;
+                        double tmp= prev_record_reads(join,
+					              (found_ref |
+					               keyuse->used_tables));
+				if (tmp < best_prev_record_reads)
+				{
+					best_part_found_ref = keyuse->used_tables;
+					best_prev_record_reads = tmp;
+				}
+		        if (rec > keyuse->ref_table_rows)
+		          rec= keyuse->ref_table_rows;
+		        /*
+		          If there is one 'key_column IS NULL' expression, we can
+		          use this ref_or_null optimisation of this field
+		        */
+		        found_ref_or_null|= (keyuse->optimize &
+				             KEY_OPTIMIZE_REF_OR_NULL);
+              }
+	          keyuse++;
+	        } while (keyuse->table == table && keyuse->key == key &&
+		         keyuse->keypart == keypart);
+	        found_ref|= best_part_found_ref;
+	      } while (keyuse->table == table && keyuse->key == key);
+
+	      /*
+	        Assume that that each key matches a proportional part of table.
+	      */
           if (!found_part && !ft_key)
-	    continue;				// Nothing usable found
-	  if (rec < MATCHING_ROWS_IN_OTHER_TABLE)
-	    rec= MATCHING_ROWS_IN_OTHER_TABLE;	// Fix for small tables
+	        continue;				// Nothing usable found
+	      if (rec < MATCHING_ROWS_IN_OTHER_TABLE)
+	        rec= MATCHING_ROWS_IN_OTHER_TABLE;	// Fix for small tables
 
           /*
-	    ft-keys require special treatment
+	        ft-keys require special treatment
           */
           if (ft_key)
           {
             /*
-	      Really, there should be records=0.0 (yes!)
-	      but 1.0 would be probably safer
+			 Rally, there should be records=0.0 (yes!)
+			 bt 1.0 would be probably safer
             */
             tmp=prev_record_reads(join,found_ref);
             records=1.0;
           }
           else
           {
-	  found_constraint= 1;
-	  /*
-	    Check if we found full key
-	  */
-	  if (found_part == PREV_BITS(uint,keyinfo->key_parts) &&
-	      !found_ref_or_null)
-	  {				/* use eq key */
-	    max_key_part= (uint) ~0;
-	    if ((keyinfo->flags & (HA_NOSAME | HA_NULL_PART_KEY |
-				   HA_END_SPACE_KEY)) == HA_NOSAME)
-	    {
-	      tmp=prev_record_reads(join,found_ref);
-	      records=1.0;
-	    }
-	    else
-	    {
-	      if (!found_ref)
-	      {					// We found a const key
-		if (table->quick_keys.is_set(key))
-		  records= (double) table->quick_rows[key];
-		else
-		{
-		  /* quick_range couldn't use key! */
-		  records= (double) s->records/rec;
-		}
-	      }
-	      else
-	      {
-		if (!(records=keyinfo->rec_per_key[keyinfo->key_parts-1]))
-		{				// Prefere longer keys
-		  records=
-		    ((double) s->records / (double) rec *
-		     (1.0 +
-		      ((double) (table->s->max_key_length-keyinfo->key_length) /
-		       (double) table->s->max_key_length)));
-		  if (records < 2.0)
-		    records=2.0;		// Can't be as good as a unique
-		}
-	      }
-	      /* Limit the number of matched rows */
-	      tmp= records;
-	      set_if_smaller(tmp, (double) thd->variables.max_seeks_for_key);
-	      if (table->used_keys.is_set(key))
-	      {
-		/* we can use only index tree */
-		uint keys_per_block= table->file->block_size/2/
-		  (keyinfo->key_length+table->file->ref_length)+1;
-		tmp=record_count*(tmp+keys_per_block-1)/keys_per_block;
-	      }
-	      else
-		tmp=record_count*min(tmp,s->worst_seeks);
-	    }
-	  }
-	  else
-	  {
-	    /*
-	      Use as much key-parts as possible and a uniq key is better
-	      than a not unique key
-	      Set tmp to (previous record count) * (records / combination)
-	    */
-	    if ((found_part & 1) &&
-		(!(table->file->index_flags(key,0,0) & HA_ONLY_WHOLE_INDEX) ||
-		 found_part == PREV_BITS(uint,keyinfo->key_parts)))
-	    {
-	      max_key_part=max_part_bit(found_part);
-	      /*
-		Check if quick_range could determinate how many rows we
-		will match
-	      */
-	      if (table->quick_keys.is_set(key) &&
-		  table->quick_key_parts[key] == max_key_part)
-		tmp=records= (double) table->quick_rows[key];
-	      else
-	      {
-		/* Check if we have statistic about the distribution */
-		if ((records=keyinfo->rec_per_key[max_key_part-1]))
-		  tmp=records;
-		else
-		{
-		  /*
-		    Assume that the first key part matches 1% of the file
-		    and that the whole key matches 10 (duplicates) or 1
-		    (unique) records.
-		    Assume also that more key matches proportionally more
-		    records
-		    This gives the formula:
-		    records= (x * (b-a) + a*c-b)/(c-1)
+	          found_constraint= 1;
+	          /*
+	            Check if we found full key
+	          */
+	          if (found_part == PREV_BITS(uint,keyinfo->key_parts) &&
+	              !found_ref_or_null)
+	          {				/* use eq key */
+	            max_key_part= (uint) ~0;
+	            if ((keyinfo->flags & (HA_NOSAME | HA_NULL_PART_KEY |
+			               HA_END_SPACE_KEY)) == HA_NOSAME)
+	            {
+	              tmp=prev_record_reads(join,found_ref);
+	              records=1.0;
+	            }
+	            else
+	            {
+	              if (!found_ref)
+	              {					// We found a const key
+		            if (table->quick_keys.is_set(key))
+		              records= (double) table->quick_rows[key];
+		            else
+		            {
+		              /* quick_range couldn't use key! */
+		              records= (double) s->records/rec;
+		            }
+	              }
+	              else
+	              {
+		            if (!(records=keyinfo->rec_per_key[keyinfo->key_parts-1]))
+		            {				// Prefere longer keys
+		              records=
+		                ((double) s->records / (double) rec *
+		                 (1.0 +
+		                  ((double) (table->s->max_key_length-keyinfo->key_length) /
+		                   (double) table->s->max_key_length)));
+		              if (records < 2.0)
+		                records=2.0;		// Can't be as good as a unique
+		            }
+	              }
+	              /* Limit the number of matched rows */
+	              tmp= records;
+	              set_if_smaller(tmp, (double) thd->variables.max_seeks_for_key);
+	              if (table->used_keys.is_set(key))
+	              {
+		            /* we can use only index tree */
+		            uint keys_per_block= table->file->block_size/2/
+		              (keyinfo->key_length+table->file->ref_length)+1;
+		            tmp=record_count*(tmp+keys_per_block-1)/keys_per_block;
+	              }
+	              else
+		            tmp=record_count*min(tmp,s->worst_seeks);
+	            }
+	          }
+	          else
+	          {
+	            /*
+	              Use as much key-parts as possible and a uniq key is better
+	              than a not unique key
+	              Set tmp to (previous record count) * (records / combination)
+	            */
+	            if ((found_part & 1) &&
+				    (!(table->file->index_flags(key, 0, 0) & HA_ONLY_WHOLE_INDEX) ||
+					    found_part == PREV_BITS(uint, keyinfo->key_parts)))
+	            {
+	              max_key_part=max_part_bit(found_part);
+	              /*
+				    Check if quick_range could determinate how many rows we
+				    will match
+	              */
+	              if (table->quick_keys.is_set(key) &&
+		            table->quick_key_parts[key] == max_key_part)
+		                tmp=records= (double) table->quick_rows[key];
+	              else
+	              {
+		            /* Check if we have statistic about the distribution */
+		            if ((records=keyinfo->rec_per_key[max_key_part-1]))
+		              tmp=records;
+		            else
+		            {
+		              /*
+		                Assume that the first key part matches 1% of the file
+		                and that the whole key matches 10 (duplicates) or 1
+		                (unique) records.
+		                Assume also that more key matches proportionally more
+		                records
+		                This gives the formula:
+		                records= (x * (b-a) + a*c-b)/(c-1)
 
-		    b = records matched by whole key
-		    a = records matched by first key part (10% of all records?)
-		    c = number of key parts in key
-		    x = used key parts (1 <= x <= c)
-		  */
-		  double rec_per_key;
-                  rec_per_key= keyinfo->rec_per_key[keyinfo->key_parts-1] ?
-		    (double) keyinfo->rec_per_key[keyinfo->key_parts-1] :
-		    (double) s->records/rec+1;   
-		  if (!s->records)
-		    tmp=0;
-		  else if (rec_per_key/(double) s->records >= 0.01)
-		    tmp=rec_per_key;
-		  else
-		  {
-		    double a=s->records*0.01;
-		    tmp=(max_key_part * (rec_per_key - a) +
-			 a*keyinfo->key_parts - rec_per_key)/
-		      (keyinfo->key_parts-1);
-		    set_if_bigger(tmp,1.0);
-		  }
-		  records=(ulong) tmp;
-		}
-		/*
-		  If quick_select was used on a part of this key, we know
-		  the maximum number of rows that the key can match.
-		*/
-		if (table->quick_keys.is_set(key) &&
-		    table->quick_key_parts[key] <= max_key_part &&
-		    records > (double) table->quick_rows[key])
-		  tmp= records= (double) table->quick_rows[key];
-		else if (found_ref_or_null)
-		{
-		  /* We need to do two key searches to find key */
-		  tmp*= 2.0;
-		  records*= 2.0;
-		}
-	      }
-	      /* Limit the number of matched rows */
-	      set_if_smaller(tmp, (double) thd->variables.max_seeks_for_key);
-	      if (table->used_keys.is_set(key))
-	      {
-		/* we can use only index tree */
-		uint keys_per_block= table->file->block_size/2/
-		  (keyinfo->key_length+table->file->ref_length)+1;
-		tmp=record_count*(tmp+keys_per_block-1)/keys_per_block;
-	      }
-	      else
-		tmp=record_count*min(tmp,s->worst_seeks);
-	    }
-	    else
-	      tmp=best_time;			// Do nothing
-	  }
+		                b = records matched by whole key
+		                a = records matched by first key part (10% of all records?)
+		                c = number of key parts in key
+		                x = used key parts (1 <= x <= c)
+		              */
+		              double rec_per_key;
+                              rec_per_key= keyinfo->rec_per_key[keyinfo->key_parts-1] ?
+		                (double) keyinfo->rec_per_key[keyinfo->key_parts-1] :
+		                (double) s->records/rec+1;   
+		              if (!s->records)
+		                tmp=0;
+		              else if (rec_per_key/(double) s->records >= 0.01)
+		                tmp=rec_per_key;
+		              else
+		              {
+		                double a=s->records*0.01;
+		                tmp=(max_key_part * (rec_per_key - a) +
+		                 a*keyinfo->key_parts - rec_per_key)/
+		                  (keyinfo->key_parts-1);
+		                set_if_bigger(tmp,1.0);
+		              }
+		              records=(ulong) tmp;
+		            }
+		            /*
+		              If quick_select was used on a part of this key, we know
+		              the maximum number of rows that the key can match.
+		            */
+		            if (table->quick_keys.is_set(key) &&
+		                table->quick_key_parts[key] <= max_key_part &&
+		                records > (double) table->quick_rows[key])
+		              tmp= records= (double) table->quick_rows[key];
+		            else if (found_ref_or_null)
+		            {
+		              /* We need to do two key searches to find key */
+		              tmp*= 2.0;
+		              records*= 2.0;
+		            }
+	              }
+	              /* Limit the number of matched rows */
+	              set_if_smaller(tmp, (double) thd->variables.max_seeks_for_key);
+	              if (table->used_keys.is_set(key))
+	              {
+		            /* we can use only index tree */
+		            uint keys_per_block= table->file->block_size/2/
+		              (keyinfo->key_length+table->file->ref_length)+1;
+		            tmp=record_count*(tmp+keys_per_block-1)/keys_per_block;
+	              }
+	              else
+		            tmp=record_count*min(tmp,s->worst_seeks);
+	            }
+	            else
+	              tmp=best_time;			// Do nothing
+	          }
           } /* not ft_key */
-	  if (tmp < best_time - records/(double) TIME_FOR_COMPARE)
-	  {
-	    best_time=tmp + records/(double) TIME_FOR_COMPARE;
-	    best=tmp;
-	    best_records=records;
-	    best_key=start_key;
-	    best_max_key_part=max_key_part;
-	  }
-	}
-	records=best_records;
+	      if (tmp < best_time - records/(double) TIME_FOR_COMPARE)
+	      {
+	        best_time=tmp + records/(double) TIME_FOR_COMPARE;
+	        best=tmp;
+	        best_records=records;
+	        best_key=start_key;
+	        best_max_key_part=max_key_part;
+	      }
+	    }
+	    records=best_records;
       }
 
       /*
-	Don't test table scan if it can't be better.
-	Prefer key lookup if we would use the same key for scanning.
+		Don't test table scan if it can't be better.
+		Prefer key lookup if we would use the same key for scanning.
 
-	Don't do a table scan on InnoDB tables, if we can read the used
-	parts of the row from any of the used index.
-	This is because table scans uses index and we would not win
-	anything by using a table scan.
+		Don't do a table scan on InnoDB tables, if we can read the used
+		parts of the row from any of the used index.
+		This is because table scans uses index and we would not win
+		anything by using a table scan.
       */
       if ((records >= s->found_records || best > s->read_time) &&
 	  !(s->quick && best_key && s->quick->index == best_key->key &&
@@ -4464,53 +4464,53 @@ find_best(JOIN *join,table_map rest_tables,uint idx,double record_count,
           as record_count * rnd_records / TIME_FOR_COMPARE. This cost plus
           tmp give us total cost of using TABLE SCAN
         */
-	if (best == DBL_MAX ||
-	    (tmp  + record_count/(double) TIME_FOR_COMPARE*rnd_records <
-	     best + record_count/(double) TIME_FOR_COMPARE*records))
-	{
-	  /*
-	    If the table has a range (s->quick is set) make_join_select()
-	    will ensure that this will be used
-	  */
-	  best=tmp;
-	  records= rows2double(rnd_records);
-	  best_key=0;
-	}
+	    if (best == DBL_MAX ||
+	        (tmp  + record_count/(double) TIME_FOR_COMPARE*rnd_records <
+	         best + record_count/(double) TIME_FOR_COMPARE*records))
+	    {
+	      /*
+	        If the table has a range (s->quick is set) make_join_select()
+	        will ensure that this will be used
+	      */
+	      best=tmp;
+	      records= rows2double(rnd_records);
+	      best_key=0;
+	    }
       }
       join->positions[idx].records_read= records;
       join->positions[idx].key=best_key;
       join->positions[idx].table= s;
       if (!best_key && idx == join->const_tables &&
-	  s->table == join->sort_by_table &&
-	  join->unit->select_limit_cnt >= records)
-	join->sort_by_table= (TABLE*) 1;	// Must use temporary table
+		  s->table == join->sort_by_table &&
+		  join->unit->select_limit_cnt >= records)
+	    join->sort_by_table= (TABLE*) 1;	// Must use temporary table
 
-     /*
-	Go to the next level only if there hasn't been a better key on
-	this level! This will cut down the search for a lot simple cases!
-       */
+      /*
+	    Go to the next level only if there hasn't been a better key on
+	    this level! This will cut down the search for a lot simple cases!
+      */
       double current_record_count=record_count*records;
       double current_read_time=read_time+best;
       if (best_record_count > current_record_count ||
 	  best_read_time > current_read_time ||
 	  idx == join->const_tables && s->table == join->sort_by_table)
       {
-	if (best_record_count >= current_record_count &&
-	    best_read_time >= current_read_time &&
-	    (!(s->key_dependent & rest_tables) || records < 2.0))
-	{
-	  best_record_count=current_record_count;
-	  best_read_time=current_read_time;
-	}
-	swap_variables(JOIN_TAB*, join->best_ref[idx], *pos);
-	find_best(join,rest_tables & ~real_table_bit,idx+1,
-		  current_record_count,current_read_time);
-        if (thd->killed)
-          return;
-	swap_variables(JOIN_TAB*, join->best_ref[idx], *pos);
+		  if (best_record_count >= current_record_count &&
+			    best_read_time >= current_read_time &&
+			    (!(s->key_dependent & rest_tables) || records < 2.0))
+		  {
+			  best_record_count = current_record_count;
+			  best_read_time = current_read_time;
+		  }
+		  swap_variables(JOIN_TAB*, join->best_ref[idx], *pos);
+		  find_best(join, rest_tables & ~real_table_bit, idx + 1,
+			  current_record_count, current_read_time);
+		  if (thd->killed)
+			  return;
+		  swap_variables(JOIN_TAB*, join->best_ref[idx], *pos);
       }
       if (join->select_options & SELECT_STRAIGHT_JOIN)
-	break;				// Don't test all combinations
+	    break;				// Don't test all combinations
     }
   }
 }

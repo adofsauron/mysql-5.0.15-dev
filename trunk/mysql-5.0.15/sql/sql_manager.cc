@@ -14,7 +14,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-/* 
+/*
  * sql_manager.cc
  * This thread manages various maintenance tasks.
  *
@@ -55,16 +55,16 @@ pthread_handler_t handle_manager(void *arg __attribute__((unused)))
     {
       if (reset_flush_time)
       {
-	set_timespec(abstime, flush_time);
+        set_timespec(abstime, flush_time);
         reset_flush_time = FALSE;
       }
       while (!manager_status && (!error || error == EINTR) && !abort_loop)
-        error= pthread_cond_timedwait(&COND_manager, &LOCK_manager, &abstime);
+        error = pthread_cond_timedwait(&COND_manager, &LOCK_manager, &abstime);
     }
     else
     {
       while (!manager_status && (!error || error == EINTR) && !abort_loop)
-        error= pthread_cond_wait(&COND_manager, &LOCK_manager);
+        error = pthread_cond_wait(&COND_manager, &LOCK_manager);
     }
     status = manager_status;
     manager_status = 0;

@@ -39,11 +39,10 @@ enum Gis_read_stream::enum_tok_types Gis_read_stream::get_next_toc_type()
   return unknown;
 }
 
-
 bool Gis_read_stream::get_next_word(LEX_STRING *res)
 {
   skip_space();
-  res->str= (char*) m_cur;
+  res->str = (char *)m_cur;
   /* The following will also test for \0 */
   if (!my_isvar_start(&my_charset_bin, *m_cur))
     return 1;
@@ -53,13 +52,11 @@ bool Gis_read_stream::get_next_word(LEX_STRING *res)
     my_isvar() is a macro that would cause side effects
   */
   m_cur++;
-  while ((m_cur < m_limit) && my_isvar(&my_charset_bin, *m_cur))
-    m_cur++;
+  while ((m_cur < m_limit) && my_isvar(&my_charset_bin, *m_cur)) m_cur++;
 
-  res->length= (uint32) (m_cur - res->str);
+  res->length = (uint32)(m_cur - res->str);
   return 0;
 }
-
 
 /*
   Read a floating point number
@@ -75,22 +72,19 @@ bool Gis_read_stream::get_next_number(double *d)
 
   skip_space();
 
-  if ((m_cur >= m_limit) ||
-      (*m_cur < '0' || *m_cur > '9') && *m_cur != '-' && *m_cur != '+')
+  if ((m_cur >= m_limit) || (*m_cur < '0' || *m_cur > '9') && *m_cur != '-' && *m_cur != '+')
   {
     set_error_msg("Numeric constant expected");
     return 1;
   }
 
-  *d = my_strntod(m_charset, (char *)m_cur,
-		  (uint) (m_limit-m_cur), &endptr, &err);
+  *d = my_strntod(m_charset, (char *)m_cur, (uint)(m_limit - m_cur), &endptr, &err);
   if (err)
     return 1;
   if (endptr)
     m_cur = endptr;
   return 0;
 }
-
 
 bool Gis_read_stream::check_next_symbol(char symbol)
 {
@@ -99,7 +93,7 @@ bool Gis_read_stream::check_next_symbol(char symbol)
   {
     char buff[32];
     strmov(buff, "'?' expected");
-    buff[2]= symbol;
+    buff[2] = symbol;
     set_error_msg(buff);
     return 1;
   }
@@ -107,14 +101,13 @@ bool Gis_read_stream::check_next_symbol(char symbol)
   return 0;
 }
 
-
 /*
   Remember error message.
 */
 
 void Gis_read_stream::set_error_msg(const char *msg)
 {
-  size_t len= strlen(msg);			// ok in this context
-  m_err_msg= (char *) my_realloc(m_err_msg, (uint) len + 1, MYF(MY_ALLOW_ZERO_PTR));
+  size_t len = strlen(msg);  // ok in this context
+  m_err_msg = (char *)my_realloc(m_err_msg, (uint)len + 1, MYF(MY_ALLOW_ZERO_PTR));
   memcpy(m_err_msg, msg, len + 1);
 }

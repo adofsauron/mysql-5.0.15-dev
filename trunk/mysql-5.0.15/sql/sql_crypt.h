@@ -14,25 +14,26 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-
-#ifdef USE_PRAGMA_INTERFACE 
-#pragma interface			/* gcc class implementation */
+#ifdef USE_PRAGMA_INTERFACE
+#pragma interface /* gcc class implementation */
 #endif
 
-class SQL_CRYPT :public Sql_alloc
+class SQL_CRYPT : public Sql_alloc
 {
-  struct rand_struct rand,org_rand;
-  char decode_buff[256],encode_buff[256];
+  struct rand_struct rand, org_rand;
+  char decode_buff[256], encode_buff[256];
   uint shift;
   void crypt_init(ulong *seed);
+
  public:
   SQL_CRYPT(const char *seed);
-  SQL_CRYPT(ulong *seed)
-  {
-    crypt_init(seed);
-  }
+  SQL_CRYPT(ulong *seed) { crypt_init(seed); }
   ~SQL_CRYPT() {}
-  void init() { shift=0; rand=org_rand; }
+  void init()
+  {
+    shift = 0;
+    rand = org_rand;
+  }
   void encode(char *str, uint length);
   void decode(char *str, uint length);
 };

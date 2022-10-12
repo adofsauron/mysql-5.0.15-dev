@@ -17,7 +17,7 @@
 /* subselect Item */
 
 #ifdef USE_PRAGMA_INTERFACE
-#pragma interface			/* gcc class implementation */
+#pragma interface /* gcc class implementation */
 #endif
 
 class st_select_lex;
@@ -29,10 +29,10 @@ class Item_bool_func2;
 
 /* base class for subselects */
 
-class Item_subselect :public Item_result_field
+class Item_subselect : public Item_result_field
 {
   my_bool value_assigned; /* value already assigned to subselect */
-protected:
+ protected:
   /* thread handler, will be assigned in fix_fields only */
   THD *thd;
   /* substitution instead of subselect in case of optimization */
@@ -54,15 +54,27 @@ protected:
   /* cache of constant state */
   bool const_item_cache;
 
-public:
+ public:
   /* changed engine indicator */
   bool engine_changed;
   /* subquery is transformed */
   bool changed;
 
-  enum trans_res {RES_OK, RES_REDUCE, RES_ERROR};
-  enum subs_type {UNKNOWN_SUBS, SINGLEROW_SUBS,
-		  EXISTS_SUBS, IN_SUBS, ALL_SUBS, ANY_SUBS};
+  enum trans_res
+  {
+    RES_OK,
+    RES_REDUCE,
+    RES_ERROR
+  };
+  enum subs_type
+  {
+    UNKNOWN_SUBS,
+    SINGLEROW_SUBS,
+    EXISTS_SUBS,
+    IN_SUBS,
+    ALL_SUBS,
+    ANY_SUBS
+  };
 
   Item_subselect();
 
@@ -73,18 +85,14 @@ public:
      pointer in constructor initialization list, but we need pass pointer
      to subselect Item class to select_subselect classes constructor.
   */
-  virtual void init (st_select_lex *select_lex,
-		     select_subselect *result);
+  virtual void init(st_select_lex *select_lex, select_subselect *result);
 
   ~Item_subselect();
   void cleanup();
-  virtual void reset()
-  {
-    null_value= 1;
-  }
+  virtual void reset() { null_value = 1; }
   virtual trans_res select_transformer(JOIN *join);
   bool assigned() { return value_assigned; }
-  void assigned(bool a) { value_assigned= a; }
+  void assigned(bool a) { value_assigned = a; }
   enum Type type() const;
   bool is_null()
   {
@@ -104,9 +112,9 @@ public:
   void print(String *str);
   bool change_engine(subselect_engine *eng)
   {
-    old_engine= engine;
-    engine= eng;
-    engine_changed= 1;
+    old_engine = engine;
+    engine = eng;
+    engine_changed = 1;
     return eng == 0;
   }
   /*
@@ -126,39 +134,38 @@ public:
   friend class Item_in_optimizer;
   friend bool Item_field::fix_fields(THD *, Item **);
   friend bool Item_ref::fix_fields(THD *, Item **);
-  friend void mark_select_range_as_dependent(THD*,
-                                             st_select_lex*, st_select_lex*,
-                                             Field*, Item*, Item_ident*);
+  friend void mark_select_range_as_dependent(THD *, st_select_lex *, st_select_lex *, Field *, Item *, Item_ident *);
 };
 
 /* single value subselect */
 
 class Item_cache;
-class Item_singlerow_subselect :public Item_subselect
+class Item_singlerow_subselect : public Item_subselect
 {
-protected:
+ protected:
   Item_cache *value, **row;
-public:
+
+ public:
   Item_singlerow_subselect(st_select_lex *select_lex);
-  Item_singlerow_subselect() :Item_subselect(), value(0), row (0) {}
+  Item_singlerow_subselect() : Item_subselect(), value(0), row(0) {}
 
   void cleanup();
   subs_type substype() { return SINGLEROW_SUBS; }
 
   void reset();
   trans_res select_transformer(JOIN *join);
-  void store(uint i, Item* item);
+  void store(uint i, Item *item);
   double val_real();
-  longlong val_int ();
-  String *val_str (String *);
+  longlong val_int();
+  String *val_str(String *);
   my_decimal *val_decimal(my_decimal *);
   bool val_bool();
   enum Item_result result_type() const;
   void fix_length_and_dec();
 
   uint cols();
-  Item* el(uint i) { return my_reinterpret_cast(Item*)(row[i]); }
-  Item** addr(uint i) { return (Item**)row + i; }
+  Item *el(uint i) { return my_reinterpret_cast(Item *)(row[i]); }
+  Item **addr(uint i) { return (Item **)row + i; }
   bool check_cols(uint c);
   bool null_inside();
   void bring_value();
@@ -168,42 +175,38 @@ public:
 
 /* used in static ALL/ANY optimization */
 class select_max_min_finder_subselect;
-class Item_maxmin_subselect :public Item_singlerow_subselect
+class Item_maxmin_subselect : public Item_singlerow_subselect
 {
-protected:
+ protected:
   bool max;
   bool was_values;  // Set if we have found at least one row
-public:
-  Item_maxmin_subselect(THD *thd, Item_subselect *parent,
-			st_select_lex *select_lex, bool max);
+ public:
+  Item_maxmin_subselect(THD *thd, Item_subselect *parent, st_select_lex *select_lex, bool max);
   void print(String *str);
   void cleanup();
   bool any_value() { return was_values; }
-  void register_value() { was_values= TRUE; }
-  void reset_value_registration() { was_values= FALSE; }
+  void register_value() { was_values = TRUE; }
+  void reset_value_registration() { was_values = FALSE; }
 };
 
 /* exists subselect */
 
-class Item_exists_subselect :public Item_subselect
+class Item_exists_subselect : public Item_subselect
 {
-protected:
+ protected:
   bool value; /* value of this item (boolean: exists/not-exists) */
 
-public:
+ public:
   Item_exists_subselect(st_select_lex *select_lex);
-  Item_exists_subselect(): Item_subselect() {}
+  Item_exists_subselect() : Item_subselect() {}
 
   subs_type substype() { return EXISTS_SUBS; }
-  void reset() 
-  {
-    value= 0;
-  }
+  void reset() { value = 0; }
 
-  enum Item_result result_type() const { return INT_RESULT;}
+  enum Item_result result_type() const { return INT_RESULT; }
   longlong val_int();
   double val_real();
-  String *val_str(String*);
+  String *val_str(String *);
   my_decimal *val_decimal(my_decimal *);
   bool val_bool();
   void fix_length_and_dec();
@@ -216,9 +219,9 @@ public:
 
 /* IN subselect */
 
-class Item_in_subselect :public Item_exists_subselect
+class Item_in_subselect : public Item_exists_subselect
 {
-protected:
+ protected:
   Item *left_expr;
   /*
     expr & optimizer used in subselect rewriting to store Item for
@@ -229,32 +232,30 @@ protected:
   bool was_null;
   bool abort_on_null;
   bool transformed;
-public:
-  Item_func_not_all *upper_item; // point on NOT/NOP before ALL/SOME subquery
 
-  Item_in_subselect(Item * left_expr, st_select_lex *select_lex);
-  Item_in_subselect()
-    :Item_exists_subselect(), optimizer(0), abort_on_null(0), transformed(0),
-     upper_item(0)
-  {}
+ public:
+  Item_func_not_all *upper_item;  // point on NOT/NOP before ALL/SOME subquery
+
+  Item_in_subselect(Item *left_expr, st_select_lex *select_lex);
+  Item_in_subselect() : Item_exists_subselect(), optimizer(0), abort_on_null(0), transformed(0), upper_item(0) {}
 
   subs_type substype() { return IN_SUBS; }
-  void reset() 
+  void reset()
   {
-    value= 0;
-    null_value= 0;
-    was_null= 0;
+    value = 0;
+    null_value = 0;
+    was_null = 0;
   }
   trans_res select_transformer(JOIN *join);
   trans_res select_in_like_transformer(JOIN *join, Comp_creator *func);
   trans_res single_value_transformer(JOIN *join, Comp_creator *func);
-  trans_res row_value_transformer(JOIN * join);
+  trans_res row_value_transformer(JOIN *join);
   longlong val_int();
   double val_real();
-  String *val_str(String*);
+  String *val_str(String *);
   my_decimal *val_decimal(my_decimal *);
   bool val_bool();
-  void top_level_item() { abort_on_null=1; }
+  void top_level_item() { abort_on_null = 1; }
   bool test_limit(st_select_lex_unit *unit);
   void print(String *str);
 
@@ -263,167 +264,146 @@ public:
   friend class subselect_indexsubquery_engine;
 };
 
-
 /* ALL/ANY/SOME subselect */
-class Item_allany_subselect :public Item_in_subselect
+class Item_allany_subselect : public Item_in_subselect
 {
-protected:
+ protected:
   Comp_creator *func;
 
-public:
+ public:
   bool all;
 
-  Item_allany_subselect(Item * left_expr, Comp_creator *f,
-		     st_select_lex *select_lex, bool all);
+  Item_allany_subselect(Item *left_expr, Comp_creator *f, st_select_lex *select_lex, bool all);
 
   // only ALL subquery has upper not
-  subs_type substype() { return all?ALL_SUBS:ANY_SUBS; }
+  subs_type substype() { return all ? ALL_SUBS : ANY_SUBS; }
   trans_res select_transformer(JOIN *join);
   void print(String *str);
 };
 
-
-class subselect_engine: public Sql_alloc
+class subselect_engine : public Sql_alloc
 {
-protected:
-  select_subselect *result; /* results storage class */
-  THD *thd; /* pointer to current THD */
-  Item_subselect *item; /* item, that use this engine */
+ protected:
+  select_subselect *result;  /* results storage class */
+  THD *thd;                  /* pointer to current THD */
+  Item_subselect *item;      /* item, that use this engine */
   enum Item_result res_type; /* type of results */
-  bool maybe_null; /* may be null (first item in select) */
-public:
-
-  subselect_engine(Item_subselect *si, select_subselect *res)
-    :thd(0)
+  bool maybe_null;           /* may be null (first item in select) */
+ public:
+  subselect_engine(Item_subselect *si, select_subselect *res) : thd(0)
   {
-    result= res;
-    item= si;
-    res_type= STRING_RESULT;
-    maybe_null= 0;
+    result = res;
+    item = si;
+    res_type = STRING_RESULT;
+    maybe_null = 0;
   }
-  virtual ~subselect_engine() {}; // to satisfy compiler
-  virtual void cleanup()= 0;
+  virtual ~subselect_engine(){};  // to satisfy compiler
+  virtual void cleanup() = 0;
 
   /*
     Also sets "thd" for subselect_engine::result.
     Should be called before prepare().
   */
   void set_thd(THD *thd_arg);
-  THD * get_thd() { return thd; }
-  virtual int prepare()= 0;
-  virtual void fix_length_and_dec(Item_cache** row)= 0;
-  virtual int exec()= 0;
-  virtual uint cols()= 0; /* return number of columns in select */
-  virtual uint8 uncacheable()= 0; /* query is uncacheable */
+  THD *get_thd() { return thd; }
+  virtual int prepare() = 0;
+  virtual void fix_length_and_dec(Item_cache **row) = 0;
+  virtual int exec() = 0;
+  virtual uint cols() = 0;         /* return number of columns in select */
+  virtual uint8 uncacheable() = 0; /* query is uncacheable */
   enum Item_result type() { return res_type; }
-  virtual void exclude()= 0;
+  virtual void exclude() = 0;
   bool may_be_null() { return maybe_null; };
-  virtual table_map upper_select_const_tables()= 0;
+  virtual table_map upper_select_const_tables() = 0;
   static table_map calc_const_tables(TABLE_LIST *);
-  virtual void print(String *str)= 0;
-  virtual bool change_result(Item_subselect *si, select_subselect *result)= 0;
-  virtual bool no_tables()= 0;
+  virtual void print(String *str) = 0;
+  virtual bool change_result(Item_subselect *si, select_subselect *result) = 0;
+  virtual bool no_tables() = 0;
   virtual bool is_executed() const { return FALSE; }
 };
 
-
-class subselect_single_select_engine: public subselect_engine
+class subselect_single_select_engine : public subselect_engine
 {
-  my_bool prepared; /* simple subselect is prepared */
-  my_bool optimized; /* simple subselect is optimized */
-  my_bool executed; /* simple subselect is executed */
+  my_bool prepared;          /* simple subselect is prepared */
+  my_bool optimized;         /* simple subselect is optimized */
+  my_bool executed;          /* simple subselect is executed */
   st_select_lex *select_lex; /* corresponding select_lex */
-  JOIN * join; /* corresponding JOIN structure */
-public:
-  subselect_single_select_engine(st_select_lex *select,
-				 select_subselect *result,
-				 Item_subselect *item);
+  JOIN *join;                /* corresponding JOIN structure */
+ public:
+  subselect_single_select_engine(st_select_lex *select, select_subselect *result, Item_subselect *item);
   void cleanup();
   int prepare();
-  void fix_length_and_dec(Item_cache** row);
+  void fix_length_and_dec(Item_cache **row);
   int exec();
   uint cols();
   uint8 uncacheable();
   void exclude();
   table_map upper_select_const_tables();
-  void print (String *str);
+  void print(String *str);
   bool change_result(Item_subselect *si, select_subselect *result);
   bool no_tables();
   bool is_executed() const { return executed; }
 };
 
-
-class subselect_union_engine: public subselect_engine
+class subselect_union_engine : public subselect_engine
 {
-  st_select_lex_unit *unit;  /* corresponding unit structure */
-public:
-  subselect_union_engine(st_select_lex_unit *u,
-			 select_subselect *result,
-			 Item_subselect *item);
+  st_select_lex_unit *unit; /* corresponding unit structure */
+ public:
+  subselect_union_engine(st_select_lex_unit *u, select_subselect *result, Item_subselect *item);
   void cleanup();
   int prepare();
-  void fix_length_and_dec(Item_cache** row);
+  void fix_length_and_dec(Item_cache **row);
   int exec();
   uint cols();
   uint8 uncacheable();
   void exclude();
   table_map upper_select_const_tables();
-  void print (String *str);
+  void print(String *str);
   bool change_result(Item_subselect *si, select_subselect *result);
   bool no_tables();
   bool is_executed() const;
 };
 
-
 struct st_join_table;
-class subselect_uniquesubquery_engine: public subselect_engine
+class subselect_uniquesubquery_engine : public subselect_engine
 {
-protected:
+ protected:
   st_join_table *tab;
   Item *cond;
-public:
 
+ public:
   // constructor can assign THD because it will be called after JOIN::prepare
-  subselect_uniquesubquery_engine(THD *thd_arg, st_join_table *tab_arg,
-				  Item_subselect *subs, Item *where)
-    :subselect_engine(subs, 0), tab(tab_arg), cond(where)
+  subselect_uniquesubquery_engine(THD *thd_arg, st_join_table *tab_arg, Item_subselect *subs, Item *where)
+      : subselect_engine(subs, 0), tab(tab_arg), cond(where)
   {
     set_thd(thd_arg);
   }
   ~subselect_uniquesubquery_engine();
   void cleanup();
   int prepare();
-  void fix_length_and_dec(Item_cache** row);
+  void fix_length_and_dec(Item_cache **row);
   int exec();
   uint cols() { return 1; }
   uint8 uncacheable() { return UNCACHEABLE_DEPENDENT; }
   void exclude();
   table_map upper_select_const_tables() { return 0; }
-  void print (String *str);
+  void print(String *str);
   bool change_result(Item_subselect *si, select_subselect *result);
   bool no_tables();
 };
 
-
-class subselect_indexsubquery_engine: public subselect_uniquesubquery_engine
+class subselect_indexsubquery_engine : public subselect_uniquesubquery_engine
 {
   bool check_null;
-public:
 
+ public:
   // constructor can assign THD because it will be called after JOIN::prepare
-  subselect_indexsubquery_engine(THD *thd, st_join_table *tab_arg,
-				 Item_subselect *subs, Item *where,
-				 bool chk_null)
-    :subselect_uniquesubquery_engine(thd, tab_arg, subs, where),
-     check_null(chk_null)
-  {}
+  subselect_indexsubquery_engine(THD *thd, st_join_table *tab_arg, Item_subselect *subs, Item *where, bool chk_null)
+      : subselect_uniquesubquery_engine(thd, tab_arg, subs, where), check_null(chk_null)
+  {
+  }
   int exec();
-  void print (String *str);
+  void print(String *str);
 };
 
-
-inline bool Item_subselect::is_evaluated() const
-{
-  return engine->is_executed();
-}
-
+inline bool Item_subselect::is_evaluated() const { return engine->is_executed(); }

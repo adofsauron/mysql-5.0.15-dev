@@ -43,7 +43,7 @@ C_MODE_END
   digits in one our big digit decreased on 1 (because we always put decimal
   point on the border of our big digits))
 */
-#define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8*2)
+#define DECIMAL_MAX_PRECISION ((DECIMAL_BUFF_LENGTH * 9) - 8 * 2)
 #define DECIMAL_MAX_SCALE 30
 #define DECIMAL_NOT_SPECIFIED 31
 
@@ -57,7 +57,6 @@ C_MODE_END
 */
 #define DECIMAL_MAX_FIELD_SIZE DECIMAL_MAX_PRECISION
 
-
 inline uint my_decimal_size(uint precision, uint scale)
 {
   /*
@@ -67,12 +66,10 @@ inline uint my_decimal_size(uint precision, uint scale)
   return decimal_size(precision, scale) + 1;
 }
 
-
 inline int my_decimal_int_part(uint precision, uint decimals)
 {
   return precision - ((decimals == DECIMAL_NOT_SPECIFIED) ? 0 : decimals);
 }
-
 
 /*
   my_decimal class limits 'decimal_t' type to what we need in MySQL
@@ -81,37 +78,31 @@ inline int my_decimal_int_part(uint precision, uint decimals)
   when he moves my_decimal objects in memory
 */
 
-class my_decimal :public decimal_t
+class my_decimal : public decimal_t
 {
   decimal_digit_t buffer[DECIMAL_BUFF_LENGTH];
 
-public:
-
+ public:
   void init()
   {
-    len= DECIMAL_BUFF_LENGTH;
-    buf= buffer;
-#if !defined (HAVE_purify) && !defined(DBUG_OFF)
+    len = DECIMAL_BUFF_LENGTH;
+    buf = buffer;
+#if !defined(HAVE_purify) && !defined(DBUG_OFF)
     /* Set buffer to 'random' value to find wrong buffer usage */
-    for (uint i= 0; i < DECIMAL_BUFF_LENGTH; i++)
-      buffer[i]= i;
+    for (uint i = 0; i < DECIMAL_BUFF_LENGTH; i++) buffer[i] = i;
 #endif
   }
-  my_decimal()
-  {
-    init();
-  }
-  void fix_buffer_pointer() { buf= buffer; }
+  my_decimal() { init(); }
+  void fix_buffer_pointer() { buf = buffer; }
 
   bool sign() const { return decimal_t::sign; }
-  void sign(bool s) { decimal_t::sign= s; }
+  void sign(bool s) { decimal_t::sign = s; }
   uint precision() const { return intg + frac; }
 };
 
-
 #ifndef DBUG_OFF
 void print_decimal(const my_decimal *dec);
-void print_decimal_buff(const my_decimal *dec, const byte* ptr, int length);
+void print_decimal_buff(const my_decimal *dec, const byte *ptr, int length);
 const char *dbug_decimal_as_string(char *buff, const my_decimal *val);
 #else
 #define dbug_decimal_as_string(A) NULL
@@ -120,10 +111,7 @@ const char *dbug_decimal_as_string(char *buff, const my_decimal *val);
 #ifndef MYSQL_CLIENT
 int decimal_operation_results(int result);
 #else
-inline int decimal_operation_results(int result)
-{
-  return result;
-}
+inline int decimal_operation_results(int result) { return result; }
 #endif /*MYSQL_CLIENT*/
 
 inline int check_result(uint mask, int result)
@@ -133,227 +121,154 @@ inline int check_result(uint mask, int result)
   return result;
 }
 
-inline uint my_decimal_length_to_precision(uint length, uint scale,
-                                           bool unsigned_flag)
+inline uint my_decimal_length_to_precision(uint length, uint scale, bool unsigned_flag)
 {
-  return (uint) (length - (scale>0 ? 1:0) - (unsigned_flag ? 0:1));
+  return (uint)(length - (scale > 0 ? 1 : 0) - (unsigned_flag ? 0 : 1));
 }
 
-inline uint32 my_decimal_precision_to_length(uint precision, uint8 scale,
-                                             bool unsigned_flag)
+inline uint32 my_decimal_precision_to_length(uint precision, uint8 scale, bool unsigned_flag)
 {
   set_if_smaller(precision, DECIMAL_MAX_PRECISION);
-  return (uint32)(precision + (scale>0 ? 1:0) + (unsigned_flag ? 0:1));
+  return (uint32)(precision + (scale > 0 ? 1 : 0) + (unsigned_flag ? 0 : 1));
 }
 
-inline
-int my_decimal_string_length(const my_decimal *d)
-{
-  return decimal_string_size(d);
-}
+inline int my_decimal_string_length(const my_decimal *d) { return decimal_string_size(d); }
 
-
-inline
-int my_decimal_max_length(const my_decimal *d)
+inline int my_decimal_max_length(const my_decimal *d)
 {
   /* -1 because we do not count \0 */
   return decimal_string_size(d) - 1;
 }
 
-
-inline
-int my_decimal_get_binary_size(uint precision, uint scale)
+inline int my_decimal_get_binary_size(uint precision, uint scale)
 {
   return decimal_bin_size((int)precision, (int)scale);
 }
 
-
-inline
-void my_decimal2decimal(const my_decimal *from, my_decimal *to)
+inline void my_decimal2decimal(const my_decimal *from, my_decimal *to)
 {
-  *to= *from;
+  *to = *from;
   to->fix_buffer_pointer();
 }
 
+int my_decimal2binary(uint mask, const my_decimal *d, char *bin, int prec, int scale);
 
-int my_decimal2binary(uint mask, const my_decimal *d, char *bin, int prec,
-		      int scale);
-
-
-inline
-int binary2my_decimal(uint mask, const char *bin, my_decimal *d, int prec,
-		      int scale)
+inline int binary2my_decimal(uint mask, const char *bin, my_decimal *d, int prec, int scale)
 {
-  return check_result(mask, bin2decimal((char *)bin, (decimal_t*) d, prec,
-					scale));
+  return check_result(mask, bin2decimal((char *)bin, (decimal_t *)d, prec, scale));
 }
 
-
-inline
-int my_decimal_set_zero(my_decimal *d)
+inline int my_decimal_set_zero(my_decimal *d)
 {
-  decimal_make_zero(((decimal_t*) d));
+  decimal_make_zero(((decimal_t *)d));
   return 0;
 }
 
+inline bool my_decimal_is_zero(const my_decimal *decimal_value) { return decimal_is_zero((decimal_t *)decimal_value); }
 
-inline
-bool my_decimal_is_zero(const my_decimal *decimal_value)
+inline int my_decimal_round(uint mask, const my_decimal *from, int scale, bool truncate, my_decimal *to)
 {
-  return decimal_is_zero((decimal_t*) decimal_value);
+  return check_result(mask, decimal_round((decimal_t *)from, to, scale, (truncate ? TRUNCATE : HALF_UP)));
 }
 
-
-inline
-int my_decimal_round(uint mask, const my_decimal *from, int scale,
-                     bool truncate, my_decimal *to)
+inline int my_decimal_floor(uint mask, const my_decimal *from, my_decimal *to)
 {
-  return check_result(mask, decimal_round((decimal_t*) from, to, scale,
-					  (truncate ? TRUNCATE : HALF_UP)));
+  return check_result(mask, decimal_round((decimal_t *)from, to, 0, FLOOR));
 }
 
-
-inline
-int my_decimal_floor(uint mask, const my_decimal *from, my_decimal *to)
+inline int my_decimal_ceiling(uint mask, const my_decimal *from, my_decimal *to)
 {
-  return check_result(mask, decimal_round((decimal_t*) from, to, 0, FLOOR));
+  return check_result(mask, decimal_round((decimal_t *)from, to, 0, CEILING));
 }
-
-
-inline
-int my_decimal_ceiling(uint mask, const my_decimal *from, my_decimal *to)
-{
-  return check_result(mask, decimal_round((decimal_t*) from, to, 0, CEILING));
-}
-
 
 #ifndef MYSQL_CLIENT
-int my_decimal2string(uint mask, const my_decimal *d, uint fixed_prec,
-		      uint fixed_dec, char filler, String *str);
+int my_decimal2string(uint mask, const my_decimal *d, uint fixed_prec, uint fixed_dec, char filler, String *str);
 #endif
 
-inline
-int my_decimal2int(uint mask, const my_decimal *d, my_bool unsigned_flag,
-		   longlong *l)
+inline int my_decimal2int(uint mask, const my_decimal *d, my_bool unsigned_flag, longlong *l)
 {
   my_decimal rounded;
   /* decimal_round can return only E_DEC_TRUNCATED */
-  decimal_round((decimal_t*)d, &rounded, 0, HALF_UP);
-  return check_result(mask, (unsigned_flag ?
-			     decimal2ulonglong(&rounded, (ulonglong *)l) :
-			     decimal2longlong(&rounded, l)));
+  decimal_round((decimal_t *)d, &rounded, 0, HALF_UP);
+  return check_result(mask,
+                      (unsigned_flag ? decimal2ulonglong(&rounded, (ulonglong *)l) : decimal2longlong(&rounded, l)));
 }
 
-
-inline
-int my_decimal2double(uint mask, const my_decimal *d, double *result)
+inline int my_decimal2double(uint mask, const my_decimal *d, double *result)
 {
   /* No need to call check_result as this will always succeed */
-  return decimal2double((decimal_t*) d, result);
+  return decimal2double((decimal_t *)d, result);
 }
 
-
-inline
-int str2my_decimal(uint mask, const char *str, my_decimal *d, char **end)
+inline int str2my_decimal(uint mask, const char *str, my_decimal *d, char **end)
 {
-  return check_result(mask, string2decimal(str, (decimal_t*) d, end));
+  return check_result(mask, string2decimal(str, (decimal_t *)d, end));
 }
 
-
-int str2my_decimal(uint mask, const char *from, uint length,
-                   CHARSET_INFO *charset, my_decimal *decimal_value);
+int str2my_decimal(uint mask, const char *from, uint length, CHARSET_INFO *charset, my_decimal *decimal_value);
 
 #if defined(MYSQL_SERVER) || defined(EMBEDDED_LIBRARY)
-inline
-int string2my_decimal(uint mask, const String *str, my_decimal *d)
+inline int string2my_decimal(uint mask, const String *str, my_decimal *d)
 {
   return str2my_decimal(mask, str->ptr(), str->length(), str->charset(), d);
 }
 #endif
 
-inline
-int double2my_decimal(uint mask, double val, my_decimal *d)
+inline int double2my_decimal(uint mask, double val, my_decimal *d)
 {
-  return check_result(mask, double2decimal(val, (decimal_t*) d));
+  return check_result(mask, double2decimal(val, (decimal_t *)d));
 }
 
-
-inline
-int int2my_decimal(uint mask, longlong i, my_bool unsigned_flag, my_decimal *d)
+inline int int2my_decimal(uint mask, longlong i, my_bool unsigned_flag, my_decimal *d)
 {
-  return check_result(mask, (unsigned_flag ?
-			     ulonglong2decimal((ulonglong)i, d) :
-			     longlong2decimal(i, d)));
+  return check_result(mask, (unsigned_flag ? ulonglong2decimal((ulonglong)i, d) : longlong2decimal(i, d)));
 }
 
-
-inline
-void my_decimal_neg(decimal_t *arg)
+inline void my_decimal_neg(decimal_t *arg)
 {
   if (decimal_is_zero(arg))
   {
-    arg->sign= 0;
+    arg->sign = 0;
     return;
   }
   decimal_neg(arg);
 }
 
-
-inline
-int my_decimal_add(uint mask, my_decimal *res, const my_decimal *a,
-		   const my_decimal *b)
+inline int my_decimal_add(uint mask, my_decimal *res, const my_decimal *a, const my_decimal *b)
 {
-  return check_result(mask, decimal_add((decimal_t*) a, (decimal_t*) b, res));
+  return check_result(mask, decimal_add((decimal_t *)a, (decimal_t *)b, res));
 }
 
-
-inline
-int my_decimal_sub(uint mask, my_decimal *res, const my_decimal *a,
-		   const my_decimal *b)
+inline int my_decimal_sub(uint mask, my_decimal *res, const my_decimal *a, const my_decimal *b)
 {
-  return check_result(mask, decimal_sub((decimal_t*) a, (decimal_t*) b, res));
+  return check_result(mask, decimal_sub((decimal_t *)a, (decimal_t *)b, res));
 }
 
-
-inline
-int my_decimal_mul(uint mask, my_decimal *res, const my_decimal *a,
-		   const my_decimal *b)
+inline int my_decimal_mul(uint mask, my_decimal *res, const my_decimal *a, const my_decimal *b)
 {
-  return check_result(mask, decimal_mul((decimal_t*) a, (decimal_t*) b, res));
+  return check_result(mask, decimal_mul((decimal_t *)a, (decimal_t *)b, res));
 }
 
-
-inline
-int my_decimal_div(uint mask, my_decimal *res, const my_decimal *a,
-		   const my_decimal *b, int div_scale_inc)
+inline int my_decimal_div(uint mask, my_decimal *res, const my_decimal *a, const my_decimal *b, int div_scale_inc)
 {
-  return check_result(mask, decimal_div((decimal_t*) a, (decimal_t*) b, res,
-					div_scale_inc));
+  return check_result(mask, decimal_div((decimal_t *)a, (decimal_t *)b, res, div_scale_inc));
 }
 
-
-inline
-int my_decimal_mod(uint mask, my_decimal *res, const my_decimal *a,
-		   const my_decimal *b)
+inline int my_decimal_mod(uint mask, my_decimal *res, const my_decimal *a, const my_decimal *b)
 {
-  return check_result(mask, decimal_mod((decimal_t*) a, (decimal_t*) b, res));
+  return check_result(mask, decimal_mod((decimal_t *)a, (decimal_t *)b, res));
 }
-
 
 /* Returns -1 if a<b, 1 if a>b and 0 if a==b */
-inline
-int my_decimal_cmp(const my_decimal *a, const my_decimal *b)
+inline int my_decimal_cmp(const my_decimal *a, const my_decimal *b)
 {
-  return decimal_cmp((decimal_t*) a, (decimal_t*) b);
+  return decimal_cmp((decimal_t *)a, (decimal_t *)b);
 }
 
-inline
-void max_my_decimal(my_decimal *to, int precision, int frac)
+inline void max_my_decimal(my_decimal *to, int precision, int frac)
 {
-  DBUG_ASSERT((precision <= DECIMAL_MAX_PRECISION)&&
-              (frac <= DECIMAL_MAX_SCALE));
-  max_decimal(precision, frac, (decimal_t*) to);
+  DBUG_ASSERT((precision <= DECIMAL_MAX_PRECISION) && (frac <= DECIMAL_MAX_SCALE));
+  max_decimal(precision, frac, (decimal_t *)to);
 }
 
 #endif /*my_decimal_h*/
-

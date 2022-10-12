@@ -17,7 +17,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
 #ifdef USE_PRAGMA_INTERFACE
-#pragma interface                              /* gcc class interface */
+#pragma interface /* gcc class interface */
 #endif
 
 /*
@@ -33,33 +33,36 @@
   Server_side_cursor, not to its base class.
 */
 
-class Server_side_cursor: protected Query_arena, public Sql_alloc
+class Server_side_cursor : protected Query_arena, public Sql_alloc
 {
-protected:
+ protected:
   /* Row destination used for fetch */
   select_result *result;
-public:
+
+ public:
   Server_side_cursor(MEM_ROOT *mem_root_arg, select_result *result_arg)
-    :Query_arena(mem_root_arg, INITIALIZED), result(result_arg)
-  {}
+      : Query_arena(mem_root_arg, INITIALIZED), result(result_arg)
+  {
+  }
 
-  virtual bool is_open() const= 0;
+  virtual bool is_open() const = 0;
 
-  virtual int open(JOIN *top_level_join)= 0;
-  virtual void fetch(ulong num_rows)= 0;
-  virtual void close()= 0;
+  virtual int open(JOIN *top_level_join) = 0;
+  virtual void fetch(ulong num_rows) = 0;
+  virtual void close() = 0;
   virtual ~Server_side_cursor();
 
   static void operator delete(void *ptr, size_t size);
 };
 
-
-int mysql_open_cursor(THD *thd, uint flags,
-                      select_result *result,
-                      Server_side_cursor **res);
+int mysql_open_cursor(THD *thd, uint flags, select_result *result, Server_side_cursor **res);
 
 /* Possible values for flags */
 
-enum { ANY_CURSOR= 1, ALWAYS_MATERIALIZED_CURSOR= 2 };
+enum
+{
+  ANY_CURSOR = 1,
+  ALWAYS_MATERIALIZED_CURSOR = 2
+};
 
 #endif /* _sql_cusor_h_ */

@@ -16,10 +16,10 @@
 
 /*
 
-The idea of presented algorithm see in 
+The idea of presented algorithm see in
 "The Art of Computer Programming" by Donald E. Knuth
 Volume 3 "Sorting and searching"
-(chapter 6.3 "Digital searching" - name and number of chapter 
+(chapter 6.3 "Digital searching" - name and number of chapter
    is back translation from Russian edition :))
 
 as illustration of data structures, imagine next table:
@@ -66,10 +66,10 @@ or search-array..
 So, we can read full search-structure as 32-bit word
 
 TODO:
-1. use instead to_upper_lex, special array 
+1. use instead to_upper_lex, special array
    (substitute chars) without skip codes..
 2. try use reverse order of comparing..
-       
+
 */
 
 #define NO_YACC_SYMBOLS
@@ -77,284 +77,271 @@ TODO:
 #include "my_sys.h"
 #include "m_string.h"
 #ifndef __GNU_LIBRARY__
-#define __GNU_LIBRARY__				// Skip warnings in getopt.h
+#define __GNU_LIBRARY__ // Skip warnings in getopt.h
 #endif
 #include <my_getopt.h>
 #include "mysql_version.h"
 #include "lex.h"
 
-const char *default_dbug_option="d:t:o,/tmp/gen_lex_hash.trace";
+const char *default_dbug_option = "d:t:o,/tmp/gen_lex_hash.trace";
 
-struct my_option my_long_options[] =
-{
+struct my_option my_long_options[] = {
 #ifdef DBUG_OFF
-  {"debug", '#', "This is a non-debug version. Catch this and exit",
-   0,0, 0, GET_DISABLED, OPT_ARG, 0, 0, 0, 0, 0, 0},
+  { "debug", '#', "This is a non-debug version. Catch this and exit", 0,
+    0,       0,   GET_DISABLED,                                       OPT_ARG,
+    0,       0,   0,                                                  0,
+    0,       0 },
 #else
-  {"debug", '#', "Output debug log", (gptr*) &default_dbug_option,
-   (gptr*) &default_dbug_option, 0, GET_STR, OPT_ARG, 0, 0, 0, 0, 0, 0},
+  { "debug",                      '#',
+    "Output debug log",           (gptr *)&default_dbug_option,
+    (gptr *)&default_dbug_option, 0,
+    GET_STR,                      OPT_ARG,
+    0,                            0,
+    0,                            0,
+    0,                            0 },
 #endif
-  {"help", '?', "Display help and exit",
-   0, 0, 0, GET_NO_ARG, NO_ARG, 0, 0, 0, 0, 0, 0},
-  {"version", 'V', "Output version information and exit",
-   0, 0, 0, GET_NO_ARG, NO_ARG, 0, 0, 0, 0, 0, 0},
-  {0, 0, 0, 0, 0, 0, GET_NO_ARG, NO_ARG, 0, 0, 0, 0, 0, 0}
+  { "help", '?', "Display help and exit", 0, 0, 0, GET_NO_ARG,
+    NO_ARG, 0,   0,                       0, 0, 0, 0 },
+  { "version", 'V', "Output version information and exit", 0, 0, 0, GET_NO_ARG,
+    NO_ARG,    0,   0,                                     0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, GET_NO_ARG, NO_ARG, 0, 0, 0, 0, 0, 0 }
 };
 
-struct hash_lex_struct
-{
+struct hash_lex_struct {
   int first_char;
   char last_char;
-  union{
+  union {
     hash_lex_struct *char_tails;
     int iresult;
   };
   int ithis;
 };
 
-hash_lex_struct *get_hash_struct_by_len(hash_lex_struct **root_by_len,
-					    int len, int *max_len)
-{
-  if (*max_len<len){
-    *root_by_len= (hash_lex_struct *)realloc((char*)*root_by_len,
-                                             sizeof(hash_lex_struct)*len);
-    hash_lex_struct *cur, *end= *root_by_len + len;
-    for (cur= *root_by_len + *max_len; cur<end; cur++)
-      cur->first_char= 0;
-    *max_len= len;
+hash_lex_struct *get_hash_struct_by_len(hash_lex_struct **root_by_len, int len,
+                                        int *max_len) {
+  if (*max_len < len) {
+    *root_by_len = (hash_lex_struct *)realloc((char *)*root_by_len,
+                                              sizeof(hash_lex_struct) * len);
+    hash_lex_struct *cur, *end = *root_by_len + len;
+    for (cur = *root_by_len + *max_len; cur < end; cur++)
+      cur->first_char = 0;
+    *max_len = len;
   }
-  return (*root_by_len)+(len-1);
+  return (*root_by_len) + (len - 1);
 }
 
-void insert_into_hash(hash_lex_struct *root, const char *name, 
-		      int len_from_begin, int index, int function)
-{
+void insert_into_hash(hash_lex_struct *root, const char *name,
+                      int len_from_begin, int index, int function) {
   hash_lex_struct *end, *cur, *tails;
 
-  if (!root->first_char)
-  {
-    root->first_char= -1;
-    root->iresult= index;
+  if (!root->first_char) {
+    root->first_char = -1;
+    root->iresult = index;
     return;
   }
 
-  if (root->first_char == -1)
-  {
-    int index2= root->iresult;
-    const char *name2= (index2 < 0 ? sql_functions[-index2-1] :
-			symbols[index2]).name + len_from_begin;
-    root->first_char= (int) (uchar) name2[0];
-    root->last_char= (char) root->first_char;
-    tails= (hash_lex_struct*)malloc(sizeof(hash_lex_struct));
-    root->char_tails= tails;
-    tails->first_char= -1;
-    tails->iresult= index2;
+  if (root->first_char == -1) {
+    int index2 = root->iresult;
+    const char *name2 =
+        (index2 < 0 ? sql_functions[-index2 - 1] : symbols[index2]).name +
+        len_from_begin;
+    root->first_char = (int)(uchar)name2[0];
+    root->last_char = (char)root->first_char;
+    tails = (hash_lex_struct *)malloc(sizeof(hash_lex_struct));
+    root->char_tails = tails;
+    tails->first_char = -1;
+    tails->iresult = index2;
   }
 
-  size_t real_size= (root->last_char-root->first_char+1);
+  size_t real_size = (root->last_char - root->first_char + 1);
 
-  if (root->first_char>(*name))
-  {
-    size_t new_size= root->last_char-(*name)+1;
-    if (new_size<real_size) printf("error!!!!\n");
-    tails= root->char_tails;
-    tails= (hash_lex_struct*)realloc((char*)tails,
-				       sizeof(hash_lex_struct)*new_size);
-    root->char_tails= tails;
-    memmove(tails+(new_size-real_size),tails,real_size*sizeof(hash_lex_struct));
-    end= tails + new_size - real_size;
-    for (cur= tails; cur<end; cur++)
-      cur->first_char= 0;
-    root->first_char= (int) (uchar) *name;
+  if (root->first_char > (*name)) {
+    size_t new_size = root->last_char - (*name) + 1;
+    if (new_size < real_size)
+      printf("error!!!!\n");
+    tails = root->char_tails;
+    tails = (hash_lex_struct *)realloc((char *)tails,
+                                       sizeof(hash_lex_struct) * new_size);
+    root->char_tails = tails;
+    memmove(tails + (new_size - real_size), tails,
+            real_size * sizeof(hash_lex_struct));
+    end = tails + new_size - real_size;
+    for (cur = tails; cur < end; cur++)
+      cur->first_char = 0;
+    root->first_char = (int)(uchar) * name;
   }
 
-  if (root->last_char<(*name))
-  {
-    size_t new_size= (*name)-root->first_char+1;
-    if (new_size<real_size) printf("error!!!!\n");
-    tails= root->char_tails;
-    tails= (hash_lex_struct*)realloc((char*)tails,
-				    sizeof(hash_lex_struct)*new_size);
-    root->char_tails= tails;
-    end= tails + new_size;
-    for (cur= tails+real_size; cur<end; cur++)
-      cur->first_char= 0;
-    root->last_char= (*name);
+  if (root->last_char < (*name)) {
+    size_t new_size = (*name) - root->first_char + 1;
+    if (new_size < real_size)
+      printf("error!!!!\n");
+    tails = root->char_tails;
+    tails = (hash_lex_struct *)realloc((char *)tails,
+                                       sizeof(hash_lex_struct) * new_size);
+    root->char_tails = tails;
+    end = tails + new_size;
+    for (cur = tails + real_size; cur < end; cur++)
+      cur->first_char = 0;
+    root->last_char = (*name);
   }
 
-  insert_into_hash(root->char_tails+(*name)-root->first_char,
-		   name+1,len_from_begin+1,index,function);
+  insert_into_hash(root->char_tails + (*name) - root->first_char, name + 1,
+                   len_from_begin + 1, index, function);
 }
 
+hash_lex_struct *root_by_len = 0;
+int max_len = 0;
 
-hash_lex_struct *root_by_len= 0;
-int max_len=0;
+hash_lex_struct *root_by_len2 = 0;
+int max_len2 = 0;
 
-hash_lex_struct *root_by_len2= 0;
-int max_len2=0;
-
-void insert_symbols()
-{
-  size_t i= 0;
+void insert_symbols() {
+  size_t i = 0;
   SYMBOL *cur;
-  for (cur= symbols; i<array_elements(symbols); cur++, i++){
-    hash_lex_struct *root= 
-      get_hash_struct_by_len(&root_by_len,cur->length,&max_len);
-    insert_into_hash(root,cur->name,0,i,0);
+  for (cur = symbols; i < array_elements(symbols); cur++, i++) {
+    hash_lex_struct *root =
+        get_hash_struct_by_len(&root_by_len, cur->length, &max_len);
+    insert_into_hash(root, cur->name, 0, i, 0);
   }
 }
 
-void insert_sql_functions()
-{
-  size_t i= 0;
+void insert_sql_functions() {
+  size_t i = 0;
   SYMBOL *cur;
-  for (cur= sql_functions; i<array_elements(sql_functions); cur++, i++){
-    hash_lex_struct *root= 
-      get_hash_struct_by_len(&root_by_len,cur->length,&max_len);
-    insert_into_hash(root,cur->name,0,-i-1,1);
+  for (cur = sql_functions; i < array_elements(sql_functions); cur++, i++) {
+    hash_lex_struct *root =
+        get_hash_struct_by_len(&root_by_len, cur->length, &max_len);
+    insert_into_hash(root, cur->name, 0, -i - 1, 1);
   }
 }
 
-void calc_length()
-{
-  SYMBOL *cur, *end= symbols + array_elements(symbols);
-  for (cur= symbols; cur < end; cur++)
-    cur->length=(uchar) strlen(cur->name);
-  end= sql_functions + array_elements(sql_functions);
-  for (cur= sql_functions; cur<end; cur++)
-    cur->length=(uchar) strlen(cur->name);
+void calc_length() {
+  SYMBOL *cur, *end = symbols + array_elements(symbols);
+  for (cur = symbols; cur < end; cur++)
+    cur->length = (uchar)strlen(cur->name);
+  end = sql_functions + array_elements(sql_functions);
+  for (cur = sql_functions; cur < end; cur++)
+    cur->length = (uchar)strlen(cur->name);
 }
 
-void generate_find_structs()
-{
-  root_by_len= 0;
-  max_len=0;
+void generate_find_structs() {
+  root_by_len = 0;
+  max_len = 0;
 
   insert_symbols();
 
-  root_by_len2= root_by_len;
-  max_len2= max_len;
+  root_by_len2 = root_by_len;
+  max_len2 = max_len;
 
-  root_by_len= 0;
-  max_len= 0;
+  root_by_len = 0;
+  max_len = 0;
 
   insert_symbols();
   insert_sql_functions();
 }
 
-char *hash_map= 0;
-int size_hash_map= 0;
+char *hash_map = 0;
+int size_hash_map = 0;
 
-void add_struct_to_map(hash_lex_struct *st)
-{
-  st->ithis= size_hash_map/4;
-  size_hash_map+= 4;
-  hash_map= (char*)realloc((char*)hash_map,size_hash_map);
-  hash_map[size_hash_map-4]= (char) (st->first_char == -1 ? 0 :
-				     st->first_char);
-  hash_map[size_hash_map-3]= (char) (st->first_char == -1 ||
-				     st->first_char == 0 ? 0 : st->last_char);
-  if (st->first_char == -1)
-  {
-    hash_map[size_hash_map-2]= ((unsigned int)(int16)st->iresult)&255;
-    hash_map[size_hash_map-1]= ((unsigned int)(int16)st->iresult)>>8;
-  }
-  else if (st->first_char == 0)
-  {
-    hash_map[size_hash_map-2]= ((unsigned int)(int16)array_elements(symbols))&255;
-    hash_map[size_hash_map-1]= ((unsigned int)(int16)array_elements(symbols))>>8;
+void add_struct_to_map(hash_lex_struct *st) {
+  st->ithis = size_hash_map / 4;
+  size_hash_map += 4;
+  hash_map = (char *)realloc((char *)hash_map, size_hash_map);
+  hash_map[size_hash_map - 4] =
+      (char)(st->first_char == -1 ? 0 : st->first_char);
+  hash_map[size_hash_map - 3] =
+      (char)(st->first_char == -1 || st->first_char == 0 ? 0 : st->last_char);
+  if (st->first_char == -1) {
+    hash_map[size_hash_map - 2] = ((unsigned int)(int16)st->iresult) & 255;
+    hash_map[size_hash_map - 1] = ((unsigned int)(int16)st->iresult) >> 8;
+  } else if (st->first_char == 0) {
+    hash_map[size_hash_map - 2] =
+        ((unsigned int)(int16)array_elements(symbols)) & 255;
+    hash_map[size_hash_map - 1] =
+        ((unsigned int)(int16)array_elements(symbols)) >> 8;
   }
 }
 
-
-void add_structs_to_map(hash_lex_struct *st, int len)
-{
-  hash_lex_struct *cur, *end= st+len;
-  for (cur= st; cur<end; cur++)
+void add_structs_to_map(hash_lex_struct *st, int len) {
+  hash_lex_struct *cur, *end = st + len;
+  for (cur = st; cur < end; cur++)
     add_struct_to_map(cur);
-  for (cur= st; cur<end; cur++)
-  {
+  for (cur = st; cur < end; cur++) {
     if (cur->first_char && cur->first_char != -1)
-      add_structs_to_map(cur->char_tails,cur->last_char-cur->first_char+1);
+      add_structs_to_map(cur->char_tails, cur->last_char - cur->first_char + 1);
   }
 }
 
-void set_links(hash_lex_struct *st, int len)
-{
-  hash_lex_struct *cur, *end= st+len;
-  for (cur= st; cur<end; cur++)
-  {
-    if (cur->first_char != 0 && cur->first_char != -1)
-    {
-      int ilink= cur->char_tails->ithis;
-      hash_map[cur->ithis*4+2]= ilink%256;
-      hash_map[cur->ithis*4+3]= ilink/256;
-      set_links(cur->char_tails,cur->last_char-cur->first_char+1);
+void set_links(hash_lex_struct *st, int len) {
+  hash_lex_struct *cur, *end = st + len;
+  for (cur = st; cur < end; cur++) {
+    if (cur->first_char != 0 && cur->first_char != -1) {
+      int ilink = cur->char_tails->ithis;
+      hash_map[cur->ithis * 4 + 2] = ilink % 256;
+      hash_map[cur->ithis * 4 + 3] = ilink / 256;
+      set_links(cur->char_tails, cur->last_char - cur->first_char + 1);
     }
   }
 }
 
-
-void print_hash_map(const char *name)
-{
+void print_hash_map(const char *name) {
   char *cur;
   int i;
 
-  printf("static uchar %s[%d]= {\n",name,size_hash_map);
-  for (i=0, cur= hash_map; i<size_hash_map; i++, cur++)
-  {
-    switch(i%4){
-    case 0: case 1:
+  printf("static uchar %s[%d]= {\n", name, size_hash_map);
+  for (i = 0, cur = hash_map; i < size_hash_map; i++, cur++) {
+    switch (i % 4) {
+    case 0:
+    case 1:
       if (!*cur)
-	printf("0,   ");
+        printf("0,   ");
       else
-	printf("\'%c\', ",*cur);
+        printf("\'%c\', ", *cur);
       break;
-    case 2: printf("%u, ",(uint)(uchar)*cur); break;
-    case 3: printf("%u,\n",(uint)(uchar)*cur); break;
+    case 2:
+      printf("%u, ", (uint)(uchar) * cur);
+      break;
+    case 3:
+      printf("%u,\n", (uint)(uchar) * cur);
+      break;
     }
   }
   printf("};\n");
 }
 
-
-void print_find_structs()
-{
-  add_structs_to_map(root_by_len,max_len);
-  set_links(root_by_len,max_len);
+void print_find_structs() {
+  add_structs_to_map(root_by_len, max_len);
+  set_links(root_by_len, max_len);
   print_hash_map("sql_functions_map");
 
-  hash_map= 0;
-  size_hash_map= 0;
+  hash_map = 0;
+  size_hash_map = 0;
 
   printf("\n");
 
-  add_structs_to_map(root_by_len2,max_len2);
-  set_links(root_by_len2,max_len2);
+  add_structs_to_map(root_by_len2, max_len2);
+  set_links(root_by_len2, max_len2);
   print_hash_map("symbols_map");
 }
 
-
-static void usage(int version)
-{
-  printf("%s  Ver 3.6 Distrib %s, for %s (%s)\n",
-	 my_progname, MYSQL_SERVER_VERSION, SYSTEM_TYPE, MACHINE_TYPE);
+static void usage(int version) {
+  printf("%s  Ver 3.6 Distrib %s, for %s (%s)\n", my_progname,
+         MYSQL_SERVER_VERSION, SYSTEM_TYPE, MACHINE_TYPE);
   if (version)
     return;
   puts("Copyright (C) 2001 MySQL AB, by VVA and Monty");
-  puts("This software comes with ABSOLUTELY NO WARRANTY. This is free software,\n\
+  puts(
+      "This software comes with ABSOLUTELY NO WARRANTY. This is free software,\n\
 and you are welcome to modify and redistribute it under the GPL license\n");
   puts("This program generates a perfect hashing function for the sql_lex.cc");
   printf("Usage: %s [OPTIONS]\n\n", my_progname);
   my_print_help(my_long_options);
 }
 
-
-extern "C" my_bool
-get_one_option(int optid, const struct my_option *opt __attribute__((unused)),
-	       char *argument __attribute__((unused)))
-{
-  switch(optid) {
+extern "C" my_bool get_one_option(int optid, const struct my_option *opt
+                                  __attribute__((unused)),
+                                  char *argument __attribute__((unused))) {
+  switch (optid) {
   case 'V':
     usage(1);
     exit(0);
@@ -369,77 +356,64 @@ get_one_option(int optid, const struct my_option *opt __attribute__((unused)),
   return 0;
 }
 
-
-static int get_options(int argc, char **argv)
-{
+static int get_options(int argc, char **argv) {
   int ho_error;
 
-  if ((ho_error= handle_options(&argc, &argv, my_long_options, get_one_option)))
+  if ((ho_error =
+           handle_options(&argc, &argv, my_long_options, get_one_option)))
     exit(ho_error);
 
-  if (argc >= 1)
-  {
+  if (argc >= 1) {
     usage(0);
-     exit(1);
+    exit(1);
   }
-  return(0);
+  return (0);
 }
 
-
-int check_dup_symbols(SYMBOL *s1, SYMBOL *s2)
-{
-  if (s1->length!=s2->length || strncmp(s1->name,s2->name,s1->length))
+int check_dup_symbols(SYMBOL *s1, SYMBOL *s2) {
+  if (s1->length != s2->length || strncmp(s1->name, s2->name, s1->length))
     return 0;
 
-  const char *err_tmpl= "\ngen_lex_hash fatal error : \
+  const char *err_tmpl = "\ngen_lex_hash fatal error : \
 Unfortunately gen_lex_hash can not generate a hash,\n since \
 your lex.h has duplicate definition for a symbol \"%s\"\n\n";
-  printf (err_tmpl,s1->name);
-  fprintf (stderr,err_tmpl,s1->name);
+  printf(err_tmpl, s1->name);
+  fprintf(stderr, err_tmpl, s1->name);
 
   return 1;
 }
 
-
-int check_duplicates()
-{
+int check_duplicates() {
   SYMBOL *cur1, *cur2, *s_end, *f_end;
 
-  s_end= symbols + array_elements(symbols);
-  f_end= sql_functions + array_elements(sql_functions);
+  s_end = symbols + array_elements(symbols);
+  f_end = sql_functions + array_elements(sql_functions);
 
-  for (cur1= symbols; cur1<s_end; cur1++)
-  {
-    for (cur2= cur1+1; cur2<s_end; cur2++)
-    {
-      if (check_dup_symbols(cur1,cur2))
-	return 1;
+  for (cur1 = symbols; cur1 < s_end; cur1++) {
+    for (cur2 = cur1 + 1; cur2 < s_end; cur2++) {
+      if (check_dup_symbols(cur1, cur2))
+        return 1;
     }
-    for (cur2= sql_functions; cur2<f_end; cur2++)
-    {
-      if (check_dup_symbols(cur1,cur2))
-	return 1;
+    for (cur2 = sql_functions; cur2 < f_end; cur2++) {
+      if (check_dup_symbols(cur1, cur2))
+        return 1;
     }
   }
 
-  for (cur1= sql_functions; cur1<f_end; cur1++)
-  {
-    for (cur2= cur1+1; cur2< f_end; cur2++)
-    {
-      if (check_dup_symbols(cur1,cur2))
-	return 1;
+  for (cur1 = sql_functions; cur1 < f_end; cur1++) {
+    for (cur2 = cur1 + 1; cur2 < f_end; cur2++) {
+      if (check_dup_symbols(cur1, cur2))
+        return 1;
     }
   }
   return 0;
 }
 
-
-int main(int argc,char **argv)
-{
+int main(int argc, char **argv) {
   MY_INIT(argv[0]);
   DBUG_PROCESS(argv[0]);
 
-  if (get_options(argc,(char **) argv))
+  if (get_options(argc, (char **)argv))
     exit(1);
 
   printf("/* Copyright (C) 2001-2004 MySQL AB\n\
@@ -526,9 +500,7 @@ static inline SYMBOL *get_hash_symbol(const char *s,\n\
       cur_str++;\n\
     }\n\
   }\n\
-}\n"
-);
+}\n");
   my_end(0);
   exit(0);
 }
-

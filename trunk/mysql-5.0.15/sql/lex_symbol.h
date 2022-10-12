@@ -14,7 +14,6 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-
 /* This struct includes all reserved words and functions */
 
 #ifndef _lex_symbol_h
@@ -24,17 +23,16 @@ struct st_sym_group;
 
 typedef struct st_symbol {
   const char *name;
-  uint	tok;
+  uint tok;
   uint length;
   void *create_func;
   struct st_sym_group *group;
 } SYMBOL;
 
-typedef struct st_lex_symbol
-{
+typedef struct st_lex_symbol {
   SYMBOL *symbol;
-  char   *str;
-  uint   length;
+  char *str;
+  uint length;
 } LEX_SYMBOL;
 
 typedef struct st_sym_group {

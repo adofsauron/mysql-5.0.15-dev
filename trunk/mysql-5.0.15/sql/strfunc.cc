@@ -37,57 +37,49 @@
     set_warning is set to 1 if there was any sets that couldn't be set
 */
 
-static const char field_separator=',';
+static const char field_separator = ',';
 
 ulonglong find_set(TYPELIB *lib, const char *str, uint length, CHARSET_INFO *cs,
-                   char **err_pos, uint *err_len, bool *set_warning)
-{
-  CHARSET_INFO *strip= cs ? cs : &my_charset_latin1;
-  const char *end= str + strip->cset->lengthsp(strip, str, length);
-  ulonglong found= 0;
-  *err_pos= 0;                  // No error yet
-  if (str != end)
-  {
-    const char *start= str;    
-    for (;;)
-    {
-      const char *pos= start;
+                   char **err_pos, uint *err_len, bool *set_warning) {
+  CHARSET_INFO *strip = cs ? cs : &my_charset_latin1;
+  const char *end = str + strip->cset->lengthsp(strip, str, length);
+  ulonglong found = 0;
+  *err_pos = 0; // No error yet
+  if (str != end) {
+    const char *start = str;
+    for (;;) {
+      const char *pos = start;
       uint var_len;
-      int mblen= 1;
+      int mblen = 1;
 
-      if (cs && cs->mbminlen > 1)
-      {
-        for ( ; pos < end; pos+= mblen)
-        {
+      if (cs && cs->mbminlen > 1) {
+        for (; pos < end; pos += mblen) {
           my_wc_t wc;
-          if ((mblen= cs->cset->mb_wc(cs, &wc, (const uchar *) pos, 
-                                               (const uchar *) end)) < 1)
-            mblen= 1; // Not to hang on a wrong multibyte sequence
-          if (wc == (my_wc_t) field_separator)
+          if ((mblen = cs->cset->mb_wc(cs, &wc, (const uchar *)pos,
+                                       (const uchar *)end)) < 1)
+            mblen = 1; // Not to hang on a wrong multibyte sequence
+          if (wc == (my_wc_t)field_separator)
             break;
         }
-      }
-      else
-        for (; pos != end && *pos != field_separator; pos++) ;
-      var_len= (uint) (pos - start);
-      uint find= cs ? find_type2(lib, start, var_len, cs) :
-                      find_type(lib, start, var_len, (bool) 0);
-      if (!find)
-      {
-        *err_pos= (char*) start;
-        *err_len= var_len;
-        *set_warning= 1;
-      }
-      else
-        found|= ((longlong) 1 << (find - 1));
+      } else
+        for (; pos != end && *pos != field_separator; pos++)
+          ;
+      var_len = (uint)(pos - start);
+      uint find = cs ? find_type2(lib, start, var_len, cs)
+                     : find_type(lib, start, var_len, (bool)0);
+      if (!find) {
+        *err_pos = (char *)start;
+        *err_len = var_len;
+        *set_warning = 1;
+      } else
+        found |= ((longlong)1 << (find - 1));
       if (pos >= end)
         break;
-      start= pos + mblen;
+      start = pos + mblen;
     }
   }
   return found;
 }
-
 
 /*
   Function to find a string in a TYPELIB
@@ -105,28 +97,25 @@ ulonglong find_set(TYPELIB *lib, const char *str, uint length, CHARSET_INFO *cs,
   > 0 position in TYPELIB->type_names +1
 */
 
-uint find_type(TYPELIB *lib, const char *find, uint length, bool part_match)
-{
-  uint found_count=0, found_pos=0;
-  const char *end= find+length;
+uint find_type(TYPELIB *lib, const char *find, uint length, bool part_match) {
+  uint found_count = 0, found_pos = 0;
+  const char *end = find + length;
   const char *i;
   const char *j;
-  for (uint pos=0 ; (j=lib->type_names[pos++]) ; )
-  {
-    for (i=find ; i != end && 
-	   my_toupper(system_charset_info,*i) == 
-	   my_toupper(system_charset_info,*j) ; i++, j++) ;
-    if (i == end)
-    {
-      if (! *j)
-	return(pos);
+  for (uint pos = 0; (j = lib->type_names[pos++]);) {
+    for (i = find; i != end && my_toupper(system_charset_info, *i) ==
+                                   my_toupper(system_charset_info, *j);
+         i++, j++)
+      ;
+    if (i == end) {
+      if (!*j)
+        return (pos);
       found_count++;
-      found_pos= pos;
+      found_pos = pos;
     }
   }
-  return(found_count == 1 && part_match ? found_pos : 0);
+  return (found_count == 1 && part_match ? found_pos : 0);
 }
-
 
 /*
   Find a string in a list of strings according to collation
@@ -145,29 +134,26 @@ uint find_type(TYPELIB *lib, const char *find, uint length, bool part_match)
     >0  Offset+1 in typelib for matched string
 */
 
-uint find_type2(TYPELIB *typelib, const char *x, uint length, CHARSET_INFO *cs)
-{
+uint find_type2(TYPELIB *typelib, const char *x, uint length,
+                CHARSET_INFO *cs) {
   int pos;
   const char *j;
   DBUG_ENTER("find_type2");
-  DBUG_PRINT("enter",("x: '%.*s'  lib: 0x%lx", length, x, typelib));
+  DBUG_PRINT("enter", ("x: '%.*s'  lib: 0x%lx", length, x, typelib));
 
-  if (!typelib->count)
-  {
-    DBUG_PRINT("exit",("no count"));
+  if (!typelib->count) {
+    DBUG_PRINT("exit", ("no count"));
     DBUG_RETURN(0);
   }
 
-  for (pos=0 ; (j=typelib->type_names[pos]) ; pos++)
-  {
-    if (!my_strnncoll(cs, (const uchar*) x, length,
-                          (const uchar*) j, typelib->type_lengths[pos]))
-      DBUG_RETURN(pos+1);
+  for (pos = 0; (j = typelib->type_names[pos]); pos++) {
+    if (!my_strnncoll(cs, (const uchar *)x, length, (const uchar *)j,
+                      typelib->type_lengths[pos]))
+      DBUG_RETURN(pos + 1);
   }
-  DBUG_PRINT("exit",("Couldn't find type"));
+  DBUG_PRINT("exit", ("Couldn't find type"));
   DBUG_RETURN(0);
 } /* find_type */
-
 
 /*
   Un-hex all elements in a typelib
@@ -182,13 +168,10 @@ uint find_type2(TYPELIB *typelib, const char *x, uint length, CHARSET_INFO *cs)
     N/A
 */
 
-void unhex_type2(TYPELIB *interval)
-{
-  for (uint pos= 0; pos < interval->count; pos++)
-  {
+void unhex_type2(TYPELIB *interval) {
+  for (uint pos = 0; pos < interval->count; pos++) {
     char *from, *to;
-    for (from= to= (char*) interval->type_names[pos]; *from; )
-    {
+    for (from = to = (char *)interval->type_names[pos]; *from;) {
       /*
         Note, hexchar_to_int(*from++) doesn't work
         one some compilers, e.g. IRIX. Looks like a compiler
@@ -197,14 +180,12 @@ void unhex_type2(TYPELIB *interval)
         and increment 'from' by two later.
       */
 
-      *to++= (char) (hexchar_to_int(from[0]) << 4) +
-                     hexchar_to_int(from[1]);
-      from+= 2;
+      *to++ = (char)(hexchar_to_int(from[0]) << 4) + hexchar_to_int(from[1]);
+      from += 2;
     }
     interval->type_lengths[pos] /= 2;
   }
 }
-
 
 /*
   Check if the first word in a string is one of the ones in TYPELIB
@@ -219,19 +200,18 @@ void unhex_type2(TYPELIB *interval)
   RETURN
     0	 No matching value
     > 1  lib->type_names[#-1] matched
-	 end_of_word will point to separator character/end in 'val'
+         end_of_word will point to separator character/end in 'val'
 */
 
 uint check_word(TYPELIB *lib, const char *val, const char *end,
-		const char **end_of_word)
-{
+                const char **end_of_word) {
   int res;
   const char *ptr;
 
   /* Fiend end of word */
-  for (ptr= val ; ptr < end && my_isalpha(&my_charset_latin1, *ptr) ; ptr++)
+  for (ptr = val; ptr < end && my_isalpha(&my_charset_latin1, *ptr); ptr++)
     ;
-  if ((res=find_type(lib, val, (uint) (ptr - val), 1)) > 0)
-    *end_of_word= ptr;
+  if ((res = find_type(lib, val, (uint)(ptr - val), 1)) > 0)
+    *end_of_word = ptr;
   return res;
 }

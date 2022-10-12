@@ -22,15 +22,15 @@
 */
 
 #ifdef USE_PRAGMA_INTERFACE
-#pragma interface			/* gcc class implementation */
+#pragma interface /* gcc class implementation */
 #endif
 
 #include <mysql.h>
 
-/* 
+/*
   handler::print_error has a case statement for error numbers.
-  This value is (10000) is far out of range and will envoke the 
-  default: case.  
+  This value is (10000) is far out of range and will envoke the
+  default: case.
   (Current error range is 120-159 from include/my_base.h)
 */
 #define HA_FEDERATED_ERROR_WITH_REMOTE_SYSTEM 10000
@@ -96,7 +96,7 @@
 #define FEDERATED_SQUOTE_LEN sizeof(FEDERATED_SQUOTE)
 #define FEDERATED_COMMA ", "
 #define FEDERATED_COMMA_LEN sizeof(FEDERATED_COMMA)
-#define FEDERATED_BTICK "`" 
+#define FEDERATED_BTICK "`"
 #define FEDERATED_BTICK_LEN sizeof(FEDERATED_BTICK)
 #define FEDERATED_OPENPAREN " ("
 #define FEDERATED_OPENPAREN_LEN sizeof(FEDERATED_OPENPAREN)
@@ -147,16 +147,15 @@ typedef struct st_federated_share {
 /*
   Class definition for the storage engine
 */
-class ha_federated: public handler
-{
-  THR_LOCK_DATA lock;      /* MySQL lock */
-  FEDERATED_SHARE *share;    /* Shared lock info */
-  MYSQL *mysql; /* MySQL connection */
+class ha_federated : public handler {
+  THR_LOCK_DATA lock;     /* MySQL lock */
+  FEDERATED_SHARE *share; /* Shared lock info */
+  MYSQL *mysql;           /* MySQL connection */
   MYSQL_RES *stored_result;
   bool scan_flag;
   uint ref_length;
-  uint fetch_num; // stores the fetch num
-  MYSQL_ROW_OFFSET current_position;  // Current position used by ::position()
+  uint fetch_num;                    // stores the fetch num
+  MYSQL_ROW_OFFSET current_position; // Current position used by ::position()
   int remote_error_number;
   char remote_error_buf[FEDERATED_QUERY_BUFFER_SIZE];
 
@@ -166,17 +165,14 @@ private:
       return errorcode otherwise
   */
   uint convert_row_to_internal_format(byte *buf, MYSQL_ROW row);
-  bool create_where_from_key(String *to, KEY *key_info, 
+  bool create_where_from_key(String *to, KEY *key_info,
                              const key_range *start_key,
-                             const key_range *end_key,
-                             bool records_in_range);
+                             const key_range *end_key, bool records_in_range);
   int stash_remote_error();
 
 public:
   ha_federated(TABLE *table_arg);
-  ~ha_federated()
-  {
-  }
+  ~ha_federated() {}
   /* The name that will be used for display purposes */
   const char *table_type() const { return "FEDERATED"; }
   /*
@@ -191,12 +187,11 @@ public:
     implements. The current table flags are documented in
     handler.h
   */
-  ulong table_flags() const
-  {
+  ulong table_flags() const {
     /* fix server to be able to get remote server table flags */
-    return (HA_NOT_EXACT_COUNT |
-            HA_PRIMARY_KEY_IN_READ_INDEX | HA_FILE_BASED | HA_REC_NOT_IN_SEQ |
-            HA_AUTO_PART_KEY | HA_CAN_INDEX_BLOBS| HA_NO_PREFIX_CHAR_KEYS);
+    return (HA_NOT_EXACT_COUNT | HA_PRIMARY_KEY_IN_READ_INDEX | HA_FILE_BASED |
+            HA_REC_NOT_IN_SEQ | HA_AUTO_PART_KEY | HA_CAN_INDEX_BLOBS |
+            HA_NO_PREFIX_CHAR_KEYS);
   }
   /*
     This is a bitmap of flags that says how the storage engine
@@ -208,15 +203,14 @@ public:
     If all_parts it's set, MySQL want to know the flags for the combined
     index up to and including 'part'.
   */
-    /* fix server to be able to get remote server index flags */
-  ulong index_flags(uint inx, uint part, bool all_parts) const
-  {
+  /* fix server to be able to get remote server index flags */
+  ulong index_flags(uint inx, uint part, bool all_parts) const {
     return (HA_READ_NEXT | HA_READ_RANGE | HA_READ_AFTER_KEY);
   }
   uint max_supported_record_length() const { return HA_MAX_REC_LENGTH; }
-  uint max_supported_keys()          const { return MAX_KEY; }
-  uint max_supported_key_parts()     const { return MAX_REF_PARTS; }
-  uint max_supported_key_length()    const { return MAX_KEY_LENGTH; }
+  uint max_supported_keys() const { return MAX_KEY; }
+  uint max_supported_key_parts() const { return MAX_REF_PARTS; }
+  uint max_supported_key_length() const { return MAX_KEY_LENGTH; }
   /*
     Called in test_quick_select to determine if indexes should be used.
     Normally, we need to know number of blocks . For federated we need to
@@ -224,26 +218,24 @@ public:
     on the network side (?)
     Talk to Kostja about this - how to get the
     number of rows * ...
-    disk scan time on other side (block size, size of the row) + network time ...
-    The reason for "records * 1000" is that such a large number forces 
+    disk scan time on other side (block size, size of the row) + network time
+    ...
+    The reason for "records * 1000" is that such a large number forces
     this to use indexes "
   */
-  double scan_time()
-  {
-    DBUG_PRINT("info",
-               ("records %d", records));
-    return (double)(records*1000); 
+  double scan_time() {
+    DBUG_PRINT("info", ("records %d", records));
+    return (double)(records * 1000);
   }
   /*
     The next method will never be called if you do not implement indexes.
   */
-  double read_time(uint index, uint ranges, ha_rows rows) 
-  {
+  double read_time(uint index, uint ranges, ha_rows rows) {
     /*
       Per Brian, this number is bugus, but this method must be implemented,
       and at a later date, he intends to document this issue for handler code
     */
-    return (double) rows /  20.0+1;
+    return (double)rows / 20.0 + 1;
   }
 
   const key_map *keys_to_use_for_scanning() { return &key_map_full; }
@@ -253,22 +245,21 @@ public:
     Most of these methods are not obligatory, skip them and
     MySQL will treat them as not implemented
   */
-  int open(const char *name, int mode, uint test_if_locked);    // required
-  int close(void);                                              // required
+  int open(const char *name, int mode, uint test_if_locked); // required
+  int close(void);                                           // required
 
   int write_row(byte *buf);
   int update_row(const byte *old_data, byte *new_data);
   int delete_row(const byte *buf);
   int index_init(uint keynr);
-  int index_read(byte *buf, const byte *key,
-                 uint key_len, enum ha_rkey_function find_flag);
-  int index_read_idx(byte *buf, uint idx, const byte *key,
-                     uint key_len, enum ha_rkey_function find_flag);
+  int index_read(byte *buf, const byte *key, uint key_len,
+                 enum ha_rkey_function find_flag);
+  int index_read_idx(byte *buf, uint idx, const byte *key, uint key_len,
+                     enum ha_rkey_function find_flag);
   int index_next(byte *buf);
   int index_end();
-  int read_range_first(const key_range *start_key,
-                               const key_range *end_key,
-                               bool eq_range, bool sorted);
+  int read_range_first(const key_range *start_key, const key_range *end_key,
+                       bool eq_range, bool sorted);
   int read_range_next();
   /*
     unlike index_init(), rnd_init() can be called two times
@@ -278,25 +269,24 @@ public:
     position it to the start of the table, no need to deallocate
     and allocate it again
   */
-  int rnd_init(bool scan);                                      //required
+  int rnd_init(bool scan); // required
   int rnd_end();
-  int rnd_next(byte *buf);                                      //required
-  int rnd_pos(byte *buf, byte *pos);                            //required
-  void position(const byte *record);                            //required
-  void info(uint);                                              //required
+  int rnd_next(byte *buf); // required
+  int rnd_pos(byte *buf, byte *pos); // required
+  void position(const byte *record); // required
+  void info(uint); // required
 
-  int repair(THD* thd, HA_CHECK_OPT* check_opt);
-  int optimize(THD* thd, HA_CHECK_OPT* check_opt);
+  int repair(THD *thd, HA_CHECK_OPT *check_opt);
+  int optimize(THD *thd, HA_CHECK_OPT *check_opt);
 
   int delete_all_rows(void);
   int create(const char *name, TABLE *form,
-             HA_CREATE_INFO *create_info);                      //required
-  ha_rows records_in_range(uint inx, key_range *start_key,
-                                   key_range *end_key);
+             HA_CREATE_INFO *create_info); // required
+  ha_rows records_in_range(uint inx, key_range *start_key, key_range *end_key);
   uint8 table_cache_type() { return HA_CACHE_TBL_NOCACHE; }
 
   THR_LOCK_DATA **store_lock(THD *thd, THR_LOCK_DATA **to,
-                             enum thr_lock_type lock_type);     //required
+                             enum thr_lock_type lock_type); // required
   virtual bool get_error_message(int error, String *buf);
 };
 

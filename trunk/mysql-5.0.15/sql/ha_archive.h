@@ -15,7 +15,7 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
 #ifdef USE_PRAGMA_INTERFACE
-#pragma interface			/* gcc class implementation */
+#pragma interface /* gcc class implementation */
 #endif
 
 #include <zlib.h>
@@ -29,14 +29,14 @@
 typedef struct st_archive_share {
   char *table_name;
   char data_file_name[FN_REFLEN];
-  uint table_name_length,use_count;
+  uint table_name_length, use_count;
   pthread_mutex_t mutex;
   THR_LOCK lock;
-  File meta_file;           /* Meta file we use */
-  gzFile archive_write;     /* Archive file we are working with */
-  bool dirty;               /* Flag for if a flush should occur */
-  bool crashed;             /* Meta file is crashed */
-  ha_rows rows_recorded;    /* Number of rows in tables */
+  File meta_file;        /* Meta file we use */
+  gzFile archive_write;  /* Archive file we are working with */
+  bool dirty;            /* Flag for if a flush should occur */
+  bool crashed;          /* Meta file is crashed */
+  ha_rows rows_recorded; /* Number of rows in tables */
 } ARCHIVE_SHARE;
 
 /*
@@ -45,8 +45,7 @@ typedef struct st_archive_share {
 */
 #define ARCHIVE_VERSION 1
 
-class ha_archive: public handler
-{
+class ha_archive : public handler {
   THR_LOCK_DATA lock;        /* MySQL lock */
   ARCHIVE_SHARE *share;      /* Shared lock info */
   gzFile archive;            /* Archive file we are working with */
@@ -59,29 +58,23 @@ class ha_archive: public handler
 
 public:
   ha_archive(TABLE *table_arg);
-  ~ha_archive()
-  {
-  }
+  ~ha_archive() {}
   const char *table_type() const { return "ARCHIVE"; }
   const char *index_type(uint inx) { return "NONE"; }
   const char **bas_ext() const;
-  ulong table_flags() const
-  {
+  ulong table_flags() const {
     return (HA_REC_NOT_IN_SEQ | HA_NOT_EXACT_COUNT | HA_NO_AUTO_INCREMENT |
             HA_FILE_BASED | HA_CAN_INSERT_DELAYED);
   }
-  ulong index_flags(uint idx, uint part, bool all_parts) const
-  {
-    return 0;
-  }
+  ulong index_flags(uint idx, uint part, bool all_parts) const { return 0; }
   int open(const char *name, int mode, uint test_if_locked);
   int close(void);
-  int write_row(byte * buf);
+  int write_row(byte *buf);
   int real_write_row(byte *buf, gzFile writer);
   int delete_all_rows();
-  int rnd_init(bool scan=1);
+  int rnd_init(bool scan = 1);
   int rnd_next(byte *buf);
-  int rnd_pos(byte * buf, byte *pos);
+  int rnd_pos(byte *buf, byte *pos);
   int get_row(gzFile file_to_read, byte *buf);
   int read_meta_file(File meta_file, ha_rows *rows);
   int write_meta_file(File meta_file, ha_rows rows, bool dirty);
@@ -93,18 +86,14 @@ public:
   void position(const byte *record);
   void info(uint);
   int create(const char *name, TABLE *form, HA_CREATE_INFO *create_info);
-  int optimize(THD* thd, HA_CHECK_OPT* check_opt);
-  int repair(THD* thd, HA_CHECK_OPT* check_opt);
+  int optimize(THD *thd, HA_CHECK_OPT *check_opt);
+  int repair(THD *thd, HA_CHECK_OPT *check_opt);
   void start_bulk_insert(ha_rows rows);
   int end_bulk_insert();
-  enum row_type get_row_type() const 
-  { 
-    return ROW_TYPE_COMPRESSED;
-  }
+  enum row_type get_row_type() const { return ROW_TYPE_COMPRESSED; }
   THR_LOCK_DATA **store_lock(THD *thd, THR_LOCK_DATA **to,
                              enum thr_lock_type lock_type);
 };
 
 bool archive_db_init(void);
 bool archive_db_end(void);
-

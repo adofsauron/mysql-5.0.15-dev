@@ -14,7 +14,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-/* 
+/*
  * sql_manager.cc
  * This thread manages various maintenance tasks.
  *
@@ -32,8 +32,7 @@ pthread_t manager_thread;
 pthread_mutex_t LOCK_manager;
 pthread_cond_t COND_manager;
 
-pthread_handler_t handle_manager(void *arg __attribute__((unused)))
-{
+pthread_handler_t handle_manager(void *arg __attribute__((unused))) {
   int error = 0;
   ulong status;
   struct timespec abstime;
@@ -46,25 +45,20 @@ pthread_handler_t handle_manager(void *arg __attribute__((unused)))
   manager_status = 0;
   manager_thread_in_use = 1;
 
-  for (;;)
-  {
+  for (;;) {
     pthread_mutex_lock(&LOCK_manager);
     /* XXX: This will need to be made more general to handle different
      * polling needs. */
-    if (flush_time)
-    {
-      if (reset_flush_time)
-      {
-	set_timespec(abstime, flush_time);
+    if (flush_time) {
+      if (reset_flush_time) {
+        set_timespec(abstime, flush_time);
         reset_flush_time = FALSE;
       }
       while (!manager_status && (!error || error == EINTR) && !abort_loop)
-        error= pthread_cond_timedwait(&COND_manager, &LOCK_manager, &abstime);
-    }
-    else
-    {
+        error = pthread_cond_timedwait(&COND_manager, &LOCK_manager, &abstime);
+    } else {
       while (!manager_status && (!error || error == EINTR) && !abort_loop)
-        error= pthread_cond_wait(&COND_manager, &LOCK_manager);
+        error = pthread_cond_wait(&COND_manager, &LOCK_manager);
     }
     status = manager_status;
     manager_status = 0;
@@ -73,16 +67,14 @@ pthread_handler_t handle_manager(void *arg __attribute__((unused)))
     if (abort_loop)
       break;
 
-    if (error == ETIMEDOUT || error == ETIME)
-    {
+    if (error == ETIMEDOUT || error == ETIME) {
       flush_tables();
       error = 0;
       reset_flush_time = TRUE;
     }
 
 #ifdef HAVE_BERKELEY_DB
-    if (status & MANAGER_BERKELEY_LOG_CLEANUP)
-    {
+    if (status & MANAGER_BERKELEY_LOG_CLEANUP) {
       berkeley_cleanup_log_files();
       status &= ~MANAGER_BERKELEY_LOG_CLEANUP;
     }

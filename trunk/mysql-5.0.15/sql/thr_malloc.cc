@@ -14,107 +14,85 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-
 /* Mallocs for used in threads */
 
 #include "mysql_priv.h"
 
 extern "C" {
-  void sql_alloc_error_handler(void)
-  {
-    THD *thd=current_thd;
-    if (thd)					// QQ;  To be removed
-      thd->fatal_error();			/* purecov: inspected */
-    sql_print_error(ER(ER_OUT_OF_RESOURCES));
-  }
+void sql_alloc_error_handler(void) {
+  THD *thd = current_thd;
+  if (thd)              // QQ;  To be removed
+    thd->fatal_error(); /* purecov: inspected */
+  sql_print_error(ER(ER_OUT_OF_RESOURCES));
+}
 }
 
-void init_sql_alloc(MEM_ROOT *mem_root, uint block_size, uint pre_alloc)
-{
+void init_sql_alloc(MEM_ROOT *mem_root, uint block_size, uint pre_alloc) {
   init_alloc_root(mem_root, block_size, pre_alloc);
-  mem_root->error_handler=sql_alloc_error_handler;
+  mem_root->error_handler = sql_alloc_error_handler;
 }
 
-
-gptr sql_alloc(uint Size)
-{
-  MEM_ROOT *root= *my_pthread_getspecific_ptr(MEM_ROOT**,THR_MALLOC);
-  char *ptr= (char*) alloc_root(root,Size);
+gptr sql_alloc(uint Size) {
+  MEM_ROOT *root = *my_pthread_getspecific_ptr(MEM_ROOT **, THR_MALLOC);
+  char *ptr = (char *)alloc_root(root, Size);
   return ptr;
 }
 
-
-gptr sql_calloc(uint size)
-{
+gptr sql_calloc(uint size) {
   gptr ptr;
-  if ((ptr=sql_alloc(size)))
-    bzero((char*) ptr,size);
+  if ((ptr = sql_alloc(size)))
+    bzero((char *)ptr, size);
   return ptr;
 }
 
-
-char *sql_strdup(const char *str)
-{
-  uint len=(uint) strlen(str)+1;
+char *sql_strdup(const char *str) {
+  uint len = (uint)strlen(str) + 1;
   char *pos;
-  if ((pos= (char*) sql_alloc(len)))
-    memcpy(pos,str,len);
+  if ((pos = (char *)sql_alloc(len)))
+    memcpy(pos, str, len);
   return pos;
 }
 
-
-char *sql_strmake(const char *str,uint len)
-{
+char *sql_strmake(const char *str, uint len) {
   char *pos;
-  if ((pos= (char*) sql_alloc(len+1)))
-  {
-    memcpy(pos,str,len);
-    pos[len]=0;
+  if ((pos = (char *)sql_alloc(len + 1))) {
+    memcpy(pos, str, len);
+    pos[len] = 0;
   }
   return pos;
 }
 
-
-gptr sql_memdup(const void *ptr,uint len)
-{
+gptr sql_memdup(const void *ptr, uint len) {
   char *pos;
-  if ((pos= (char*) sql_alloc(len)))
-    memcpy(pos,ptr,len);
+  if ((pos = (char *)sql_alloc(len)))
+    memcpy(pos, ptr, len);
   return pos;
 }
 
-void sql_element_free(void *ptr __attribute__((unused)))
-{} /* purecov: deadcode */
-
-
+void sql_element_free(void *ptr __attribute__((unused))) {
+} /* purecov: deadcode */
 
 char *sql_strmake_with_convert(const char *str, uint32 arg_length,
-			       CHARSET_INFO *from_cs,
-			       uint32 max_res_length,
-			       CHARSET_INFO *to_cs, uint32 *result_length)
-{
+                               CHARSET_INFO *from_cs, uint32 max_res_length,
+                               CHARSET_INFO *to_cs, uint32 *result_length) {
   char *pos;
-  uint32 new_length= to_cs->mbmaxlen*arg_length;
-  max_res_length--;				// Reserve place for end null
+  uint32 new_length = to_cs->mbmaxlen * arg_length;
+  max_res_length--; // Reserve place for end null
 
   set_if_smaller(new_length, max_res_length);
-  if (!(pos= sql_alloc(new_length+1)))
-    return pos;					// Error
+  if (!(pos = sql_alloc(new_length + 1)))
+    return pos; // Error
 
-  if ((from_cs == &my_charset_bin) || (to_cs == &my_charset_bin))
-  {
+  if ((from_cs == &my_charset_bin) || (to_cs == &my_charset_bin)) {
     // Safety if to_cs->mbmaxlen > 0
-    new_length= min(arg_length, max_res_length);
+    new_length = min(arg_length, max_res_length);
     memcpy(pos, str, new_length);
-  }
-  else
-  {
+  } else {
     uint dummy_errors;
-    new_length= copy_and_convert((char*) pos, new_length, to_cs, str,
-				 arg_length, from_cs, &dummy_errors);
+    new_length = copy_and_convert((char *)pos, new_length, to_cs, str,
+                                  arg_length, from_cs, &dummy_errors);
   }
-  pos[new_length]= 0;
-  *result_length= new_length;
+  pos[new_length] = 0;
+  *result_length = new_length;
   return pos;
 }
-

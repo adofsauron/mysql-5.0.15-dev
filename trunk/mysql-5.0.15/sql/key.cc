@@ -14,61 +14,52 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-
 /* Functions to handle keys and fields in forms */
 
 #include "mysql_priv.h"
 
-	/*
-	** Search after with key field is. If no key starts with field test
-	** if field is part of some key.
-	**
-	** returns number of key. keylength is set to length of key before
-	** (not including) field
-	** Used when calculating key for NEXT_NUMBER
-	*/
+/*
+** Search after with key field is. If no key starts with field test
+** if field is part of some key.
+**
+** returns number of key. keylength is set to length of key before
+** (not including) field
+** Used when calculating key for NEXT_NUMBER
+*/
 
-int find_ref_key(TABLE *table,Field *field, uint *key_length)
-{
+int find_ref_key(TABLE *table, Field *field, uint *key_length) {
   reg2 int i;
   reg3 KEY *key_info;
   uint fieldpos;
 
-  fieldpos=    field->offset();
+  fieldpos = field->offset();
 
-	/* Test if some key starts as fieldpos */
+  /* Test if some key starts as fieldpos */
 
-  for (i= 0, key_info= table->key_info ;
-       i < (int) table->s->keys ;
-       i++, key_info++)
-  {
-    if (key_info->key_part[0].offset == fieldpos)
-    {						/* Found key. Calc keylength */
-      *key_length=0;
-      return(i);			/* Use this key */
+  for (i = 0, key_info = table->key_info; i < (int)table->s->keys;
+       i++, key_info++) {
+    if (key_info->key_part[0].offset ==
+        fieldpos) { /* Found key. Calc keylength */
+      *key_length = 0;
+      return (i); /* Use this key */
     }
   }
-	/* Test if some key contains fieldpos */
+  /* Test if some key contains fieldpos */
 
-  for (i= 0, key_info= table->key_info ;
-       i < (int) table->s->keys ;
-       i++, key_info++)
-  {
+  for (i = 0, key_info = table->key_info; i < (int)table->s->keys;
+       i++, key_info++) {
     uint j;
     KEY_PART_INFO *key_part;
-    *key_length=0;
-    for (j=0, key_part=key_info->key_part ;
-	 j < key_info->key_parts ;
-	 j++, key_part++)
-    {
+    *key_length = 0;
+    for (j = 0, key_part = key_info->key_part; j < key_info->key_parts;
+         j++, key_part++) {
       if (key_part->offset == fieldpos)
-	return(i);			/* Use this key */
-      *key_length+=key_part->store_length;
+        return (i); /* Use this key */
+      *key_length += key_part->store_length;
     }
   }
-  return(-1);					/* No key is ok */
+  return (-1); /* No key is ok */
 }
-
 
 /*
   Copy part of a record that forms a key or key prefix to a buffer.
@@ -91,63 +82,50 @@ int find_ref_key(TABLE *table,Field *field, uint *key_length)
     None
 */
 
-void key_copy(byte *to_key, byte *from_record, KEY *key_info, uint key_length)
-{
+void key_copy(byte *to_key, byte *from_record, KEY *key_info, uint key_length) {
   uint length;
   KEY_PART_INFO *key_part;
 
   if (key_length == 0)
-    key_length= key_info->key_length;
-  for (key_part= key_info->key_part; (int) key_length > 0; key_part++)
-  {
-    if (key_part->null_bit)
-    {
-      *to_key++= test(from_record[key_part->null_offset] &
-		   key_part->null_bit);
+    key_length = key_info->key_length;
+  for (key_part = key_info->key_part; (int)key_length > 0; key_part++) {
+    if (key_part->null_bit) {
+      *to_key++ = test(from_record[key_part->null_offset] & key_part->null_bit);
       key_length--;
     }
-    if (key_part->type == HA_KEYTYPE_BIT)
-    {
-      Field_bit *field= (Field_bit *) (key_part->field);
-      if (field->bit_len)
-      {
-        uchar bits= get_rec_bits((uchar*) from_record +
-                                 key_part->null_offset +
-                                 (key_part->null_bit == 128),
-                                 field->bit_ofs, field->bit_len);
-        *to_key++= bits;
+    if (key_part->type == HA_KEYTYPE_BIT) {
+      Field_bit *field = (Field_bit *)(key_part->field);
+      if (field->bit_len) {
+        uchar bits = get_rec_bits((uchar *)from_record + key_part->null_offset +
+                                      (key_part->null_bit == 128),
+                                  field->bit_ofs, field->bit_len);
+        *to_key++ = bits;
         key_length--;
       }
     }
-    if (key_part->key_part_flag & HA_BLOB_PART)
-    {
+    if (key_part->key_part_flag & HA_BLOB_PART) {
       char *pos;
-      ulong blob_length= ((Field_blob*) key_part->field)->get_length();
-      key_length-= HA_KEY_BLOB_LENGTH;
-      ((Field_blob*) key_part->field)->get_ptr(&pos);
-      length=min(key_length, key_part->length);
+      ulong blob_length = ((Field_blob *)key_part->field)->get_length();
+      key_length -= HA_KEY_BLOB_LENGTH;
+      ((Field_blob *)key_part->field)->get_ptr(&pos);
+      length = min(key_length, key_part->length);
       set_if_smaller(blob_length, length);
-      int2store(to_key, (uint) blob_length);
-      to_key+= HA_KEY_BLOB_LENGTH;			// Skip length info
+      int2store(to_key, (uint)blob_length);
+      to_key += HA_KEY_BLOB_LENGTH; // Skip length info
       memcpy(to_key, pos, blob_length);
+    } else if (key_part->key_part_flag & HA_VAR_LENGTH_PART) {
+      key_length -= HA_KEY_BLOB_LENGTH;
+      length = min(key_length, key_part->length);
+      key_part->field->get_key_image((char *)to_key, length, Field::itRAW);
+      to_key += HA_KEY_BLOB_LENGTH;
+    } else {
+      length = min(key_length, key_part->length);
+      memcpy(to_key, from_record + key_part->offset, (size_t)length);
     }
-    else if (key_part->key_part_flag & HA_VAR_LENGTH_PART)
-    {
-      key_length-= HA_KEY_BLOB_LENGTH;
-      length= min(key_length, key_part->length);
-      key_part->field->get_key_image((char *) to_key, length, Field::itRAW);
-      to_key+= HA_KEY_BLOB_LENGTH;
-    }
-    else
-    {
-      length= min(key_length, key_part->length);
-      memcpy(to_key, from_record + key_part->offset, (size_t) length);
-    }
-    to_key+= length;
-    key_length-= length;
+    to_key += length;
+    key_length -= length;
   }
 }
-
 
 /*
   Restore a key from some buffer to record.
@@ -168,62 +146,50 @@ void key_copy(byte *to_key, byte *from_record, KEY *key_info, uint key_length)
 */
 
 void key_restore(byte *to_record, byte *from_key, KEY *key_info,
-                 uint key_length)
-{
+                 uint key_length) {
   uint length;
   KEY_PART_INFO *key_part;
 
-  if (key_length == 0)
-  {
-    key_length= key_info->key_length;
+  if (key_length == 0) {
+    key_length = key_info->key_length;
   }
-  for (key_part= key_info->key_part ; (int) key_length > 0 ; key_part++)
-  {
-    if (key_part->null_bit)
-    {
+  for (key_part = key_info->key_part; (int)key_length > 0; key_part++) {
+    if (key_part->null_bit) {
       if (*from_key++)
-	to_record[key_part->null_offset]|= key_part->null_bit;
+        to_record[key_part->null_offset] |= key_part->null_bit;
       else
-	to_record[key_part->null_offset]&= ~key_part->null_bit;
+        to_record[key_part->null_offset] &= ~key_part->null_bit;
       key_length--;
     }
-    if (key_part->type == HA_KEYTYPE_BIT)
-    {
-      Field_bit *field= (Field_bit *) (key_part->field);
-      if (field->bit_len)
-      {
-        uchar bits= *(from_key + key_part->length - field->field_length -1);
+    if (key_part->type == HA_KEYTYPE_BIT) {
+      Field_bit *field = (Field_bit *)(key_part->field);
+      if (field->bit_len) {
+        uchar bits = *(from_key + key_part->length - field->field_length - 1);
         set_rec_bits(bits, to_record + key_part->null_offset +
-                     (key_part->null_bit == 128),
+                               (key_part->null_bit == 128),
                      field->bit_ofs, field->bit_len);
       }
     }
-    if (key_part->key_part_flag & HA_BLOB_PART)
-    {
-      uint blob_length= uint2korr(from_key);
-      from_key+= HA_KEY_BLOB_LENGTH;
-      key_length-= HA_KEY_BLOB_LENGTH;
-      ((Field_blob*) key_part->field)->set_ptr((ulong) blob_length,
-					       (char*) from_key);
-      length= key_part->length;
+    if (key_part->key_part_flag & HA_BLOB_PART) {
+      uint blob_length = uint2korr(from_key);
+      from_key += HA_KEY_BLOB_LENGTH;
+      key_length -= HA_KEY_BLOB_LENGTH;
+      ((Field_blob *)key_part->field)
+          ->set_ptr((ulong)blob_length, (char *)from_key);
+      length = key_part->length;
+    } else if (key_part->key_part_flag & HA_VAR_LENGTH_PART) {
+      key_length -= HA_KEY_BLOB_LENGTH;
+      length = min(key_length, key_part->length);
+      key_part->field->set_key_image((char *)from_key, length);
+      from_key += HA_KEY_BLOB_LENGTH;
+    } else {
+      length = min(key_length, key_part->length);
+      memcpy(to_record + key_part->offset, from_key, (size_t)length);
     }
-    else if (key_part->key_part_flag & HA_VAR_LENGTH_PART)
-    {
-      key_length-= HA_KEY_BLOB_LENGTH;
-      length= min(key_length, key_part->length);
-      key_part->field->set_key_image((char *) from_key, length);
-      from_key+= HA_KEY_BLOB_LENGTH;
-    }
-    else
-    {
-      length= min(key_length, key_part->length);
-      memcpy(to_record + key_part->offset, from_key, (size_t) length);
-    }
-    from_key+= length;
-    key_length-= length;
+    from_key += length;
+    key_length -= length;
   }
 }
-
 
 /*
   Compare if a key has changed
@@ -246,124 +212,105 @@ void key_restore(byte *to_record, byte *from_key, KEY *key_info,
     1	Key has changed
 */
 
-bool key_cmp_if_same(TABLE *table,const byte *key,uint idx,uint key_length)
-{
+bool key_cmp_if_same(TABLE *table, const byte *key, uint idx, uint key_length) {
   uint store_length;
   KEY_PART_INFO *key_part;
-  const byte *key_end= key + key_length;;
+  const byte *key_end = key + key_length;
+  ;
 
-  for (key_part=table->key_info[idx].key_part;
-       key < key_end ; 
-       key_part++, key+= store_length)
-  {
+  for (key_part = table->key_info[idx].key_part; key < key_end;
+       key_part++, key += store_length) {
     uint length;
-    store_length= key_part->store_length;
+    store_length = key_part->store_length;
 
-    if (key_part->null_bit)
-    {
-      if (*key != test(table->record[0][key_part->null_offset] & 
-		       key_part->null_bit))
-	return 1;
+    if (key_part->null_bit) {
+      if (*key !=
+          test(table->record[0][key_part->null_offset] & key_part->null_bit))
+        return 1;
       if (*key)
-	continue;
+        continue;
       key++;
       store_length--;
     }
-    if (key_part->key_part_flag & (HA_BLOB_PART | HA_VAR_LENGTH_PART |
-                                   HA_BIT_PART))
-    {
+    if (key_part->key_part_flag &
+        (HA_BLOB_PART | HA_VAR_LENGTH_PART | HA_BIT_PART)) {
       if (key_part->field->key_cmp(key, key_part->length))
-	return 1;
-      continue;
-    }
-    length= min((uint) (key_end-key), store_length);
-    if (!(key_part->key_type & (FIELDFLAG_NUMBER+FIELDFLAG_BINARY+
-                                FIELDFLAG_PACK)))
-    {
-      CHARSET_INFO *cs= key_part->field->charset();
-      uint char_length= key_part->length / cs->mbmaxlen;
-      const byte *pos= table->record[0] + key_part->offset;
-      if (length > char_length)
-      {
-        char_length= my_charpos(cs, pos, pos + length, char_length);
-        set_if_smaller(char_length, length);
-      }
-      if (cs->coll->strnncollsp(cs,
-                                (const uchar*) key, length,
-                                (const uchar*) pos, char_length, 0))
         return 1;
       continue;
     }
-    if (memcmp(key,table->record[0]+key_part->offset,length))
+    length = min((uint)(key_end - key), store_length);
+    if (!(key_part->key_type &
+          (FIELDFLAG_NUMBER + FIELDFLAG_BINARY + FIELDFLAG_PACK))) {
+      CHARSET_INFO *cs = key_part->field->charset();
+      uint char_length = key_part->length / cs->mbmaxlen;
+      const byte *pos = table->record[0] + key_part->offset;
+      if (length > char_length) {
+        char_length = my_charpos(cs, pos, pos + length, char_length);
+        set_if_smaller(char_length, length);
+      }
+      if (cs->coll->strnncollsp(cs, (const uchar *)key, length,
+                                (const uchar *)pos, char_length, 0))
+        return 1;
+      continue;
+    }
+    if (memcmp(key, table->record[0] + key_part->offset, length))
       return 1;
   }
   return 0;
 }
 
-	/* unpack key-fields from record to some buffer */
-	/* This is used to get a good error message */
+/* unpack key-fields from record to some buffer */
+/* This is used to get a good error message */
 
-void key_unpack(String *to,TABLE *table,uint idx)
-{
-  KEY_PART_INFO *key_part,*key_part_end;
+void key_unpack(String *to, TABLE *table, uint idx) {
+  KEY_PART_INFO *key_part, *key_part_end;
   Field *field;
   String tmp;
   DBUG_ENTER("key_unpack");
 
   to->length(0);
-  for (key_part=table->key_info[idx].key_part,key_part_end=key_part+
-	 table->key_info[idx].key_parts ;
-       key_part < key_part_end;
-       key_part++)
-  {
+  for (key_part = table->key_info[idx].key_part,
+      key_part_end = key_part + table->key_info[idx].key_parts;
+       key_part < key_part_end; key_part++) {
     if (to->length())
       to->append('-');
-    if (key_part->null_bit)
-    {
-      if (table->record[0][key_part->null_offset] & key_part->null_bit)
-      {
-	to->append("NULL", 4);
-	continue;
+    if (key_part->null_bit) {
+      if (table->record[0][key_part->null_offset] & key_part->null_bit) {
+        to->append("NULL", 4);
+        continue;
       }
     }
-    if ((field=key_part->field))
-    {
+    if ((field = key_part->field)) {
       field->val_str(&tmp);
       if (key_part->length < field->pack_length())
-	tmp.length(min(tmp.length(),key_part->length));
+        tmp.length(min(tmp.length(), key_part->length));
       to->append(tmp);
-    }
-    else
+    } else
       to->append("???", 3);
   }
   DBUG_VOID_RETURN;
 }
-
 
 /*
   Return 1 if any field in a list is part of key or the key uses a field
   that is automaticly updated (like a timestamp)
 */
 
-bool check_if_key_used(TABLE *table, uint idx, List<Item> &fields)
-{
+bool check_if_key_used(TABLE *table, uint idx, List<Item> &fields) {
   List_iterator_fast<Item> f(fields);
-  KEY_PART_INFO *key_part,*key_part_end;
-  for (key_part=table->key_info[idx].key_part,key_part_end=key_part+
-	 table->key_info[idx].key_parts ;
-       key_part < key_part_end;
-       key_part++)
-  {
+  KEY_PART_INFO *key_part, *key_part_end;
+  for (key_part = table->key_info[idx].key_part,
+      key_part_end = key_part + table->key_info[idx].key_parts;
+       key_part < key_part_end; key_part++) {
     Item_field *field;
 
     if (key_part->field == table->timestamp_field)
-      return 1;					// Can't be used for update
+      return 1; // Can't be used for update
 
     f.rewind();
-    while ((field=(Item_field*) f++))
-    {
+    while ((field = (Item_field *)f++)) {
       if (key_part->field->eq(field->field))
-	return 1;
+        return 1;
     }
   }
 
@@ -376,7 +323,6 @@ bool check_if_key_used(TABLE *table, uint idx, List<Item> &fields)
     return check_if_key_used(table, table->s->primary_key, fields);
   return 0;
 }
-
 
 /*
   Compare key in row to a given key
@@ -395,37 +341,32 @@ bool check_if_key_used(TABLE *table, uint idx, List<Item> &fields)
     1			Key is larger than range
 */
 
-int key_cmp(KEY_PART_INFO *key_part, const byte *key, uint key_length)
-{
+int key_cmp(KEY_PART_INFO *key_part, const byte *key, uint key_length) {
   uint store_length;
 
-  for (const byte *end=key + key_length;
-       key < end;
-       key+= store_length, key_part++)
-  {
+  for (const byte *end = key + key_length; key < end;
+       key += store_length, key_part++) {
     int cmp;
-    store_length= key_part->store_length;
-    if (key_part->null_bit)
-    {
+    store_length = key_part->store_length;
+    if (key_part->null_bit) {
       /* This key part allows null values; NULL is lower than everything */
-      register bool field_is_null= key_part->field->is_null();
-      if (*key)                                 // If range key is null
+      register bool field_is_null = key_part->field->is_null();
+      if (*key) // If range key is null
       {
-	/* the range is expecting a null value */
-	if (!field_is_null)
-	  return 1;                             // Found key is > range
-        /* null -- exact match, go to next key part */
-	continue;
-      }
-      else if (field_is_null)
-	return -1;                              // NULL is less than any value
-      key++;					// Skip null byte
+        /* the range is expecting a null value */
+        if (!field_is_null)
+          return 1; // Found key is > range
+                    /* null -- exact match, go to next key part */
+        continue;
+      } else if (field_is_null)
+        return -1; // NULL is less than any value
+      key++;       // Skip null byte
       store_length--;
     }
-    if ((cmp=key_part->field->key_cmp((byte*) key, key_part->length)) < 0)
+    if ((cmp = key_part->field->key_cmp((byte *)key, key_part->length)) < 0)
       return -1;
     if (cmp > 0)
       return 1;
   }
-  return 0;                                     // Keys are equal
+  return 0; // Keys are equal
 }

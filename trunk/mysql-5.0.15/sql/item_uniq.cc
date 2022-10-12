@@ -17,13 +17,12 @@
 /* Compability file */
 
 #ifdef USE_PRAGMA_IMPLEMENTATION
-#pragma implementation				// gcc: Class implementation
+#pragma implementation // gcc: Class implementation
 #endif
 
 #include "mysql_priv.h"
 
 Field *Item_sum_unique_users::create_tmp_field(bool group, TABLE *table,
-                                               uint convert_blob_length)
-{
-  return new Field_long(9,maybe_null,name,table,1);
+                                               uint convert_blob_length) {
+  return new Field_long(9, maybe_null, name, table, 1);
 }

@@ -1206,14 +1206,13 @@ void JOIN::exec() {
       like SEC_TO_TIME(SUM(...)).
     */
 
-    if (
-            curr_join->group_list &&
-                (!test_if_subpart(curr_join->group_list, curr_join->order) ||
-                 curr_join->select_distinct) ||
-            (curr_join->select_distinct &&
-             curr_join->tmp_table_param
-                 .using_indirect_summary_function)) { /* Must copy to another
-                                                         table */
+    if (curr_join->group_list &&
+            (!test_if_subpart(curr_join->group_list, curr_join->order) ||
+             curr_join->select_distinct) ||
+        (curr_join->select_distinct &&
+         curr_join->tmp_table_param
+             .using_indirect_summary_function)) { /* Must copy to another
+                                                     table */
       DBUG_PRINT("info", ("Creating group table"));
 
       /* Free first data from old join */
@@ -4692,11 +4691,11 @@ static bool make_join_select(JOIN *join, SQL_SELECT *select, COND *cond) {
         if (!sel)
           DBUG_RETURN(1); // End of memory
                           /*
-          If tab is an inner table of an outer join operation,
-          add a match guard to the pushed down predicate.
-          The guard will turn the predicate on only after
-          the first match for outer tables is encountered.
-        */
+If tab is an inner table of an outer join operation,
+add a match guard to the pushed down predicate.
+The guard will turn the predicate on only after
+the first match for outer tables is encountered.
+*/
         if (cond) {
           /*
             Because of QUICK_GROUP_MIN_MAX_SELECT there may be a select without
@@ -4746,11 +4745,11 @@ static bool make_join_select(JOIN *join, SQL_SELECT *select, COND *cond) {
               tab->table->reginfo.impossible_range)
             DBUG_RETURN(1); // Impossible range
                             /*
-            We plan to scan all rows.
-            Check again if we should use an index.
-            We could have used an column from a previous table in
-            the index if we are using limit and this is the first table
-          */
+We plan to scan all rows.
+Check again if we should use an index.
+We could have used an column from a previous table in
+the index if we are using limit and this is the first table
+*/
 
           if (cond && (!tab->keys.is_subset(tab->const_keys) && i > 0) ||
               (!tab->const_keys.is_clear_all() && i == join->const_tables &&
@@ -11068,11 +11067,11 @@ bool setup_copy_fields(THD *thd, TMP_TABLE_PARAM *param,
                 pos->type() == Item::COND_ITEM) &&
                !pos->with_sum_func) { // Save for send fields
                                       /* TODO:
-         In most cases this result will be sent to the user.
-         This should be changed to use copy_int or copy_real depending
-         on how the value is to be used: In some cases this may be an
-         argument in a group function, like: IF(ISNULL(col),0,COUNT(*))
-      */
+In most cases this result will be sent to the user.
+This should be changed to use copy_int or copy_real depending
+on how the value is to be used: In some cases this may be an
+argument in a group function, like: IF(ISNULL(col),0,COUNT(*))
+*/
       if (!(pos = new Item_copy_string(pos)))
         goto err;
       if (i < border) // HAVING, ORDER and GROUP BY

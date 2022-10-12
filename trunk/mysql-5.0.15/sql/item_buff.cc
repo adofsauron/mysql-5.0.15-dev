@@ -60,17 +60,20 @@ bool Cached_item_str::cmp(void)
   String *res;
   bool tmp;
 
-  if ((res = item->val_str(&tmp_value))) res->length(min(res->length(), value.alloced_length()));
+  if ((res = item->val_str(&tmp_value)))
+    res->length(min(res->length(), value.alloced_length()));
   if (null_value != item->null_value)
   {
-    if ((null_value = item->null_value)) return TRUE;  // New value was null
+    if ((null_value = item->null_value))
+      return TRUE;  // New value was null
     tmp = TRUE;
   }
   else if (null_value)
     return 0;  // new and old value was null
   else
     tmp = sortcmp(&value, res, item->collation.collation) != 0;
-  if (tmp) value.copy(*res);  // Remember for next cmp
+  if (tmp)
+    value.copy(*res);  // Remember for next cmp
   return tmp;
 }
 
@@ -106,7 +109,8 @@ bool Cached_item_int::cmp(void)
 bool Cached_item_field::cmp(void)
 {
   bool tmp = field->cmp(buff) != 0;  // This is not a blob!
-  if (tmp) field->get_image(buff, length, field->charset());
+  if (tmp)
+    field->get_image(buff, length, field->charset());
   if (null_value != field->is_null())
   {
     null_value = !null_value;

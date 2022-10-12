@@ -216,7 +216,8 @@ class Ndb_item
     switch (type)
     {
       case (NDB_VALUE):
-        if (qualification.value_type == Item::STRING_ITEM) return value.item->str_value.length();
+        if (qualification.value_type == Item::STRING_ITEM)
+          return value.item->str_value.length();
         break;
       case (NDB_FIELD):
         return value.field_value->field->pack_length();
@@ -238,7 +239,8 @@ class Ndb_item
     switch (type)
     {
       case (NDB_VALUE):
-        if (qualification.value_type == Item::STRING_ITEM) return value.item->str_value.ptr();
+        if (qualification.value_type == Item::STRING_ITEM)
+          return value.item->str_value.ptr();
         break;
       case (NDB_FIELD):
         return value.field_value->field->ptr;
@@ -254,7 +256,8 @@ class Ndb_item
     Field *field = field_item->value.field_value->field;
     const Item *item = value.item;
 
-    if (item && field) ((Item *)item)->save_in_field(field, false);
+    if (item && field)
+      ((Item *)item)->save_in_field(field, false);
   };
 
   static NDB_FUNC_TYPE item_func_to_ndb_func(Item_func::Functype fun)
@@ -344,9 +347,11 @@ class Ndb_cond
   Ndb_cond() : ndb_item(NULL), next(NULL), prev(NULL){};
   ~Ndb_cond()
   {
-    if (ndb_item) delete ndb_item;
+    if (ndb_item)
+      delete ndb_item;
     ndb_item = NULL;
-    if (next) delete next;
+    if (next)
+      delete next;
     next = prev = NULL;
   };
   Ndb_item *ndb_item;
@@ -367,9 +372,11 @@ class Ndb_cond_stack
   Ndb_cond_stack() : ndb_cond(NULL), next(NULL){};
   ~Ndb_cond_stack()
   {
-    if (ndb_cond) delete ndb_cond;
+    if (ndb_cond)
+      delete ndb_cond;
     ndb_cond = NULL;
-    if (next) delete next;
+    if (next)
+      delete next;
     next = NULL;
   };
   Ndb_cond *ndb_cond;
@@ -382,7 +389,8 @@ class Ndb_rewrite_context
   Ndb_rewrite_context(Item_func *func) : func_item(func), left_hand_item(NULL), count(0){};
   ~Ndb_rewrite_context()
   {
-    if (next) delete next;
+    if (next)
+      delete next;
   }
   const Item_func *func_item;
   const Item *left_hand_item;
@@ -412,11 +420,13 @@ class Ndb_cond_traverse_context
         collation(NULL),
         rewrite_stack(NULL)
   {
-    if (stack) cond_ptr = stack->ndb_cond;
+    if (stack)
+      cond_ptr = stack->ndb_cond;
   };
   ~Ndb_cond_traverse_context()
   {
-    if (rewrite_stack) delete rewrite_stack;
+    if (rewrite_stack)
+      delete rewrite_stack;
   }
   void expect(Item::Type type) { expect_mask |= (1 << type); };
   void dont_expect(Item::Type type) { expect_mask &= ~(1 << type); };

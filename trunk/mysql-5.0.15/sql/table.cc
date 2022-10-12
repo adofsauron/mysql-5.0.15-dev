@@ -98,14 +98,16 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
     goto err;
 
   error = 4;
-  if (my_read(file, (byte *)head, 64, MYF(MY_NABP))) goto err;
+  if (my_read(file, (byte *)head, 64, MYF(MY_NABP)))
+    goto err;
 
   if (memcmp(head, "TYPE=", 5) == 0)
   {
     // new .frm
     my_close(file, MYF(MY_WME));
 
-    if (db_stat & NO_ERR_ON_NEW_FRM) DBUG_RETURN(5);
+    if (db_stat & NO_ERR_ON_NEW_FRM)
+      DBUG_RETURN(5);
     file = -1;
     // caller can't process new .frm
     goto err;
@@ -119,11 +121,13 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
   share->table_name = strdup_root(&outparam->mem_root, name + dirname_length(name));
   share->path = strdup_root(&outparam->mem_root, name);
   outparam->alias = my_strdup(alias, MYF(MY_WME));
-  if (!share->table_name || !share->path || !outparam->alias) goto err;
+  if (!share->table_name || !share->path || !outparam->alias)
+    goto err;
   *fn_ext(share->table_name) = '\0';  // Remove extension
   *fn_ext(share->path) = '\0';        // Remove extension
 
-  if (head[0] != (uchar)254 || head[1] != 1) goto err; /* purecov: inspected */
+  if (head[0] != (uchar)254 || head[1] != 1)
+    goto err; /* purecov: inspected */
   if (head[2] != FRM_VER && head[2] != FRM_VER + 1 && !(head[2] >= FRM_VER + 3 && head[2] <= FRM_VER + 4))
   {
     error = 6;
@@ -134,8 +138,9 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
   field_pack_length = new_frm_ver < 2 ? 11 : 17;
 
   error = 3;
-  if (!(pos = get_form_pos(file, head, (TYPELIB *)0))) goto err; /* purecov: inspected */
-  *fn_ext(index_file) = '\0';                                    // Remove .frm extension
+  if (!(pos = get_form_pos(file, head, (TYPELIB *)0)))
+    goto err;                  /* purecov: inspected */
+  *fn_ext(index_file) = '\0';  // Remove .frm extension
 
   share->frm_version = head[2];
   /*
@@ -144,7 +149,8 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
     We do it this way as we want to keep the old frm version to enable
     MySQL 4.1 to read these files.
   */
-  if (share->frm_version == FRM_VER_TRUE_VARCHAR - 1 && head[33] == 5) share->frm_version = FRM_VER_TRUE_VARCHAR;
+  if (share->frm_version == FRM_VER_TRUE_VARCHAR - 1 && head[33] == 5)
+    share->frm_version = FRM_VER_TRUE_VARCHAR;
 
   share->db_type = ha_checktype(thd, (enum db_type)(uint) * (head + 3), 0, 0);
   share->db_create_options = db_create_options = uint2korr(head + 30);
@@ -176,7 +182,8 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
     share->table_charset = default_charset_info;
   }
   share->db_record_offset = 1;
-  if (db_create_options & HA_OPTION_LONG_BLOB_PTR) share->blob_ptr_size = portable_sizeof_char_ptr;
+  if (db_create_options & HA_OPTION_LONG_BLOB_PTR)
+    share->blob_ptr_size = portable_sizeof_char_ptr;
   /* Set temporarily a good value for db_low_byte_first */
   share->db_low_byte_first = test(share->db_type != DB_TYPE_ISAM);
   error = 4;
@@ -186,7 +193,8 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
   /* Read keyinformation */
   key_info_length = (uint)uint2korr(head + 28);
   VOID(my_seek(file, (ulong)uint2korr(head + 6), MY_SEEK_SET, MYF(0)));
-  if (read_string(file, (gptr *)&disk_buff, key_info_length)) goto err; /* purecov: inspected */
+  if (read_string(file, (gptr *)&disk_buff, key_info_length))
+    goto err; /* purecov: inspected */
   if (disk_buff[0] & 0x80)
   {
     share->keys = keys = (disk_buff[1] << 7) | (disk_buff[0] & 0x7f);
@@ -212,7 +220,8 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
   strpos = disk_buff + 6;
 
   ulong *rec_per_key;
-  if (!(rec_per_key = (ulong *)alloc_root(&outparam->mem_root, sizeof(ulong *) * key_parts))) goto err;
+  if (!(rec_per_key = (ulong *)alloc_root(&outparam->mem_root, sizeof(ulong *) * key_parts)))
+    goto err;
 
   for (i = 0; i < keys; i++, keyinfo++)
   {
@@ -267,7 +276,8 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
   strpos += (strmov(keynames, (char *)strpos) - keynames) + 1;
 
   share->reclength = uint2korr((head + 16));
-  if (*(head + 26) == 1) share->system = 1; /* one-record-database */
+  if (*(head + 26) == 1)
+    share->system = 1; /* one-record-database */
 #ifdef HAVE_CRYPTED_FRM
   else if (*(head + 26) == 2)
   {
@@ -284,7 +294,8 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
   {
     /* Read extra data segment */
     char *buff, *next_chunk, *buff_end;
-    if (!(next_chunk = buff = my_malloc(n_length, MYF(MY_WME)))) goto err;
+    if (!(next_chunk = buff = my_malloc(n_length, MYF(MY_WME))))
+      goto err;
     buff_end = buff + n_length;
     if (my_pread(file, (byte *)buff, n_length, record_offset + share->reclength, MYF(MY_NABP)))
     {
@@ -309,7 +320,8 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
     my_free(buff, MYF(0));
   }
   /* Allocate handler */
-  if (!(outparam->file = get_new_handler(outparam, share->db_type))) goto err;
+  if (!(outparam->file = get_new_handler(outparam, share->db_type)))
+    goto err;
 
   error = 4;
   outparam->reginfo.lock_type = TL_UNLOCK;
@@ -318,11 +330,13 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
     records = 2;
   else
     records = 1;
-  if (prgflag & (READ_ALL + EXTRA_RECORD)) records++;
+  if (prgflag & (READ_ALL + EXTRA_RECORD))
+    records++;
   /* QQ: TODO, remove the +1 from below */
   rec_buff_length = ALIGN_SIZE(share->reclength + 1 + outparam->file->extra_rec_buf_length());
   share->rec_buff_length = rec_buff_length;
-  if (!(record = (char *)alloc_root(&outparam->mem_root, rec_buff_length * records))) goto err; /* purecov: inspected */
+  if (!(record = (char *)alloc_root(&outparam->mem_root, rec_buff_length * records)))
+    goto err; /* purecov: inspected */
   share->default_values = (byte *)record;
 
   if (my_pread(file, (byte *)record, (uint)share->reclength, record_offset, MYF(MY_NABP)))
@@ -350,11 +364,13 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
   if (records > 1)
   {
     memcpy(outparam->record[0], share->default_values, rec_buff_length);
-    if (records > 2) memcpy(outparam->record[1], share->default_values, rec_buff_length);
+    if (records > 2)
+      memcpy(outparam->record[1], share->default_values, rec_buff_length);
   }
 #endif
   VOID(my_seek(file, pos, MY_SEEK_SET, MYF(0)));
-  if (my_read(file, (byte *)head, 288, MYF(MY_NABP))) goto err;
+  if (my_read(file, (byte *)head, 288, MYF(MY_NABP)))
+    goto err;
 #ifdef HAVE_CRYPTED_FRM
   if (crypted)
   {
@@ -386,7 +402,8 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
 
   outparam->field = field_ptr;
   read_length = (uint)(share->fields * field_pack_length + pos + (uint)(n_length + int_length + com_length));
-  if (read_string(file, (gptr *)&disk_buff, read_length)) goto err; /* purecov: inspected */
+  if (read_string(file, (gptr *)&disk_buff, read_length))
+    goto err; /* purecov: inspected */
 #ifdef HAVE_CRYPTED_FRM
   if (crypted)
   {
@@ -400,7 +417,8 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
   share->intervals = (TYPELIB *)(field_ptr + share->fields + 1);
   int_array = (const char **)(share->intervals + interval_count);
   names = (char *)(int_array + share->fields + interval_parts + keys + 3);
-  if (!interval_count) share->intervals = 0;  // For better debugging
+  if (!interval_count)
+    share->intervals = 0;  // For better debugging
   memcpy((char *)names, strpos + (share->fields * field_pack_length), (uint)(n_length + int_length));
   comment_pos = names + (n_length + int_length);
   memcpy(comment_pos, disk_buff + read_length - com_length, com_length);
@@ -414,14 +432,16 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
     for (interval = share->intervals; interval < share->intervals + interval_count; interval++)
     {
       uint count = (uint)(interval->count + 1) * sizeof(uint);
-      if (!(interval->type_lengths = (uint *)alloc_root(&outparam->mem_root, count))) goto err;
+      if (!(interval->type_lengths = (uint *)alloc_root(&outparam->mem_root, count)))
+        goto err;
       for (count = 0; count < interval->count; count++)
         interval->type_lengths[count] = strlen(interval->type_names[count]);
       interval->type_lengths[count] = 0;
     }
   }
 
-  if (keynames) fix_type_pointers(&int_array, &share->keynames, 1, &keynames);
+  if (keynames)
+    fix_type_pointers(&int_array, &share->keynames, 1, &keynames);
   VOID(my_close(file, MYF(MY_WME)));
   file = -1;
 
@@ -585,12 +605,17 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
     }
     if (!(reg_field->flags & NOT_NULL_FLAG))
     {
-      if (!(null_bit_pos = (null_bit_pos + 1) & 7)) null_pos++;
+      if (!(null_bit_pos = (null_bit_pos + 1) & 7))
+        null_pos++;
     }
-    if (f_no_default(pack_flag)) reg_field->flags |= NO_DEFAULT_VALUE_FLAG;
-    if (reg_field->unireg_check == Field::NEXT_NUMBER) outparam->found_next_number_field = reg_field;
-    if (outparam->timestamp_field == reg_field) share->timestamp_field_offset = i;
-    if (use_hash) (void)my_hash_insert(&share->name_hash, (byte *)field_ptr);  // never fail
+    if (f_no_default(pack_flag))
+      reg_field->flags |= NO_DEFAULT_VALUE_FLAG;
+    if (reg_field->unireg_check == Field::NEXT_NUMBER)
+      outparam->found_next_number_field = reg_field;
+    if (outparam->timestamp_field == reg_field)
+      share->timestamp_field_offset = i;
+    if (use_hash)
+      (void)my_hash_insert(&share->name_hash, (byte *)field_ptr);  // never fail
   }
   *field_ptr = 0;  // End marker
 
@@ -607,7 +632,8 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
       uint usable_parts = 0;
       keyinfo->name = (char *)share->keynames.type_names[key];
       /* Fix fulltext keys for old .frm files */
-      if (outparam->key_info[key].flags & HA_FULLTEXT) outparam->key_info[key].algorithm = HA_KEY_ALG_FULLTEXT;
+      if (outparam->key_info[key].flags & HA_FULLTEXT)
+        outparam->key_info[key].algorithm = HA_KEY_ALG_FULLTEXT;
 
       if (primary_key >= MAX_KEY && (keyinfo->flags & HA_NOSAME))
       {
@@ -633,7 +659,8 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
         if (new_field_pack_flag <= 1)
           key_part->fieldnr = (uint16)find_field(outparam, (uint)key_part->offset, (uint)key_part->length);
 #ifdef EXTRA_DEBUG
-        if (key_part->fieldnr > share->fields) goto err;  // sanity check
+        if (key_part->fieldnr > share->fields)
+          goto err;  // sanity check
 #endif
         if (key_part->fieldnr)
         {  // Should always be true !
@@ -660,14 +687,17 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
               Mark that there may be many matching values for one key
               combination ('a', 'a ', 'a  '...)
             */
-            if (!(field->flags & BINARY_FLAG)) keyinfo->flags |= HA_END_SPACE_KEY;
+            if (!(field->flags & BINARY_FLAG))
+              keyinfo->flags |= HA_END_SPACE_KEY;
           }
-          if (field->type() == MYSQL_TYPE_BIT) key_part->key_part_flag |= HA_BIT_PART;
+          if (field->type() == MYSQL_TYPE_BIT)
+            key_part->key_part_flag |= HA_BIT_PART;
 
           if (i == 0 && key != primary_key)
             field->flags |=
                 ((keyinfo->flags & HA_NOSAME) && (keyinfo->key_parts == 1)) ? UNIQUE_KEY_FLAG : MULTIPLE_KEY_FLAG;
-          if (i == 0) field->key_start.set_bit(key);
+          if (i == 0)
+            field->key_start.set_bit(key);
           if (field->key_length() == key_part->length && !(field->flags & BLOB_FLAG))
           {
             if (outparam->file->index_flags(key, i, 0) & HA_KEYREAD_ONLY)
@@ -675,9 +705,11 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
               share->keys_for_keyread.set_bit(key);
               field->part_of_key.set_bit(key);
             }
-            if (outparam->file->index_flags(key, i, 1) & HA_READ_ORDER) field->part_of_sortkey.set_bit(key);
+            if (outparam->file->index_flags(key, i, 1) & HA_READ_ORDER)
+              field->part_of_sortkey.set_bit(key);
           }
-          if (!(key_part->key_part_flag & HA_REVERSE_SORT) && usable_parts == i) usable_parts++;  // For FILESORT
+          if (!(key_part->key_part_flag & HA_REVERSE_SORT) && usable_parts == i)
+            usable_parts++;  // For FILESORT
           field->flags |= PART_KEY_FLAG;
           if (key == primary_key)
           {
@@ -686,7 +718,8 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
               If this field is part of the primary key and all keys contains
               the primary key, then we can use any key to find this column
             */
-            if (ha_option & HA_PRIMARY_KEY_IN_READ_INDEX) field->part_of_key = share->keys_in_use;
+            if (ha_option & HA_PRIMARY_KEY_IN_READ_INDEX)
+              field->part_of_key = share->keys_in_use;
           }
           if (field->key_length() != key_part->length)
           {
@@ -731,7 +764,8 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
             key_part_column = expression from the WHERE clause
             as we need to test for NULL = NULL.
           */
-          if (field->real_maybe_null()) key_part->key_part_flag |= HA_PART_KEY_SEG;
+          if (field->real_maybe_null())
+            key_part->key_part_flag |= HA_PART_KEY_SEG;
         }
         else
         {  // Error: shorten key
@@ -760,7 +794,8 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
       if (outparam->key_info[primary_key].key_parts == 1)
       {
         Field *field = outparam->key_info[primary_key].key_part[0].field;
-        if (field && field->result_type() == INT_RESULT) outparam->rowid_field = field;
+        if (field && field->result_type() == INT_RESULT)
+          outparam->rowid_field = field;
       }
     }
     else
@@ -799,7 +834,8 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
       goto err;
     for (i = 0, ptr = outparam->field; *ptr; ptr++, i++)
     {
-      if ((*ptr)->flags & BLOB_FLAG) (*save++) = i;
+      if ((*ptr)->flags & BLOB_FLAG)
+        (*save++) = i;
     }
   }
 
@@ -848,17 +884,20 @@ int openfrm(THD *thd, const char *name, const char *alias, uint db_stat, uint pr
   *root_ptr = old_root;
   thd->status_var.opened_tables++;
 #ifndef DBUG_OFF
-  if (use_hash) (void)hash_check(&share->name_hash);
+  if (use_hash)
+    (void)hash_check(&share->name_hash);
 #endif
   DBUG_RETURN(0);
 
 err:
   x_free((gptr)disk_buff);
-  if (file > 0) VOID(my_close(file, MYF(MY_WME)));
+  if (file > 0)
+    VOID(my_close(file, MYF(MY_WME)));
 
   delete crypted;
   *root_ptr = old_root;
-  if (!error_reported) frm_error(error, outparam, name, ME_ERROR + ME_WAITTANG, errarg);
+  if (!error_reported)
+    frm_error(error, outparam, name, ME_ERROR + ME_WAITTANG, errarg);
   delete outparam->file;
   outparam->file = 0;  // For easier errorchecking
   outparam->db_stat = 0;
@@ -874,7 +913,8 @@ int closefrm(register TABLE *table)
 {
   int error = 0;
   DBUG_ENTER("closefrm");
-  if (table->db_stat) error = table->file->close();
+  if (table->db_stat)
+    error = table->file->close();
   my_free((char *)table->alias, MYF(MY_ALLOW_ZERO_PTR));
   table->alias = 0;
   if (table->field)
@@ -985,15 +1025,18 @@ ulong make_new_entry(File file, uchar *fileinfo, TYPELIB *formnames, const char 
     while (endpos > maxlength)
     {
       VOID(my_seek(file, (ulong)(endpos - bufflength), MY_SEEK_SET, MYF(0)));
-      if (my_read(file, (byte *)buff, bufflength, MYF(MY_NABP + MY_WME))) DBUG_RETURN(0L);
+      if (my_read(file, (byte *)buff, bufflength, MYF(MY_NABP + MY_WME)))
+        DBUG_RETURN(0L);
       VOID(my_seek(file, (ulong)(endpos - bufflength + IO_SIZE), MY_SEEK_SET, MYF(0)));
-      if ((my_write(file, (byte *)buff, bufflength, MYF(MY_NABP + MY_WME)))) DBUG_RETURN(0);
+      if ((my_write(file, (byte *)buff, bufflength, MYF(MY_NABP + MY_WME))))
+        DBUG_RETURN(0);
       endpos -= bufflength;
       bufflength = IO_SIZE;
     }
     bzero(buff, IO_SIZE); /* Null new block */
     VOID(my_seek(file, (ulong)maxlength, MY_SEEK_SET, MYF(0)));
-    if (my_write(file, (byte *)buff, bufflength, MYF(MY_NABP + MY_WME))) DBUG_RETURN(0L);
+    if (my_write(file, (byte *)buff, bufflength, MYF(MY_NABP + MY_WME)))
+      DBUG_RETURN(0L);
     maxlength += IO_SIZE; /* Fix old ref */
     int2store(fileinfo + 6, maxlength);
     for (i = names, pos = (uchar *)*formnames->type_names + n_length - 1; i--; pos += 4)
@@ -1121,11 +1164,13 @@ static void fix_type_pointers(const char ***array, TYPELIB *point_to_type, uint 
 TYPELIB *typelib(List<String> &strings)
 {
   TYPELIB *result = (TYPELIB *)sql_alloc(sizeof(TYPELIB));
-  if (!result) return 0;
+  if (!result)
+    return 0;
   result->count = strings.elements;
   result->name = "";
   uint nbytes = (sizeof(char *) + sizeof(uint)) * (result->count + 1);
-  if (!(result->type_names = (const char **)sql_alloc(nbytes))) return 0;
+  if (!(result->type_names = (const char **)sql_alloc(nbytes)))
+    return 0;
   result->type_lengths = (uint *)(result->type_names + result->count + 1);
   List_iterator<String> it(strings);
   String *tmp;
@@ -1163,8 +1208,10 @@ static uint find_field(TABLE *form, uint start, uint length)
   {
     if ((*field)->offset() == start)
     {
-      if ((*field)->key_length() == length) return (i);
-      if (!pos || form->field[pos - 1]->pack_length() < (*field)->pack_length()) pos = i;
+      if ((*field)->key_length() == length)
+        return (i);
+      if (!pos || form->field[pos - 1]->pack_length() < (*field)->pack_length())
+        pos = i;
     }
   }
   return (pos);
@@ -1174,8 +1221,10 @@ static uint find_field(TABLE *form, uint start, uint length)
 
 int set_zone(register int nr, int min_zone, int max_zone)
 {
-  if (nr <= min_zone) return (min_zone);
-  if (nr >= max_zone) return (max_zone);
+  if (nr <= min_zone)
+    return (min_zone);
+  if (nr >= max_zone)
+    return (max_zone);
   return (nr);
 } /* set_zone */
 
@@ -1184,7 +1233,8 @@ int set_zone(register int nr, int min_zone, int max_zone)
 ulong next_io_size(register ulong pos)
 {
   reg2 ulong offset;
-  if ((offset = pos & (IO_SIZE - 1))) return pos - offset + IO_SIZE;
+  if ((offset = pos & (IO_SIZE - 1)))
+    return pos - offset + IO_SIZE;
   return pos;
 } /* next_io_size */
 
@@ -1259,12 +1309,15 @@ File create_frm(THD *thd, my_string name, const char *db, const char *table, uin
   char fill[IO_SIZE];
   int create_flags = O_RDWR | O_TRUNC;
 
-  if (create_info->options & HA_LEX_CREATE_TMP_TABLE) create_flags |= O_EXCL | O_NOFOLLOW;
+  if (create_info->options & HA_LEX_CREATE_TMP_TABLE)
+    create_flags |= O_EXCL | O_NOFOLLOW;
 
 #if SIZEOF_OFF_T > 4
   /* Fix this when we have new .frm files;  Current limit is 4G rows (QQ) */
-  if (create_info->max_rows > ~(ulong)0) create_info->max_rows = ~(ulong)0;
-  if (create_info->min_rows > ~(ulong)0) create_info->min_rows = ~(ulong)0;
+  if (create_info->max_rows > ~(ulong)0)
+    create_info->max_rows = ~(ulong)0;
+  if (create_info->min_rows > ~(ulong)0)
+    create_info->min_rows = ~(ulong)0;
 #endif
   /*
     Ensure that raid_chunks can't be larger than 255, as this would cause
@@ -1382,7 +1435,8 @@ bool get_field(MEM_ROOT *mem, Field *field, String *res)
     res->length(0);
     return 1;
   }
-  if (!(to = strmake_root(mem, str.ptr(), length))) length = 0;  // Safety fix
+  if (!(to = strmake_root(mem, str.ptr(), length)))
+    length = 0;  // Safety fix
   res->set(to, length, ((Field_str *)field)->charset());
   return 0;
 }
@@ -1408,7 +1462,8 @@ char *get_field(MEM_ROOT *mem, Field *field)
 
   field->val_str(&str);
   length = str.length();
-  if (!length || !(to = (char *)alloc_root(mem, length + 1))) return NullS;
+  if (!length || !(to = (char *)alloc_root(mem, length + 1)))
+    return NullS;
   memcpy(to, str.ptr(), (uint)length);
   to[length] = 0;
   return to;
@@ -1435,7 +1490,8 @@ bool check_db_name(char *name)
   /* Used to catch empty names and names with end space */
   bool last_char_is_space = TRUE;
 
-  if (lower_case_table_names && name != any_db) my_casedn_str(files_charset_info, name);
+  if (lower_case_table_names && name != any_db)
+    my_casedn_str(files_charset_info, name);
 
   while (*name)
   {
@@ -1453,7 +1509,8 @@ bool check_db_name(char *name)
 #else
     last_char_is_space = *name == ' ';
 #endif
-    if (*name == '/' || *name == '\\' || *name == FN_LIBCHAR || *name == FN_EXTCHAR) return 1;
+    if (*name == '/' || *name == '\\' || *name == FN_LIBCHAR || *name == FN_EXTCHAR)
+      return 1;
     name++;
   }
   return last_char_is_space || (uint)(name - start) > NAME_LEN;
@@ -1469,11 +1526,13 @@ bool check_db_name(char *name)
 bool check_table_name(const char *name, uint length)
 {
   const char *end = name + length;
-  if (!length || length > NAME_LEN) return 1;
+  if (!length || length > NAME_LEN)
+    return 1;
 #if defined(USE_MB) && defined(USE_MB_IDENT)
   bool last_char_is_space = FALSE;
 #else
-  if (name[length - 1] == ' ') return 1;
+  if (name[length - 1] == ' ')
+    return 1;
 #endif
 
   while (name != end)
@@ -1490,7 +1549,8 @@ bool check_table_name(const char *name, uint length)
       }
     }
 #endif
-    if (*name == '/' || *name == '\\' || *name == FN_EXTCHAR) return 1;
+    if (*name == '/' || *name == '\\' || *name == FN_EXTCHAR)
+      return 1;
     name++;
   }
 #if defined(USE_MB) && defined(USE_MB_IDENT)
@@ -1521,7 +1581,8 @@ bool check_column_name(const char *name)
 #else
     last_char_is_space = *name == ' ';
 #endif
-    if (*name == NAMES_SEP_CHAR) return 1;
+    if (*name == NAMES_SEP_CHAR)
+      return 1;
     name++;
   }
   /* Error if empty or too long column name */
@@ -1540,7 +1601,8 @@ db_type get_table_type(THD *thd, const char *name)
   DBUG_ENTER("get_table_type");
   DBUG_PRINT("enter", ("name: '%s'", name));
 
-  if ((file = my_open(name, O_RDONLY, MYF(0))) < 0) DBUG_RETURN(DB_TYPE_UNKNOWN);
+  if ((file = my_open(name, O_RDONLY, MYF(0))) < 0)
+    DBUG_RETURN(DB_TYPE_UNKNOWN);
   error = my_read(file, (byte *)head, 4, MYF(MY_NABP));
   my_close(file, MYF(0));
   if (error || head[0] != (uchar)254 || head[1] != 1 ||
@@ -1575,7 +1637,8 @@ bool st_table::fill_item_list(List<Item> *item_list) const
   for (Field **ptr = field; *ptr; ptr++)
   {
     Item_field *item = new Item_field(*ptr);
-    if (!item || item_list->push_back(item)) return TRUE;
+    if (!item || item_list->push_back(item))
+      return TRUE;
   }
   return FALSE;
 }
@@ -1801,8 +1864,10 @@ bool st_table_list::prep_where(THD *thd, Item **conds, bool no_where_clause)
           break;
         }
       }
-      if (tbl == 0) *conds = and_conds(*conds, where);
-      if (arena) thd->restore_active_arena(arena, &backup);
+      if (tbl == 0)
+        *conds = and_conds(*conds, where);
+      if (arena)
+        thd->restore_active_arena(arena, &backup);
       where_processed = TRUE;
     }
   }
@@ -1862,10 +1927,12 @@ bool st_table_list::prep_check_option(THD *thd, uint8 check_opt_type)
     {
       for (TABLE_LIST *tbl = ancestor; tbl; tbl = tbl->next_local)
       {
-        if (tbl->check_option) item = and_conds(item, tbl->check_option);
+        if (tbl->check_option)
+          item = and_conds(item, tbl->check_option);
       }
     }
-    if (item) thd->change_item_tree(&check_option, item);
+    if (item)
+      thd->change_item_tree(&check_option, item);
   }
 
   if (check_option)
@@ -1922,12 +1989,14 @@ void st_table_list::hide_view_error(THD *thd)
 st_table_list *st_table_list::find_underlying_table(TABLE *table_to_find)
 {
   /* is this real table and table which we are looking for? */
-  if (table == table_to_find && ancestor == 0) return this;
+  if (table == table_to_find && ancestor == 0)
+    return this;
 
   for (TABLE_LIST *tbl = ancestor; tbl; tbl = tbl->next_local)
   {
     TABLE_LIST *result;
-    if ((result = tbl->find_underlying_table(table_to_find))) return result;
+    if ((result = tbl->find_underlying_table(table_to_find)))
+      return result;
   }
   return 0;
 }
@@ -1941,7 +2010,8 @@ st_table_list *st_table_list::find_underlying_table(TABLE *table_to_find)
 
 void st_table_list::cleanup_items()
 {
-  if (!field_translation) return;
+  if (!field_translation)
+    return;
 
   for (Field_translator *transl = field_translation; transl < field_translation_end; transl++)
     transl->item->walk(&Item::cleanup_processor, 0);
@@ -2005,7 +2075,8 @@ bool st_table_list::check_single_table(st_table_list **table, table_map map, st_
     {
       if (tbl->table->map & map)
       {
-        if (*table) return TRUE;
+        if (*table)
+          return TRUE;
         *table = tbl;
         tbl->check_option = view->check_option;
       }
@@ -2039,7 +2110,8 @@ bool st_table_list::set_insert_values(MEM_ROOT *mem_root)
   {
     DBUG_ASSERT(view && ancestor);
     for (TABLE_LIST *tbl = ancestor; tbl; tbl = tbl->next_local)
-      if (tbl->set_insert_values(mem_root)) return TRUE;
+      if (tbl->set_insert_values(mem_root))
+        return TRUE;
   }
   return FALSE;
 }
@@ -2094,7 +2166,8 @@ TABLE_LIST *st_table_list::first_leaf_for_name_resolution()
   NESTED_JOIN *cur_nested_join;
   LINT_INIT(cur_table_ref);
 
-  if (is_leaf_for_name_resolution()) return this;
+  if (is_leaf_for_name_resolution())
+    return this;
   DBUG_ASSERT(nested_join);
 
   for (cur_nested_join = nested_join; cur_nested_join; cur_nested_join = cur_table_ref->nested_join)
@@ -2112,7 +2185,8 @@ TABLE_LIST *st_table_list::first_leaf_for_name_resolution()
       TABLE_LIST *next;
       while ((next = it++)) cur_table_ref = next;
     }
-    if (cur_table_ref->is_leaf_for_name_resolution()) break;
+    if (cur_table_ref->is_leaf_for_name_resolution())
+      break;
   }
   return cur_table_ref;
 }
@@ -2145,7 +2219,8 @@ TABLE_LIST *st_table_list::last_leaf_for_name_resolution()
   TABLE_LIST *cur_table_ref = this;
   NESTED_JOIN *cur_nested_join;
 
-  if (is_leaf_for_name_resolution()) return this;
+  if (is_leaf_for_name_resolution())
+    return this;
   DBUG_ASSERT(nested_join);
 
   for (cur_nested_join = nested_join; cur_nested_join; cur_nested_join = cur_table_ref->nested_join)
@@ -2163,7 +2238,8 @@ TABLE_LIST *st_table_list::last_leaf_for_name_resolution()
       cur_table_ref = it++;
       while ((next = it++)) cur_table_ref = next;
     }
-    if (cur_table_ref->is_leaf_for_name_resolution()) break;
+    if (cur_table_ref->is_leaf_for_name_resolution())
+      break;
   }
   return cur_table_ref;
 }
@@ -2221,7 +2297,8 @@ const char *Natural_join_column::table_name() { return table_ref->alias; }
 
 const char *Natural_join_column::db_name()
 {
-  if (view_field) return table_ref->view_db.str;
+  if (view_field)
+    return table_ref->view_db.str;
 
   DBUG_ASSERT(!strcmp(table_ref->db, table_ref->table->s->db));
   return table_ref->db;
@@ -2229,7 +2306,8 @@ const char *Natural_join_column::db_name()
 
 GRANT_INFO *Natural_join_column::grant()
 {
-  if (view_field) return &(table_ref->grant);
+  if (view_field)
+    return &(table_ref->grant);
   return &(table_ref->table->grant);
 }
 

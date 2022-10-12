@@ -96,7 +96,8 @@ mapped_files *map_file(const my_string name, byte *magic, uint magic_length)
 
   while ((map = list++))
   {
-    if (!strcmp(path, map->name)) break;
+    if (!strcmp(path, map->name))
+      break;
   }
   if (!map)
   {
@@ -106,7 +107,8 @@ mapped_files *map_file(const my_string name, byte *magic, uint magic_length)
   else
   {
     map->use_count++;
-    if (!map->map) my_error(ER_NO_FILE_MAPPING, MYF(0), path, map->error);
+    if (!map->map)
+      my_error(ER_NO_FILE_MAPPING, MYF(0), path, map->error);
   }
   VOID(pthread_mutex_unlock(&LOCK_mapped_file));
   return map;
@@ -123,7 +125,8 @@ void unmap_file(mapped_files *map)
 {
 #ifdef HAVE_MMAP
   VOID(pthread_mutex_lock(&LOCK_mapped_file));
-  if (!map->use_count--) delete map;
+  if (!map->use_count--)
+    delete map;
   VOID(pthread_mutex_unlock(&LOCK_mapped_file));
 #endif
 }

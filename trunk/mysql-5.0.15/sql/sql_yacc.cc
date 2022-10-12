@@ -9084,16 +9084,18 @@ static const unsigned short yystos[] = {
 #define YYFPRINTF fprintf
 #endif
 
-#define YYDPRINTF(Args)          \
-  do                             \
-  {                              \
-    if (yydebug) YYFPRINTF Args; \
+#define YYDPRINTF(Args) \
+  do                    \
+  {                     \
+    if (yydebug)        \
+      YYFPRINTF Args;   \
   } while (0)
 
-#define YYDSYMPRINT(Args)         \
-  do                              \
-  {                               \
-    if (yydebug) yysymprint Args; \
+#define YYDSYMPRINT(Args) \
+  do                      \
+  {                       \
+    if (yydebug)          \
+      yysymprint Args;    \
   } while (0)
 
 #define YYDSYMPRINTF(Title, Token, Value, Location) \
@@ -9124,10 +9126,11 @@ short *top;
   YYFPRINTF(stderr, "\n");
 }
 
-#define YY_STACK_PRINT(Bottom, Top)               \
-  do                                              \
-  {                                               \
-    if (yydebug) yy_stack_print((Bottom), (Top)); \
+#define YY_STACK_PRINT(Bottom, Top)    \
+  do                                   \
+  {                                    \
+    if (yydebug)                       \
+      yy_stack_print((Bottom), (Top)); \
   } while (0)
 
 /*------------------------------------------------.
@@ -9148,10 +9151,11 @@ static void yy_reduce_print(yyrule) int yyrule;
   YYFPRINTF(stderr, "-> %s\n", yytname[yyr1[yyrule]]);
 }
 
-#define YY_REDUCE_PRINT(Rule)           \
-  do                                    \
-  {                                     \
-    if (yydebug) yy_reduce_print(Rule); \
+#define YY_REDUCE_PRINT(Rule) \
+  do                          \
+  {                           \
+    if (yydebug)              \
+      yy_reduce_print(Rule);  \
   } while (0)
 
 /* Nonzero means print parse trace.  It is left uninitialized so that
@@ -9430,19 +9434,23 @@ yysetstate:
     goto yyoverflowlab;
 #else
     /* Extend the stack our own way.  */
-    if (YYMAXDEPTH <= yystacksize) goto yyoverflowlab;
+    if (YYMAXDEPTH <= yystacksize)
+      goto yyoverflowlab;
     yystacksize *= 2;
-    if (YYMAXDEPTH < yystacksize) yystacksize = YYMAXDEPTH;
+    if (YYMAXDEPTH < yystacksize)
+      yystacksize = YYMAXDEPTH;
 
     {
       short *yyss1 = yyss;
       union yyalloc *yyptr = (union yyalloc *)YYSTACK_ALLOC(YYSTACK_BYTES(yystacksize));
-      if (!yyptr) goto yyoverflowlab;
+      if (!yyptr)
+        goto yyoverflowlab;
       YYSTACK_RELOCATE(yyss);
       YYSTACK_RELOCATE(yyvs);
 
 #undef YYSTACK_RELOCATE
-      if (yyss1 != yyssa) YYSTACK_FREE(yyss1);
+      if (yyss1 != yyssa)
+        YYSTACK_FREE(yyss1);
     }
 #endif
 #endif /* no yyoverflow */
@@ -9452,7 +9460,8 @@ yysetstate:
 
     YYDPRINTF((stderr, "Stack size increased to %lu\n", (unsigned long int)yystacksize));
 
-    if (yyss + yystacksize - 1 <= yyssp) YYABORT;
+    if (yyss + yystacksize - 1 <= yyssp)
+      YYABORT;
   }
 
   YYDPRINTF((stderr, "Entering state %d\n", yystate));
@@ -9471,7 +9480,8 @@ yybackup:
   /* First try to decide what to do without reference to lookahead token.  */
 
   yyn = yypact[yystate];
-  if (yyn == YYPACT_NINF) goto yydefault;
+  if (yyn == YYPACT_NINF)
+    goto yydefault;
 
   /* Not known => get a lookahead token if don't already have one.  */
 
@@ -9496,28 +9506,33 @@ yybackup:
   /* If the proper action on seeing token YYTOKEN is to reduce or to
      detect an error, take that action.  */
   yyn += yytoken;
-  if (yyn < 0 || YYLAST < yyn || yycheck[yyn] != yytoken) goto yydefault;
+  if (yyn < 0 || YYLAST < yyn || yycheck[yyn] != yytoken)
+    goto yydefault;
   yyn = yytable[yyn];
   if (yyn <= 0)
   {
-    if (yyn == 0 || yyn == YYTABLE_NINF) goto yyerrlab;
+    if (yyn == 0 || yyn == YYTABLE_NINF)
+      goto yyerrlab;
     yyn = -yyn;
     goto yyreduce;
   }
 
-  if (yyn == YYFINAL) YYACCEPT;
+  if (yyn == YYFINAL)
+    YYACCEPT;
 
   /* Shift the lookahead token.  */
   YYDPRINTF((stderr, "Shifting token %s, ", yytname[yytoken]));
 
   /* Discard the token being shifted unless it is eof.  */
-  if (yychar != YYEOF) yychar = YYEMPTY;
+  if (yychar != YYEOF)
+    yychar = YYEMPTY;
 
   *++yyvsp = yylval;
 
   /* Count tokens shifted since error; after three, turn off error
      status.  */
-  if (yyerrstatus) yyerrstatus--;
+  if (yyerrstatus)
+    yyerrstatus--;
 
   yystate = yyn;
   goto yynewstate;
@@ -9527,7 +9542,8 @@ yybackup:
 `-----------------------------------------------------------*/
 yydefault:
   yyn = yydefact[yystate];
-  if (yyn == 0) goto yyerrlab;
+  if (yyn == 0)
+    goto yyerrlab;
   goto yyreduce;
 
 /*-----------------------------.
@@ -9648,7 +9664,8 @@ yyreduce:
     {
       LEX *lex = Lex;
       LEX_STRING *lexstr = (LEX_STRING *)sql_memdup(&yyvsp[0].lex_str, sizeof(LEX_STRING));
-      if (!lexstr || lex->prepared_stmt_params.push_back(lexstr)) YYABORT;
+      if (!lexstr || lex->prepared_stmt_params.push_back(lexstr))
+        YYABORT;
     }
     break;
 
@@ -9844,7 +9861,8 @@ yyreduce:
         YYABORT;
       }
       lex->sql_command = SQLCOM_CREATE_INDEX;
-      if (!lex->current_select->add_table_to_list(lex->thd, yyvsp[0].table, NULL, TL_OPTION_UPDATING)) YYABORT;
+      if (!lex->current_select->add_table_to_list(lex->thd, yyvsp[0].table, NULL, TL_OPTION_UPDATING))
+        YYABORT;
       lex->create_list.empty();
       lex->key_list.empty();
       lex->col_list.empty();
@@ -9958,11 +9976,13 @@ yyreduce:
       LEX *lex = Lex;
       sp_head *sp = lex->sphead;
 
-      if (sp->check_backpatch(YYTHD)) YYABORT;
+      if (sp->check_backpatch(YYTHD))
+        YYABORT;
       sp->init_strings(YYTHD, lex, yyvsp[-9].spname);
       lex->sql_command = SQLCOM_CREATE_PROCEDURE;
       /* Restore flag if it was cleared above */
-      if (sp->m_old_cmq) YYTHD->client_capabilities |= CLIENT_MULTI_QUERIES;
+      if (sp->m_old_cmq)
+        YYTHD->client_capabilities |= CLIENT_MULTI_QUERIES;
       sp->restore_thd_mem_root(YYTHD);
     }
     break;
@@ -9974,7 +9994,8 @@ yyreduce:
       LEX *lex = thd->lex;
       lex->sql_command = SQLCOM_CREATE_VIEW;
       /* first table in list is target VIEW name */
-      if (!lex->select_lex.add_table_to_list(thd, yyvsp[0].table, NULL, 0)) YYABORT;
+      if (!lex->select_lex.add_table_to_list(thd, yyvsp[0].table, NULL, 0))
+        YYABORT;
     }
     break;
 
@@ -9996,7 +10017,8 @@ yyreduce:
         YYABORT;
       }
 
-      if (!(sp = new sp_head())) YYABORT;
+      if (!(sp = new sp_head()))
+        YYABORT;
       sp->reset_thd_mem_root(YYTHD);
       sp->init(lex);
 
@@ -10026,10 +10048,12 @@ yyreduce:
       lex->sql_command = SQLCOM_CREATE_TRIGGER;
       sp->init_strings(YYTHD, lex, yyvsp[-9].spname);
       /* Restore flag if it was cleared above */
-      if (sp->m_old_cmq) YYTHD->client_capabilities |= CLIENT_MULTI_QUERIES;
+      if (sp->m_old_cmq)
+        YYTHD->client_capabilities |= CLIENT_MULTI_QUERIES;
       sp->restore_thd_mem_root(YYTHD);
 
-      if (sp->is_not_allowed_in_function("trigger")) YYABORT;
+      if (sp->is_not_allowed_in_function("trigger"))
+        YYABORT;
 
       /*
         We have to do it after parsing trigger body, because some of
@@ -10165,7 +10189,8 @@ yyreduce:
       }
       sp_prepare_create_field(YYTHD, new_field);
 
-      if (prepare_create_field(new_field, &unused1, &unused2, &unused2, HA_CAN_GEOMETRY)) YYABORT;
+      if (prepare_create_field(new_field, &unused1, &unused2, &unused2, HA_CAN_GEOMETRY))
+        YYABORT;
 
       sp->m_returns = new_field->sql_type;
       sp->m_returns_cs = new_field->charset;
@@ -10195,13 +10220,16 @@ yyreduce:
       LEX *lex = Lex;
       sp_head *sp = lex->sphead;
 
-      if (sp->is_not_allowed_in_function("function")) YYABORT;
+      if (sp->is_not_allowed_in_function("function"))
+        YYABORT;
 
-      if (sp->check_backpatch(YYTHD)) YYABORT;
+      if (sp->check_backpatch(YYTHD))
+        YYABORT;
       lex->sql_command = SQLCOM_CREATE_SPFUNCTION;
       sp->init_strings(YYTHD, lex, lex->spname);
       /* Restore flag if it was cleared above */
-      if (sp->m_old_cmq) YYTHD->client_capabilities |= CLIENT_MULTI_QUERIES;
+      if (sp->m_old_cmq)
+        YYTHD->client_capabilities |= CLIENT_MULTI_QUERIES;
       sp->restore_thd_mem_root(YYTHD);
     }
     break;
@@ -10467,7 +10495,8 @@ yyreduce:
         sp_instr_set *in;
 
         ctx->set_type(i, type);
-        if (!has_default) it = new Item_null(); /* QQ Set to the type with null_value? */
+        if (!has_default)
+          it = new Item_null(); /* QQ Set to the type with null_value? */
         in = new sp_instr_set(lex->sphead->instructions(), ctx, ctx->pvar_context2index(i), it, type, lex,
                               (i == max - 1));
 
@@ -10990,9 +11019,11 @@ yyreduce:
         uint n;
 
         n = ctx->diff_handlers(lab->ctx);
-        if (n) sp->add_instr(new sp_instr_hpop(ip++, ctx, n));
+        if (n)
+          sp->add_instr(new sp_instr_hpop(ip++, ctx, n));
         n = ctx->diff_cursors(lab->ctx);
-        if (n) sp->add_instr(new sp_instr_cpop(ip++, ctx, n));
+        if (n)
+          sp->add_instr(new sp_instr_cpop(ip++, ctx, n));
         i = new sp_instr_jump(ip, ctx, lab->ip); /* Jump back */
         sp->add_instr(i);
       }
@@ -11397,8 +11428,10 @@ yyreduce:
       sp_pcontext *ctx = lex->spcont;
 
       sp->backpatch(ctx->last_label()); /* We always have a label */
-      if (yyvsp[-2].spblock.hndlrs) sp->add_instr(new sp_instr_hpop(sp->instructions(), ctx, yyvsp[-2].spblock.hndlrs));
-      if (yyvsp[-2].spblock.curs) sp->add_instr(new sp_instr_cpop(sp->instructions(), ctx, yyvsp[-2].spblock.curs));
+      if (yyvsp[-2].spblock.hndlrs)
+        sp->add_instr(new sp_instr_hpop(sp->instructions(), ctx, yyvsp[-2].spblock.hndlrs));
+      if (yyvsp[-2].spblock.curs)
+        sp->add_instr(new sp_instr_cpop(sp->instructions(), ctx, yyvsp[-2].spblock.curs));
       lex->spcont = ctx->pop_context();
     }
     break;
@@ -11519,7 +11552,8 @@ yyreduce:
 #line 2538 "sql_yacc.yy"
     {
       LEX *lex = Lex;
-      if (!(lex->name = (char *)yyvsp[0].table)) YYABORT;
+      if (!(lex->name = (char *)yyvsp[0].table))
+        YYABORT;
     }
     break;
 
@@ -11527,7 +11561,8 @@ yyreduce:
 #line 2544 "sql_yacc.yy"
     {
       LEX *lex = Lex;
-      if (!(lex->name = (char *)yyvsp[-1].table)) YYABORT;
+      if (!(lex->name = (char *)yyvsp[-1].table))
+        YYABORT;
     }
     break;
 
@@ -13497,7 +13532,8 @@ yyreduce:
       lex->sql_command = SQLCOM_ALTER_TABLE;
       lex->name = 0;
       lex->duplicates = DUP_ERROR;
-      if (!lex->select_lex.add_table_to_list(thd, yyvsp[0].table, NULL, TL_OPTION_UPDATING)) YYABORT;
+      if (!lex->select_lex.add_table_to_list(thd, yyvsp[0].table, NULL, TL_OPTION_UPDATING))
+        YYABORT;
       lex->create_list.empty();
       lex->key_list.empty();
       lex->col_list.empty();
@@ -14339,14 +14375,16 @@ yyreduce:
     case 636:
 #line 3871 "sql_yacc.yy"
     {
-      if (Lex->users_list.push_back(yyvsp[-2].lex_user) || Lex->users_list.push_back(yyvsp[0].lex_user)) YYABORT;
+      if (Lex->users_list.push_back(yyvsp[-2].lex_user) || Lex->users_list.push_back(yyvsp[0].lex_user))
+        YYABORT;
     }
     break;
 
     case 637:
 #line 3876 "sql_yacc.yy"
     {
-      if (Lex->users_list.push_back(yyvsp[-2].lex_user) || Lex->users_list.push_back(yyvsp[0].lex_user)) YYABORT;
+      if (Lex->users_list.push_back(yyvsp[-2].lex_user) || Lex->users_list.push_back(yyvsp[0].lex_user))
+        YYABORT;
     }
     break;
 
@@ -14530,7 +14568,8 @@ yyreduce:
     {
       LEX *lex = Lex;
       SELECT_LEX *sel = lex->current_select;
-      if (sel->linkage != UNION_TYPE) mysql_init_select(lex);
+      if (sel->linkage != UNION_TYPE)
+        mysql_init_select(lex);
       lex->current_select->parsing_place = SELECT_LIST;
     }
     break;
@@ -14569,7 +14608,8 @@ yyreduce:
     case 682:
 #line 4105 "sql_yacc.yy"
     {
-      if (check_simple_select()) YYABORT;
+      if (check_simple_select())
+        YYABORT;
       Lex->lock_option = TL_READ_HIGH_PRIORITY;
     }
     break;
@@ -14598,7 +14638,8 @@ yyreduce:
     case 686:
 #line 4114 "sql_yacc.yy"
     {
-      if (check_simple_select()) YYABORT;
+      if (check_simple_select())
+        YYABORT;
       Select->options |= OPTION_BUFFER_RESULT;
     }
     break;
@@ -14606,7 +14647,8 @@ yyreduce:
     case 687:
 #line 4120 "sql_yacc.yy"
     {
-      if (check_simple_select()) YYABORT;
+      if (check_simple_select())
+        YYABORT;
       Select->options |= OPTION_FOUND_ROWS;
     }
     break;
@@ -14654,7 +14696,8 @@ yyreduce:
 #line 4154 "sql_yacc.yy"
     {
       THD *thd = YYTHD;
-      if (add_item_to_list(thd, new Item_field(&thd->lex->current_select->context, NULL, NULL, "*"))) YYABORT;
+      if (add_item_to_list(thd, new Item_field(&thd->lex->current_select->context, NULL, NULL, "*")))
+        YYABORT;
       (thd->lex->current_select->with_wild)++;
     }
     break;
@@ -14662,7 +14705,8 @@ yyreduce:
     case 697:
 #line 4167 "sql_yacc.yy"
     {
-      if (add_item_to_list(YYTHD, yyvsp[-2].item)) YYABORT;
+      if (add_item_to_list(YYTHD, yyvsp[-2].item))
+        YYABORT;
       if (yyvsp[0].lex_str.str)
       {
         yyvsp[-2].item->set_name(yyvsp[0].lex_str.str, yyvsp[0].lex_str.length, system_charset_info);
@@ -14671,7 +14715,8 @@ yyreduce:
       else if (!yyvsp[-2].item->name)
       {
         char *str = yyvsp[-3].simple_string;
-        if (str[-1] == '`') str--;
+        if (str[-1] == '`')
+          str--;
         yyvsp[-2].item->set_name(str, (uint)(yyvsp[-1].simple_string - str), YYTHD->charset());
       }
     }
@@ -15196,7 +15241,8 @@ yyreduce:
         yyerror(ER(ER_SYNTAX_ERROR));
         YYABORT;
       }
-      if (!(yyval.item = get_system_var(YYTHD, yyvsp[-2].var_type, yyvsp[-1].lex_str, yyvsp[0].lex_str))) YYABORT;
+      if (!(yyval.item = get_system_var(YYTHD, yyvsp[-2].var_type, yyvsp[-1].lex_str, yyvsp[0].lex_str)))
+        YYABORT;
       Lex->variables_used = 1;
     }
     break;
@@ -15498,7 +15544,8 @@ yyreduce:
     case 826:
 #line 4552 "sql_yacc.yy"
     {
-      if (Lex->add_time_zone_tables_to_query_tables(YYTHD)) YYABORT;
+      if (Lex->add_time_zone_tables_to_query_tables(YYTHD))
+        YYABORT;
       yyval.item = new Item_func_convert_tz(yyvsp[-5].item, yyvsp[-3].item, yyvsp[-1].item);
     }
     break;
@@ -16175,7 +16222,8 @@ yyreduce:
 
       if (udf)
       {
-        if (udf->type == UDFTYPE_AGGREGATE) Select->in_sum_expr--;
+        if (udf->type == UDFTYPE_AGGREGATE)
+          Select->in_sum_expr--;
 
         switch (udf->returns)
         {
@@ -17110,7 +17158,8 @@ yyreduce:
 #line 5208 "sql_yacc.yy"
     {
       LEX *lex = Lex;
-      if (!(yyval.table_list = lex->current_select->nest_last_join(lex->thd))) YYABORT;
+      if (!(yyval.table_list = lex->current_select->nest_last_join(lex->thd)))
+        YYABORT;
     }
     break;
 
@@ -17156,7 +17205,8 @@ yyreduce:
       YYERROR_UNLESS(yyvsp[-3].table_list && (yyval.table_list = yyvsp[-1].table_list));
       /* Change the current name resolution context to a local context. */
       Name_resolution_context *on_context;
-      if (!(on_context = make_join_on_context(YYTHD, yyvsp[-3].table_list, yyvsp[-1].table_list))) YYABORT;
+      if (!(on_context = make_join_on_context(YYTHD, yyvsp[-3].table_list, yyvsp[-1].table_list)))
+        YYABORT;
       Lex->push_context(on_context);
     }
     break;
@@ -17175,7 +17225,8 @@ yyreduce:
       YYERROR_UNLESS(yyvsp[-3].table_list && (yyval.table_list = yyvsp[-1].table_list));
       /* Change the current name resolution context to a local context. */
       Name_resolution_context *on_context;
-      if (!(on_context = make_join_on_context(YYTHD, yyvsp[-3].table_list, yyvsp[-1].table_list))) YYABORT;
+      if (!(on_context = make_join_on_context(YYTHD, yyvsp[-3].table_list, yyvsp[-1].table_list)))
+        YYABORT;
       Lex->push_context(on_context);
     }
     break;
@@ -17210,7 +17261,8 @@ yyreduce:
     {
       /* Change the current name resolution context to a local context. */
       Name_resolution_context *on_context;
-      if (!(on_context = make_join_on_context(YYTHD, yyvsp[-5].table_list, yyvsp[-1].table_list))) YYABORT;
+      if (!(on_context = make_join_on_context(YYTHD, yyvsp[-5].table_list, yyvsp[-1].table_list)))
+        YYABORT;
       Lex->push_context(on_context);
     }
     break;
@@ -17258,7 +17310,8 @@ yyreduce:
     {
       /* Change the current name resolution context to a local context. */
       Name_resolution_context *on_context;
-      if (!(on_context = make_join_on_context(YYTHD, yyvsp[-5].table_list, yyvsp[-1].table_list))) YYABORT;
+      if (!(on_context = make_join_on_context(YYTHD, yyvsp[-5].table_list, yyvsp[-1].table_list)))
+        YYABORT;
       Lex->push_context(on_context);
     }
     break;
@@ -17268,7 +17321,8 @@ yyreduce:
     {
       LEX *lex = Lex;
       YYERROR_UNLESS(yyvsp[-7].table_list && yyvsp[-3].table_list);
-      if (!(yyval.table_list = lex->current_select->convert_right_join())) YYABORT;
+      if (!(yyval.table_list = lex->current_select->convert_right_join()))
+        YYABORT;
       add_join_on(yyval.table_list, yyvsp[0].item);
       Lex->pop_context();
     }
@@ -17286,7 +17340,8 @@ yyreduce:
 #line 5332 "sql_yacc.yy"
     {
       LEX *lex = Lex;
-      if (!(yyval.table_list = lex->current_select->convert_right_join())) YYABORT;
+      if (!(yyval.table_list = lex->current_select->convert_right_join()))
+        YYABORT;
       add_join_natural(yyval.table_list, yyvsp[-5].table_list, yyvsp[-1].string_list);
     }
     break;
@@ -17297,7 +17352,8 @@ yyreduce:
       YYERROR_UNLESS(yyvsp[-5].table_list && yyvsp[0].table_list);
       add_join_natural(yyvsp[0].table_list, yyvsp[-5].table_list, NULL);
       LEX *lex = Lex;
-      if (!(yyval.table_list = lex->current_select->convert_right_join())) YYABORT;
+      if (!(yyval.table_list = lex->current_select->convert_right_join()))
+        YYABORT;
     }
     break;
 
@@ -17354,7 +17410,8 @@ yyreduce:
     {
       /* Change the current name resolution context to a local context. */
       Name_resolution_context *on_context;
-      if (!(on_context = make_join_on_context(YYTHD, yyvsp[-5].table_list, yyvsp[-1].table_list))) YYABORT;
+      if (!(on_context = make_join_on_context(YYTHD, yyvsp[-5].table_list, yyvsp[-1].table_list)))
+        YYABORT;
       Lex->push_context(on_context);
     }
     break;
@@ -17386,7 +17443,8 @@ yyreduce:
         if (sel->master_unit()->fake_select_lex)
           sel->master_unit()->global_parameters = sel->master_unit()->fake_select_lex;
       }
-      if (yyvsp[-1].select_lex->init_nested_join(lex->thd)) YYABORT;
+      if (yyvsp[-1].select_lex->init_nested_join(lex->thd))
+        YYABORT;
       yyval.table_list = 0;
       /* incomplete derived tables return NULL, we must be
          nested in select_derived rule to be here. */
@@ -17439,7 +17497,8 @@ yyreduce:
 #line 5462 "sql_yacc.yy"
     {
       LEX *lex = Lex;
-      if (yyvsp[0].select_lex->init_nested_join(lex->thd)) YYABORT;
+      if (yyvsp[0].select_lex->init_nested_join(lex->thd))
+        YYABORT;
     }
     break;
 
@@ -17450,7 +17509,8 @@ yyreduce:
       /* for normal joins, $3 != NULL and end_nested_join() != NULL,
          for derived tables, both must equal NULL */
 
-      if (!(yyval.table_list = yyvsp[-2].select_lex->end_nested_join(lex->thd)) && yyvsp[0].table_list) YYABORT;
+      if (!(yyval.table_list = yyvsp[-2].select_lex->end_nested_join(lex->thd)) && yyvsp[0].table_list)
+        YYABORT;
       if (!yyvsp[0].table_list && yyval.table_list)
       {
         yyerror(ER(ER_SYNTAX_ERROR));
@@ -17470,7 +17530,8 @@ yyreduce:
         yyerror(ER(ER_SYNTAX_ERROR));
         YYABORT;
       }
-      if (lex->current_select->linkage == GLOBAL_OPTIONS_TYPE || mysql_new_select(lex, 1)) YYABORT;
+      if (lex->current_select->linkage == GLOBAL_OPTIONS_TYPE || mysql_new_select(lex, 1))
+        YYABORT;
       mysql_init_select(lex);
       lex->current_select->linkage = DERIVED_TABLE_TYPE;
       lex->current_select->parsing_place = SELECT_LIST;
@@ -17607,7 +17668,8 @@ yyreduce:
     case 1079:
 #line 5584 "sql_yacc.yy"
     {
-      if (!(yyval.string_list = new List<String>)) YYABORT;
+      if (!(yyval.string_list = new List<String>))
+        YYABORT;
       yyval.string_list->push_back(new (YYTHD->mem_root) String((const char *)yyvsp[0].lex_str.str,
                                                                 yyvsp[0].lex_str.length, system_charset_info));
     }
@@ -17837,7 +17899,8 @@ yyreduce:
       SELECT_LEX *select = Select;
       select->where = yyvsp[0].item;
       select->parsing_place = NO_MATTER;
-      if (yyvsp[0].item) yyvsp[0].item->top_level_item();
+      if (yyvsp[0].item)
+        yyvsp[0].item->top_level_item();
     }
     break;
 
@@ -17854,7 +17917,8 @@ yyreduce:
       SELECT_LEX *sel = Select;
       sel->having = yyvsp[0].item;
       sel->parsing_place = NO_MATTER;
-      if (yyvsp[0].item) yyvsp[0].item->top_level_item();
+      if (yyvsp[0].item)
+        yyvsp[0].item->top_level_item();
     }
     break;
 
@@ -17877,14 +17941,16 @@ yyreduce:
     case 1124:
 #line 5702 "sql_yacc.yy"
     {
-      if (add_group_to_list(YYTHD, yyvsp[-1].item, (bool)yyvsp[0].num)) YYABORT;
+      if (add_group_to_list(YYTHD, yyvsp[-1].item, (bool)yyvsp[0].num))
+        YYABORT;
     }
     break;
 
     case 1125:
 #line 5704 "sql_yacc.yy"
     {
-      if (add_group_to_list(YYTHD, yyvsp[-1].item, (bool)yyvsp[0].num)) YYABORT;
+      if (add_group_to_list(YYTHD, yyvsp[-1].item, (bool)yyvsp[0].num))
+        YYABORT;
     }
     break;
 
@@ -17937,14 +18003,16 @@ yyreduce:
     case 1133:
 #line 5758 "sql_yacc.yy"
     {
-      if (add_order_to_list(YYTHD, yyvsp[-1].item, (bool)yyvsp[0].num)) YYABORT;
+      if (add_order_to_list(YYTHD, yyvsp[-1].item, (bool)yyvsp[0].num))
+        YYABORT;
     }
     break;
 
     case 1134:
 #line 5760 "sql_yacc.yy"
     {
-      if (add_order_to_list(YYTHD, yyvsp[-1].item, (bool)yyvsp[0].num)) YYABORT;
+      if (add_order_to_list(YYTHD, yyvsp[-1].item, (bool)yyvsp[0].num))
+        YYABORT;
     }
     break;
 
@@ -18192,7 +18260,8 @@ yyreduce:
 #line 5881 "sql_yacc.yy"
     {
       LEX *lex = Lex;
-      if (add_proc_to_list(lex->thd, yyvsp[0].item)) YYABORT;
+      if (add_proc_to_list(lex->thd, yyvsp[0].item))
+        YYABORT;
       if (!yyvsp[0].item->name)
         yyvsp[0].item->set_name(yyvsp[-1].simple_string, (uint)((char *)lex->tok_end - yyvsp[-1].simple_string),
                                 YYTHD->charset());
@@ -18203,7 +18272,8 @@ yyreduce:
 #line 5893 "sql_yacc.yy"
     {
       LEX *lex = Lex;
-      if (!lex->describe && (!(lex->result = new select_dumpvar()))) YYABORT;
+      if (!lex->describe && (!(lex->result = new select_dumpvar())))
+        YYABORT;
     }
     break;
 
@@ -18268,8 +18338,10 @@ yyreduce:
       if (!lex->describe)
       {
         lex->uncacheable(UNCACHEABLE_SIDEEFFECT);
-        if (!(lex->exchange = new sql_exchange(yyvsp[0].lex_str.str, 1))) YYABORT;
-        if (!(lex->result = new select_dump(lex->exchange))) YYABORT;
+        if (!(lex->exchange = new sql_exchange(yyvsp[0].lex_str.str, 1)))
+          YYABORT;
+        if (!(lex->result = new select_dump(lex->exchange)))
+          YYABORT;
       }
     }
     break;
@@ -18330,7 +18402,8 @@ yyreduce:
       lex->sql_command = SQLCOM_DROP_INDEX;
       lex->alter_info.drop_list.empty();
       lex->alter_info.drop_list.push_back(new Alter_drop(Alter_drop::KEY, yyvsp[-3].lex_str.str));
-      if (!lex->current_select->add_table_to_list(lex->thd, yyvsp[-1].table, NULL, TL_OPTION_UPDATING)) YYABORT;
+      if (!lex->current_select->add_table_to_list(lex->thd, yyvsp[-1].table, NULL, TL_OPTION_UPDATING))
+        YYABORT;
     }
     break;
 
@@ -18408,7 +18481,8 @@ yyreduce:
     case 1194:
 #line 6074 "sql_yacc.yy"
     {
-      if (!Select->add_table_to_list(YYTHD, yyvsp[0].table, NULL, TL_OPTION_UPDATING)) YYABORT;
+      if (!Select->add_table_to_list(YYTHD, yyvsp[0].table, NULL, TL_OPTION_UPDATING))
+        YYABORT;
     }
     break;
 
@@ -18576,7 +18650,8 @@ yyreduce:
 #line 6158 "sql_yacc.yy"
     {
       LEX *lex = Lex;
-      if (!(lex->insert_list = new List_item) || lex->many_values.push_back(lex->insert_list)) YYABORT;
+      if (!(lex->insert_list = new List_item) || lex->many_values.push_back(lex->insert_list))
+        YYABORT;
     }
     break;
 
@@ -18636,7 +18711,8 @@ yyreduce:
 #line 6188 "sql_yacc.yy"
     {
       LEX *lex = Lex;
-      if (lex->field_list.push_back(yyvsp[-2].item) || lex->insert_list->push_back(yyvsp[0].item)) YYABORT;
+      if (lex->field_list.push_back(yyvsp[-2].item) || lex->insert_list->push_back(yyvsp[0].item))
+        YYABORT;
     }
     break;
 
@@ -18667,7 +18743,8 @@ yyreduce:
     case 1236:
 #line 6206 "sql_yacc.yy"
     {
-      if (!(Lex->insert_list = new List_item)) YYABORT;
+      if (!(Lex->insert_list = new List_item))
+        YYABORT;
     }
     break;
 
@@ -18675,7 +18752,8 @@ yyreduce:
 #line 6211 "sql_yacc.yy"
     {
       LEX *lex = Lex;
-      if (lex->many_values.push_back(lex->insert_list)) YYABORT;
+      if (lex->many_values.push_back(lex->insert_list))
+        YYABORT;
     }
     break;
 
@@ -18688,14 +18766,16 @@ yyreduce:
     case 1240:
 #line 6223 "sql_yacc.yy"
     {
-      if (Lex->insert_list->push_back(yyvsp[0].item)) YYABORT;
+      if (Lex->insert_list->push_back(yyvsp[0].item))
+        YYABORT;
     }
     break;
 
     case 1241:
 #line 6228 "sql_yacc.yy"
     {
-      if (Lex->insert_list->push_back(yyvsp[0].item)) YYABORT;
+      if (Lex->insert_list->push_back(yyvsp[0].item))
+        YYABORT;
     }
     break;
 
@@ -18761,7 +18841,8 @@ yyreduce:
     case 1252:
 #line 6285 "sql_yacc.yy"
     {
-      if (add_item_to_list(YYTHD, yyvsp[-2].item) || add_value_to_list(YYTHD, yyvsp[0].item)) YYABORT;
+      if (add_item_to_list(YYTHD, yyvsp[-2].item) || add_value_to_list(YYTHD, yyvsp[0].item))
+        YYABORT;
     }
     break;
 
@@ -18769,7 +18850,8 @@ yyreduce:
 #line 6296 "sql_yacc.yy"
     {
       LEX *lex = Lex;
-      if (lex->update_list.push_back(yyvsp[-2].item) || lex->value_list.push_back(yyvsp[0].item)) YYABORT;
+      if (lex->update_list.push_back(yyvsp[-2].item) || lex->value_list.push_back(yyvsp[0].item))
+        YYABORT;
     }
     break;
 
@@ -18808,7 +18890,8 @@ yyreduce:
     case 1260:
 #line 6324 "sql_yacc.yy"
     {
-      if (!Select->add_table_to_list(YYTHD, yyvsp[0].table, NULL, TL_OPTION_UPDATING, Lex->lock_option)) YYABORT;
+      if (!Select->add_table_to_list(YYTHD, yyvsp[0].table, NULL, TL_OPTION_UPDATING, Lex->lock_option))
+        YYABORT;
     }
     break;
 
@@ -18828,7 +18911,8 @@ yyreduce:
     case 1263:
 #line 6334 "sql_yacc.yy"
     {
-      if (multi_delete_set_locks_and_link_aux_tables(Lex)) YYABORT;
+      if (multi_delete_set_locks_and_link_aux_tables(Lex))
+        YYABORT;
     }
     break;
 
@@ -18842,7 +18926,8 @@ yyreduce:
     case 1265:
 #line 6341 "sql_yacc.yy"
     {
-      if (multi_delete_set_locks_and_link_aux_tables(Lex)) YYABORT;
+      if (multi_delete_set_locks_and_link_aux_tables(Lex))
+        YYABORT;
     }
     break;
 
@@ -18955,7 +19040,8 @@ yyreduce:
       LEX *lex = Lex;
       lex->sql_command = SQLCOM_SELECT;
       lex->orig_sql_command = SQLCOM_SHOW_DATABASES;
-      if (prepare_schema_table(YYTHD, lex, 0, SCH_SCHEMATA)) YYABORT;
+      if (prepare_schema_table(YYTHD, lex, 0, SCH_SCHEMATA))
+        YYABORT;
     }
     break;
 
@@ -18966,7 +19052,8 @@ yyreduce:
       lex->sql_command = SQLCOM_SELECT;
       lex->orig_sql_command = SQLCOM_SHOW_TABLES;
       lex->select_lex.db = yyvsp[-1].simple_string;
-      if (prepare_schema_table(YYTHD, lex, 0, SCH_TABLE_NAMES)) YYABORT;
+      if (prepare_schema_table(YYTHD, lex, 0, SCH_TABLE_NAMES))
+        YYABORT;
     }
     break;
 
@@ -18977,7 +19064,8 @@ yyreduce:
       lex->sql_command = SQLCOM_SELECT;
       lex->orig_sql_command = SQLCOM_SHOW_TRIGGERS;
       lex->select_lex.db = yyvsp[-1].simple_string;
-      if (prepare_schema_table(YYTHD, lex, 0, SCH_TRIGGERS)) YYABORT;
+      if (prepare_schema_table(YYTHD, lex, 0, SCH_TRIGGERS))
+        YYABORT;
     }
     break;
 
@@ -18988,7 +19076,8 @@ yyreduce:
       lex->sql_command = SQLCOM_SELECT;
       lex->orig_sql_command = SQLCOM_SHOW_TABLE_STATUS;
       lex->select_lex.db = yyvsp[-1].simple_string;
-      if (prepare_schema_table(YYTHD, lex, 0, SCH_TABLES)) YYABORT;
+      if (prepare_schema_table(YYTHD, lex, 0, SCH_TABLES))
+        YYABORT;
     }
     break;
 
@@ -18999,7 +19088,8 @@ yyreduce:
       lex->sql_command = SQLCOM_SELECT;
       lex->orig_sql_command = SQLCOM_SHOW_OPEN_TABLES;
       lex->select_lex.db = yyvsp[-1].simple_string;
-      if (prepare_schema_table(YYTHD, lex, 0, SCH_OPEN_TABLES)) YYABORT;
+      if (prepare_schema_table(YYTHD, lex, 0, SCH_OPEN_TABLES))
+        YYABORT;
     }
     break;
 
@@ -19016,8 +19106,10 @@ yyreduce:
       LEX *lex = Lex;
       lex->sql_command = SQLCOM_SELECT;
       lex->orig_sql_command = SQLCOM_SHOW_FIELDS;
-      if (yyvsp[-1].simple_string) yyvsp[-2].table->change_db(yyvsp[-1].simple_string);
-      if (prepare_schema_table(YYTHD, lex, yyvsp[-2].table, SCH_COLUMNS)) YYABORT;
+      if (yyvsp[-1].simple_string)
+        yyvsp[-2].table->change_db(yyvsp[-1].simple_string);
+      if (prepare_schema_table(YYTHD, lex, yyvsp[-2].table, SCH_COLUMNS))
+        YYABORT;
     }
     break;
 
@@ -19059,8 +19151,10 @@ yyreduce:
       LEX *lex = Lex;
       lex->sql_command = SQLCOM_SELECT;
       lex->orig_sql_command = SQLCOM_SHOW_KEYS;
-      if (yyvsp[-1].simple_string) yyvsp[-2].table->change_db(yyvsp[-1].simple_string);
-      if (prepare_schema_table(YYTHD, lex, yyvsp[-2].table, SCH_STATISTICS)) YYABORT;
+      if (yyvsp[-1].simple_string)
+        yyvsp[-2].table->change_db(yyvsp[-1].simple_string);
+      if (prepare_schema_table(YYTHD, lex, yyvsp[-2].table, SCH_STATISTICS))
+        YYABORT;
     }
     break;
 
@@ -19132,7 +19226,8 @@ yyreduce:
       lex->sql_command = SQLCOM_SELECT;
       lex->orig_sql_command = SQLCOM_SHOW_STATUS;
       lex->option_type = yyvsp[-2].var_type;
-      if (prepare_schema_table(YYTHD, lex, 0, SCH_STATUS)) YYABORT;
+      if (prepare_schema_table(YYTHD, lex, 0, SCH_STATUS))
+        YYABORT;
     }
     break;
 
@@ -19165,7 +19260,8 @@ yyreduce:
       lex->sql_command = SQLCOM_SELECT;
       lex->orig_sql_command = SQLCOM_SHOW_VARIABLES;
       lex->option_type = yyvsp[-2].var_type;
-      if (prepare_schema_table(YYTHD, lex, 0, SCH_VARIABLES)) YYABORT;
+      if (prepare_schema_table(YYTHD, lex, 0, SCH_VARIABLES))
+        YYABORT;
     }
     break;
 
@@ -19175,7 +19271,8 @@ yyreduce:
       LEX *lex = Lex;
       lex->sql_command = SQLCOM_SELECT;
       lex->orig_sql_command = SQLCOM_SHOW_CHARSETS;
-      if (prepare_schema_table(YYTHD, lex, 0, SCH_CHARSETS)) YYABORT;
+      if (prepare_schema_table(YYTHD, lex, 0, SCH_CHARSETS))
+        YYABORT;
     }
     break;
 
@@ -19185,7 +19282,8 @@ yyreduce:
       LEX *lex = Lex;
       lex->sql_command = SQLCOM_SELECT;
       lex->orig_sql_command = SQLCOM_SHOW_COLLATIONS;
-      if (prepare_schema_table(YYTHD, lex, 0, SCH_COLLATIONS)) YYABORT;
+      if (prepare_schema_table(YYTHD, lex, 0, SCH_COLLATIONS))
+        YYABORT;
     }
     break;
 
@@ -19213,7 +19311,8 @@ yyreduce:
       THD *thd = lex->thd;
       Security_context *sctx = thd->security_ctx;
       LEX_USER *curr_user;
-      if (!(curr_user = (LEX_USER *)thd->alloc(sizeof(st_lex_user)))) YYABORT;
+      if (!(curr_user = (LEX_USER *)thd->alloc(sizeof(st_lex_user))))
+        YYABORT;
       curr_user->user.str = sctx->priv_user;
       curr_user->user.length = strlen(sctx->priv_user);
       if (*sctx->priv_host != 0)
@@ -19255,7 +19354,8 @@ yyreduce:
     {
       LEX *lex = Lex;
       lex->sql_command = SQLCOM_SHOW_CREATE;
-      if (!lex->select_lex.add_table_to_list(YYTHD, yyvsp[0].table, NULL, 0)) YYABORT;
+      if (!lex->select_lex.add_table_to_list(YYTHD, yyvsp[0].table, NULL, 0))
+        YYABORT;
       lex->only_view = 0;
     }
     break;
@@ -19265,7 +19365,8 @@ yyreduce:
     {
       LEX *lex = Lex;
       lex->sql_command = SQLCOM_SHOW_CREATE;
-      if (!lex->select_lex.add_table_to_list(YYTHD, yyvsp[0].table, NULL, 0)) YYABORT;
+      if (!lex->select_lex.add_table_to_list(YYTHD, yyvsp[0].table, NULL, 0))
+        YYABORT;
       lex->only_view = 1;
     }
     break;
@@ -19310,8 +19411,10 @@ yyreduce:
       LEX *lex = Lex;
       lex->sql_command = SQLCOM_SELECT;
       lex->orig_sql_command = SQLCOM_SHOW_STATUS_PROC;
-      if (!sp_add_to_query_tables(YYTHD, lex, "mysql", "proc", TL_READ)) YYABORT;
-      if (prepare_schema_table(YYTHD, lex, 0, SCH_PROCEDURES)) YYABORT;
+      if (!sp_add_to_query_tables(YYTHD, lex, "mysql", "proc", TL_READ))
+        YYABORT;
+      if (prepare_schema_table(YYTHD, lex, 0, SCH_PROCEDURES))
+        YYABORT;
     }
     break;
 
@@ -19321,8 +19424,10 @@ yyreduce:
       LEX *lex = Lex;
       lex->sql_command = SQLCOM_SELECT;
       lex->orig_sql_command = SQLCOM_SHOW_STATUS_FUNC;
-      if (!sp_add_to_query_tables(YYTHD, lex, "mysql", "proc", TL_READ)) YYABORT;
-      if (prepare_schema_table(YYTHD, lex, 0, SCH_PROCEDURES)) YYABORT;
+      if (!sp_add_to_query_tables(YYTHD, lex, "mysql", "proc", TL_READ))
+        YYABORT;
+      if (prepare_schema_table(YYTHD, lex, 0, SCH_PROCEDURES))
+        YYABORT;
     }
     break;
 
@@ -19426,7 +19531,8 @@ yyreduce:
 #line 6732 "sql_yacc.yy"
     {
       Select->where = yyvsp[0].item;
-      if (yyvsp[0].item) yyvsp[0].item->top_level_item();
+      if (yyvsp[0].item)
+        yyvsp[0].item->top_level_item();
     }
     break;
 
@@ -19441,7 +19547,8 @@ yyreduce:
       lex->orig_sql_command = SQLCOM_SHOW_FIELDS;
       lex->select_lex.db = 0;
       lex->verbose = 0;
-      if (prepare_schema_table(YYTHD, lex, yyvsp[0].table, SCH_COLUMNS)) YYABORT;
+      if (prepare_schema_table(YYTHD, lex, yyvsp[0].table, SCH_COLUMNS))
+        YYABORT;
     }
     break;
 
@@ -19760,7 +19867,8 @@ yyreduce:
         YYABORT;
       }
       lex->sql_command = SQLCOM_LOAD_MASTER_TABLE;
-      if (!Select->add_table_to_list(YYTHD, yyvsp[-2].table, NULL, TL_OPTION_UPDATING)) YYABORT;
+      if (!Select->add_table_to_list(YYTHD, yyvsp[-2].table, NULL, TL_OPTION_UPDATING))
+        YYABORT;
     }
     break;
 
@@ -19773,7 +19881,8 @@ yyreduce:
       lex->local_file = yyvsp[-2].num;
       lex->duplicates = DUP_ERROR;
       lex->ignore = 0;
-      if (!(lex->exchange = new sql_exchange(yyvsp[0].lex_str.str, 0))) YYABORT;
+      if (!(lex->exchange = new sql_exchange(yyvsp[0].lex_str.str, 0)))
+        YYABORT;
     }
     break;
 
@@ -19789,7 +19898,8 @@ yyreduce:
 #line 6942 "sql_yacc.yy"
     {
       LEX *lex = Lex;
-      if (!Select->add_table_to_list(YYTHD, yyvsp[0].table, NULL, TL_OPTION_UPDATING, lex->lock_option)) YYABORT;
+      if (!Select->add_table_to_list(YYTHD, yyvsp[0].table, NULL, TL_OPTION_UPDATING, lex->lock_option))
+        YYABORT;
       lex->field_list.empty();
       lex->update_list.empty();
       lex->value_list.empty();
@@ -20593,7 +20703,8 @@ yyreduce:
 #line 7475 "sql_yacc.yy"
     {
       THD *thd = YYTHD;
-      if (!(yyval.lex_user = (LEX_USER *)thd->alloc(sizeof(st_lex_user)))) YYABORT;
+      if (!(yyval.lex_user = (LEX_USER *)thd->alloc(sizeof(st_lex_user))))
+        YYABORT;
       yyval.lex_user->user = yyvsp[0].lex_str;
       yyval.lex_user->host.str = (char *)"%";
       yyval.lex_user->host.length = 1;
@@ -20604,7 +20715,8 @@ yyreduce:
 #line 7484 "sql_yacc.yy"
     {
       THD *thd = YYTHD;
-      if (!(yyval.lex_user = (LEX_USER *)thd->alloc(sizeof(st_lex_user)))) YYABORT;
+      if (!(yyval.lex_user = (LEX_USER *)thd->alloc(sizeof(st_lex_user))))
+        YYABORT;
       yyval.lex_user->user = yyvsp[-2].lex_str;
       yyval.lex_user->host = yyvsp[0].lex_str;
     }
@@ -20615,7 +20727,8 @@ yyreduce:
     {
       THD *thd = YYTHD;
       Security_context *sctx = thd->security_ctx;
-      if (!(yyval.lex_user = (LEX_USER *)thd->alloc(sizeof(st_lex_user)))) YYABORT;
+      if (!(yyval.lex_user = (LEX_USER *)thd->alloc(sizeof(st_lex_user))))
+        YYABORT;
       yyval.lex_user->user.str = sctx->priv_user;
       yyval.lex_user->user.length = strlen(sctx->priv_user);
       if (*sctx->priv_host != 0)
@@ -22192,14 +22305,16 @@ yyreduce:
           LEX_STRING qbuff;
           sp_instr_stmt *i;
 
-          if (!(i = new sp_instr_stmt(sp->instructions(), lex->spcont, lex))) YYABORT;
+          if (!(i = new sp_instr_stmt(sp->instructions(), lex->spcont, lex)))
+            YYABORT;
 
           if (lex->ptr - lex->tok_end > 1)
             qbuff.length = lex->ptr - sp->m_tmp_query;
           else
             qbuff.length = lex->tok_end - sp->m_tmp_query;
 
-          if (!(qbuff.str = alloc_root(YYTHD->mem_root, qbuff.length + 5))) YYABORT;
+          if (!(qbuff.str = alloc_root(YYTHD->mem_root, qbuff.length + 5)))
+            YYABORT;
 
           strmake(strmake(qbuff.str, "SET ", 4), (char *)sp->m_tmp_query, qbuff.length);
           qbuff.length += 4;
@@ -22349,7 +22464,8 @@ yyreduce:
       }
       else if (yyvsp[-2].variable.var)
       { /* System variable */
-        if (yyvsp[-3].var_type) lex->option_type = yyvsp[-3].var_type;
+        if (yyvsp[-3].var_type)
+          lex->option_type = yyvsp[-3].var_type;
         lex->var_list.push_back(
             new set_var(lex->option_type, yyvsp[-2].variable.var, &yyvsp[-2].variable.base_name, yyvsp[0].item));
       }
@@ -22384,7 +22500,8 @@ yyreduce:
 #line 7969 "sql_yacc.yy"
     {
       LEX *lex = Lex;
-      if (yyvsp[-4].var_type) lex->option_type = yyvsp[-4].var_type;
+      if (yyvsp[-4].var_type)
+        lex->option_type = yyvsp[-4].var_type;
       lex->var_list.push_back(new set_var(lex->option_type, find_sys_var("tx_isolation"), &null_lex_str,
                                           new Item_int((int32)yyvsp[0].tx_isolation)));
     }
@@ -22426,7 +22543,8 @@ yyreduce:
 
       names.str = (char *)"names";
       names.length = 5;
-      if (spc && spc->find_pvar(&names)) my_error(ER_SP_BAD_VAR_SHADOW, MYF(0), names.str);
+      if (spc && spc->find_pvar(&names))
+        my_error(ER_SP_BAD_VAR_SHADOW, MYF(0), names.str);
       YYABORT;
     }
     break;
@@ -22462,7 +22580,8 @@ yyreduce:
         my_error(ER_SP_BAD_VAR_SHADOW, MYF(0), pw.str);
         YYABORT;
       }
-      if (!(user = (LEX_USER *)thd->alloc(sizeof(LEX_USER)))) YYABORT;
+      if (!(user = (LEX_USER *)thd->alloc(sizeof(LEX_USER))))
+        YYABORT;
       user->host = null_lex_str;
       user->user.str = thd->security_ctx->priv_user;
       thd->lex->var_list.push_back(new set_var_password(user, yyvsp[0].simple_string));
@@ -22488,7 +22607,8 @@ yyreduce:
       {
         /* Not an SP local variable */
         sys_var *tmp = find_sys_var(yyvsp[0].lex_str.str, yyvsp[0].lex_str.length);
-        if (!tmp) YYABORT;
+        if (!tmp)
+          YYABORT;
         yyval.variable.var = tmp;
         yyval.variable.base_name = null_lex_str;
         /*
@@ -22550,8 +22670,10 @@ yyreduce:
       else
       {
         sys_var *tmp = find_sys_var(yyvsp[0].lex_str.str, yyvsp[0].lex_str.length);
-        if (!tmp) YYABORT;
-        if (!tmp->is_struct()) my_error(ER_VARIABLE_IS_NOT_STRUCT, MYF(0), yyvsp[0].lex_str.str);
+        if (!tmp)
+          YYABORT;
+        if (!tmp->is_struct())
+          my_error(ER_VARIABLE_IS_NOT_STRUCT, MYF(0), yyvsp[0].lex_str.str);
         yyval.variable.var = tmp;
         yyval.variable.base_name = yyvsp[-2].lex_str;
       }
@@ -22562,8 +22684,10 @@ yyreduce:
 #line 8132 "sql_yacc.yy"
     {
       sys_var *tmp = find_sys_var(yyvsp[0].lex_str.str, yyvsp[0].lex_str.length);
-      if (!tmp) YYABORT;
-      if (!tmp->is_struct()) my_error(ER_VARIABLE_IS_NOT_STRUCT, MYF(0), yyvsp[0].lex_str.str);
+      if (!tmp)
+        YYABORT;
+      if (!tmp->is_struct())
+        my_error(ER_VARIABLE_IS_NOT_STRUCT, MYF(0), yyvsp[0].lex_str.str);
       yyval.variable.var = tmp;
       yyval.variable.base_name.str = (char *)"default";
       yyval.variable.base_name.length = 7;
@@ -22744,7 +22868,8 @@ yyreduce:
         YYABORT;
       }
       lex->sql_command = SQLCOM_HA_OPEN;
-      if (!lex->current_select->add_table_to_list(lex->thd, yyvsp[-2].table, yyvsp[0].lex_str_ptr, 0)) YYABORT;
+      if (!lex->current_select->add_table_to_list(lex->thd, yyvsp[-2].table, yyvsp[0].lex_str_ptr, 0))
+        YYABORT;
     }
     break;
 
@@ -22758,7 +22883,8 @@ yyreduce:
         YYABORT;
       }
       lex->sql_command = SQLCOM_HA_CLOSE;
-      if (!lex->current_select->add_table_to_list(lex->thd, yyvsp[-1].table, 0, 0)) YYABORT;
+      if (!lex->current_select->add_table_to_list(lex->thd, yyvsp[-1].table, 0, 0))
+        YYABORT;
     }
     break;
 
@@ -22775,7 +22901,8 @@ yyreduce:
       lex->ha_rkey_mode = HA_READ_KEY_EXACT; /* Avoid purify warnings */
       lex->current_select->select_limit = new Item_int((int32)1);
       lex->current_select->offset_limit = 0;
-      if (!lex->current_select->add_table_to_list(lex->thd, yyvsp[-1].table, 0, 0)) YYABORT;
+      if (!lex->current_select->add_table_to_list(lex->thd, yyvsp[-1].table, 0, 0))
+        YYABORT;
     }
     break;
 
@@ -22847,7 +22974,8 @@ yyreduce:
       LEX *lex = Lex;
       lex->ha_read_mode = RKEY;
       lex->ha_rkey_mode = yyvsp[0].ha_rkey_mode;
-      if (!(lex->insert_list = new List_item)) YYABORT;
+      if (!(lex->insert_list = new List_item))
+        YYABORT;
     }
     break;
 
@@ -23311,36 +23439,42 @@ yyreduce:
 #line 8539 "sql_yacc.yy"
     {
       LEX *lex = Lex;
-      if (!lex->current_select->add_table_to_list(lex->thd, yyvsp[0].table, NULL, 0)) YYABORT;
-      if (lex->grant == GLOBAL_ACLS) lex->grant = TABLE_ACLS & ~GRANT_ACL;
+      if (!lex->current_select->add_table_to_list(lex->thd, yyvsp[0].table, NULL, 0))
+        YYABORT;
+      if (lex->grant == GLOBAL_ACLS)
+        lex->grant = TABLE_ACLS & ~GRANT_ACL;
     }
     break;
 
     case 1878:
 #line 8550 "sql_yacc.yy"
     {
-      if (Lex->users_list.push_back(yyvsp[0].lex_user)) YYABORT;
+      if (Lex->users_list.push_back(yyvsp[0].lex_user))
+        YYABORT;
     }
     break;
 
     case 1879:
 #line 8552 "sql_yacc.yy"
     {
-      if (Lex->users_list.push_back(yyvsp[0].lex_user)) YYABORT;
+      if (Lex->users_list.push_back(yyvsp[0].lex_user))
+        YYABORT;
     }
     break;
 
     case 1880:
 #line 8560 "sql_yacc.yy"
     {
-      if (Lex->users_list.push_back(yyvsp[0].lex_user)) YYABORT;
+      if (Lex->users_list.push_back(yyvsp[0].lex_user))
+        YYABORT;
     }
     break;
 
     case 1881:
 #line 8562 "sql_yacc.yy"
     {
-      if (Lex->users_list.push_back(yyvsp[0].lex_user)) YYABORT;
+      if (Lex->users_list.push_back(yyvsp[0].lex_user))
+        YYABORT;
     }
     break;
 
@@ -23354,14 +23488,16 @@ yyreduce:
         if (YYTHD->variables.old_passwords)
         {
           char *buff = (char *)YYTHD->alloc(SCRAMBLED_PASSWORD_CHAR_LENGTH_323 + 1);
-          if (buff) make_scrambled_password_323(buff, yyvsp[0].lex_str.str);
+          if (buff)
+            make_scrambled_password_323(buff, yyvsp[0].lex_str.str);
           yyvsp[-3].lex_user->password.str = buff;
           yyvsp[-3].lex_user->password.length = SCRAMBLED_PASSWORD_CHAR_LENGTH_323;
         }
         else
         {
           char *buff = (char *)YYTHD->alloc(SCRAMBLED_PASSWORD_CHAR_LENGTH + 1);
-          if (buff) make_scrambled_password(buff, yyvsp[0].lex_str.str);
+          if (buff)
+            make_scrambled_password(buff, yyvsp[0].lex_str.str);
           yyvsp[-3].lex_user->password.str = buff;
           yyvsp[-3].lex_user->password.length = SCRAMBLED_PASSWORD_CHAR_LENGTH;
         }
@@ -23403,7 +23539,8 @@ yyreduce:
       LEX *lex = Lex;
       while ((point = iter++))
       {
-        if (!my_strcasecmp(system_charset_info, point->column.ptr(), new_str->ptr())) break;
+        if (!my_strcasecmp(system_charset_info, point->column.ptr(), new_str->ptr()))
+          break;
       }
       lex->grant_tot_col |= lex->which_columns;
       if (point)
@@ -23666,7 +23803,8 @@ yyreduce:
         yyerror(ER(ER_SYNTAX_ERROR));
         YYABORT;
       }
-      if (mysql_new_select(lex, 0)) YYABORT;
+      if (mysql_new_select(lex, 0))
+        YYABORT;
       mysql_init_select(lex);
       lex->current_select->linkage = UNION_TYPE;
       if (yyvsp[0].num) /* UNION DISTINCT - remember position */
@@ -23807,7 +23945,8 @@ yyreduce:
         yyerror(ER(ER_SYNTAX_ERROR));
         YYABORT;
       }
-      if (mysql_new_select(Lex, 1)) YYABORT;
+      if (mysql_new_select(Lex, 1))
+        YYABORT;
     }
     break;
 
@@ -23886,8 +24025,10 @@ yyreduce:
 #line 8968 "sql_yacc.yy"
     {
       THD *thd = YYTHD;
-      if (!(thd->lex->create_view_definer = (LEX_USER *)thd->alloc(sizeof(st_lex_user)))) YYABORT;
-      if (default_view_definer(thd->security_ctx, thd->lex->create_view_definer)) YYABORT;
+      if (!(thd->lex->create_view_definer = (LEX_USER *)thd->alloc(sizeof(st_lex_user))))
+        YYABORT;
+      if (default_view_definer(thd->security_ctx, thd->lex->create_view_definer))
+        YYABORT;
     }
     break;
 
@@ -23895,8 +24036,10 @@ yyreduce:
 #line 8978 "sql_yacc.yy"
     {
       THD *thd = YYTHD;
-      if (!(thd->lex->create_view_definer = (LEX_USER *)thd->alloc(sizeof(st_lex_user)))) YYABORT;
-      if (default_view_definer(thd->security_ctx, thd->lex->create_view_definer)) YYABORT;
+      if (!(thd->lex->create_view_definer = (LEX_USER *)thd->alloc(sizeof(st_lex_user))))
+        YYABORT;
+      if (default_view_definer(thd->security_ctx, thd->lex->create_view_definer))
+        YYABORT;
     }
     break;
 
@@ -23905,7 +24048,8 @@ yyreduce:
     {
       THD *thd = YYTHD;
       st_lex_user *view_user;
-      if (!(thd->lex->create_view_definer = view_user = (LEX_USER *)thd->alloc(sizeof(st_lex_user)))) YYABORT;
+      if (!(thd->lex->create_view_definer = view_user = (LEX_USER *)thd->alloc(sizeof(st_lex_user))))
+        YYABORT;
       view_user->user = yyvsp[-2].lex_str;
       view_user->host = yyvsp[0].lex_str;
       if (strchr(view_user->host.str, wild_many) || strchr(view_user->host.str, wild_one))
@@ -24011,7 +24155,8 @@ yyreduce:
 #line 9052 "sql_yacc.yy"
     {
       YYERROR_UNLESS(yyvsp[0].string->length() <= MAXGTRIDSIZE);
-      if (!(Lex->xid = (XID *)YYTHD->alloc(sizeof(XID)))) YYABORT;
+      if (!(Lex->xid = (XID *)YYTHD->alloc(sizeof(XID))))
+        YYABORT;
       Lex->xid->set(1L, yyvsp[0].string->ptr(), yyvsp[0].string->length(), 0, 0);
     }
     break;
@@ -24020,7 +24165,8 @@ yyreduce:
 #line 9059 "sql_yacc.yy"
     {
       YYERROR_UNLESS(yyvsp[-2].string->length() <= MAXGTRIDSIZE && yyvsp[0].string->length() <= MAXBQUALSIZE);
-      if (!(Lex->xid = (XID *)YYTHD->alloc(sizeof(XID)))) YYABORT;
+      if (!(Lex->xid = (XID *)YYTHD->alloc(sizeof(XID))))
+        YYABORT;
       Lex->xid->set(1L, yyvsp[-2].string->ptr(), yyvsp[-2].string->length(), yyvsp[0].string->ptr(),
                     yyvsp[0].string->length());
     }
@@ -24030,7 +24176,8 @@ yyreduce:
 #line 9066 "sql_yacc.yy"
     {
       YYERROR_UNLESS(yyvsp[-4].string->length() <= MAXGTRIDSIZE && yyvsp[-2].string->length() <= MAXBQUALSIZE);
-      if (!(Lex->xid = (XID *)YYTHD->alloc(sizeof(XID)))) YYABORT;
+      if (!(Lex->xid = (XID *)YYTHD->alloc(sizeof(XID))))
+        YYABORT;
       Lex->xid->set(yyvsp[0].ulong_num, yyvsp[-4].string->ptr(), yyvsp[-4].string->length(), yyvsp[-2].string->ptr(),
                     yyvsp[-2].string->length());
     }
@@ -24217,7 +24364,8 @@ yyerrlab:
         for (;;)
         {
           YYPOPSTACK;
-          if (yyssp == yyss) YYABORT;
+          if (yyssp == yyss)
+            YYABORT;
           YYDSYMPRINTF("Error: popping", yystos[*yyssp], yyvsp, yylsp);
           yydestruct(yystos[*yyssp], yyvsp);
         }
@@ -24242,7 +24390,8 @@ yyerrorlab:
 #ifdef __GNUC__
   /* Pacify GCC when the user code never invokes YYERROR and the label
      yyerrorlab therefore never appears in user code.  */
-  if (0) goto yyerrorlab;
+  if (0)
+    goto yyerrorlab;
 #endif
 
   yyvsp -= yylen;
@@ -24265,12 +24414,14 @@ yyerrlab1:
       if (0 <= yyn && yyn <= YYLAST && yycheck[yyn] == YYTERROR)
       {
         yyn = yytable[yyn];
-        if (0 < yyn) break;
+        if (0 < yyn)
+          break;
       }
     }
 
     /* Pop the current state because it cannot handle the error token.  */
-    if (yyssp == yyss) YYABORT;
+    if (yyssp == yyss)
+      YYABORT;
 
     YYDSYMPRINTF("Error: popping", yystos[*yyssp], yyvsp, yylsp);
     yydestruct(yystos[yystate], yyvsp);
@@ -24279,7 +24430,8 @@ yyerrlab1:
     YY_STACK_PRINT(yyss, yyssp);
   }
 
-  if (yyn == YYFINAL) YYACCEPT;
+  if (yyn == YYFINAL)
+    YYACCEPT;
 
   YYDPRINTF((stderr, "Shifting error token, "));
 
@@ -24314,7 +24466,8 @@ yyoverflowlab:
 
 yyreturn:
 #ifndef yyoverflow
-  if (yyss != yyssa) YYSTACK_FREE(yyss);
+  if (yyss != yyssa)
+    YYSTACK_FREE(yyss);
 #endif
   return yyresult;
 }

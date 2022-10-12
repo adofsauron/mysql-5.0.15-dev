@@ -84,7 +84,8 @@ int ha_myisammrg::open(const char *name, int mode, uint test_if_locked)
   if (!(test_if_locked == HA_OPEN_WAIT_IF_LOCKED || test_if_locked == HA_OPEN_ABORT_IF_LOCKED))
     myrg_extra(file, HA_EXTRA_NO_WAIT_LOCK, 0);
   info(HA_STATUS_NO_LOCK | HA_STATUS_VARIABLE | HA_STATUS_CONST);
-  if (!(test_if_locked & HA_OPEN_WAIT_IF_LOCKED)) myrg_extra(file, HA_EXTRA_WAIT_LOCK, 0);
+  if (!(test_if_locked & HA_OPEN_WAIT_IF_LOCKED))
+    myrg_extra(file, HA_EXTRA_WAIT_LOCK, 0);
 
   if (table->s->reclength != mean_rec_length && mean_rec_length)
   {
@@ -93,7 +94,8 @@ int ha_myisammrg::open(const char *name, int mode, uint test_if_locked)
   }
 #if !defined(BIG_TABLES) || SIZEOF_OFF_T == 4
   /* Merge table has more than 2G rows */
-  if (table->s->crashed) goto err;
+  if (table->s->crashed)
+    goto err;
 #endif
   return (0);
 err:
@@ -107,15 +109,18 @@ int ha_myisammrg::close(void) { return myrg_close(file); }
 int ha_myisammrg::write_row(byte *buf)
 {
   statistic_increment(table->in_use->status_var.ha_write_count, &LOCK_status);
-  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_INSERT) table->timestamp_field->set_time();
-  if (table->next_number_field && buf == table->record[0]) update_auto_increment();
+  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_INSERT)
+    table->timestamp_field->set_time();
+  if (table->next_number_field && buf == table->record[0])
+    update_auto_increment();
   return myrg_write(file, buf);
 }
 
 int ha_myisammrg::update_row(const byte *old_data, byte *new_data)
 {
   statistic_increment(table->in_use->status_var.ha_update_count, &LOCK_status);
-  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_UPDATE) table->timestamp_field->set_time();
+  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_UPDATE)
+    table->timestamp_field->set_time();
   return myrg_update(file, old_data, new_data);
 }
 
@@ -230,7 +235,8 @@ void ha_myisammrg::info(uint flag)
   records = (ha_rows)info.records;
   deleted = (ha_rows)info.deleted;
 #if !defined(BIG_TABLES) || SIZEOF_OFF_T == 4
-  if ((info.records >= (ulonglong)1 << 32) || (info.deleted >= (ulonglong)1 << 32)) table->s->crashed = 1;
+  if ((info.records >= (ulonglong)1 << 32) || (info.deleted >= (ulonglong)1 << 32))
+    table->s->crashed = 1;
 #endif
   data_file_length = info.data_file_length;
   errkey = info.errkey;
@@ -257,7 +263,8 @@ int ha_myisammrg::extra(enum ha_extra_function operation)
 {
   /* As this is just a mapping, we don't have to force the underlying
      tables to be closed */
-  if (operation == HA_EXTRA_FORCE_REOPEN || operation == HA_EXTRA_PREPARE_FOR_DELETE) return 0;
+  if (operation == HA_EXTRA_FORCE_REOPEN || operation == HA_EXTRA_PREPARE_FOR_DELETE)
+    return 0;
   return myrg_extra(file, operation, 0);
 }
 
@@ -265,7 +272,8 @@ int ha_myisammrg::extra(enum ha_extra_function operation)
 
 int ha_myisammrg::extra_opt(enum ha_extra_function operation, ulong cache_size)
 {
-  if ((specialflag & SPECIAL_SAFE_MODE) && operation == HA_EXTRA_WRITE_CACHE) return 0;
+  if ((specialflag & SPECIAL_SAFE_MODE) && operation == HA_EXTRA_WRITE_CACHE)
+    return 0;
   return myrg_extra(file, operation, (void *)&cache_size);
 }
 
@@ -280,7 +288,8 @@ THR_LOCK_DATA **ha_myisammrg::store_lock(THD *thd, THR_LOCK_DATA **to, enum thr_
   for (open_table = file->open_tables; open_table != file->end_table; open_table++)
   {
     *(to++) = &open_table->table->lock;
-    if (lock_type != TL_IGNORE && open_table->table->lock.type == TL_UNLOCK) open_table->table->lock.type = lock_type;
+    if (lock_type != TL_IGNORE && open_table->table->lock.type == TL_UNLOCK)
+      open_table->table->lock.type = lock_type;
   }
   return to;
 }
@@ -324,10 +333,13 @@ void ha_myisammrg::update_create_info(HA_CREATE_INFO *create_info)
       TABLE_LIST *ptr;
       LEX_STRING db, name;
 
-      if (!(ptr = (TABLE_LIST *)thd->calloc(sizeof(TABLE_LIST)))) goto err;
+      if (!(ptr = (TABLE_LIST *)thd->calloc(sizeof(TABLE_LIST))))
+        goto err;
       split_file_name(open_table->table->filename, &db, &name);
-      if (!(ptr->table_name = thd->strmake(name.str, name.length))) goto err;
-      if (db.length && !(ptr->db = thd->strmake(db.str, db.length))) goto err;
+      if (!(ptr->table_name = thd->strmake(name.str, name.length)))
+        goto err;
+      if (db.length && !(ptr->db = thd->strmake(db.str, db.length)))
+        goto err;
 
       create_info->merge_list.elements++;
       (*create_info->merge_list.next) = (byte *)ptr;
@@ -362,7 +374,8 @@ int ha_myisammrg::create(const char *name, register TABLE *form, HA_CREATE_INFO 
   {
     const char *table_name;
     TABLE **tbl = 0;
-    if (create_info->options & HA_LEX_CREATE_TMP_TABLE) tbl = find_temporary_table(thd, tables->db, tables->table_name);
+    if (create_info->options & HA_LEX_CREATE_TMP_TABLE)
+      tbl = find_temporary_table(thd, tables->db, tables->table_name);
     if (!tbl)
     {
       /*
@@ -418,7 +431,8 @@ void ha_myisammrg::append_create_info(String *packet)
   {
     LEX_STRING db, name;
     split_file_name(open_table->table->filename, &db, &name);
-    if (open_table != first) packet->append(',');
+    if (open_table != first)
+      packet->append(',');
     /* Report database for mapped table if it isn't in current database */
     if (db.length && (db_length != db.length || strncmp(current_db, db.str, db.length)))
     {

@@ -186,7 +186,8 @@ Item *create_func_space(Item *a)
   {
     uint dummy_errors;
     sp = new Item_string("", 0, cs);
-    if (sp) sp->str_value.copy(" ", 1, &my_charset_latin1, cs, &dummy_errors);
+    if (sp)
+      sp->str_value.copy(" ", 1, &my_charset_latin1, cs, &dummy_errors);
   }
   else
   {

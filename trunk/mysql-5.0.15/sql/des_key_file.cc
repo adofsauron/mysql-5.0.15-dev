@@ -56,7 +56,8 @@ bool load_des_key_file(const char *file_name)
     st_des_keyblock keyblock;
     uint length;
 
-    if (!(length = my_b_gets(&io, buf, sizeof(buf) - 1))) break;  // End of file
+    if (!(length = my_b_gets(&io, buf, sizeof(buf) - 1)))
+      break;  // End of file
     offset = buf[0];
     if (offset >= '0' && offset <= '9')  // If ok key
     {
@@ -78,7 +79,8 @@ bool load_des_key_file(const char *file_name)
         DES_set_key_unchecked(&keyblock.key1, &(des_keyschedule[(int)offset].ks1));
         DES_set_key_unchecked(&keyblock.key2, &(des_keyschedule[(int)offset].ks2));
         DES_set_key_unchecked(&keyblock.key3, &(des_keyschedule[(int)offset].ks3));
-        if (des_default_key == 15) des_default_key = (uint)offset;  // use first as def.
+        if (des_default_key == 15)
+          des_default_key = (uint)offset;  // use first as def.
       }
     }
     else if (offset != '#')

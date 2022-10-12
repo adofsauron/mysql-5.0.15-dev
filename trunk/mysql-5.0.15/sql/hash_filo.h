@@ -78,10 +78,12 @@ class hash_filo
       init = 1;
       (void)pthread_mutex_init(&lock, MY_MUTEX_INIT_FAST);
     }
-    if (!locked) (void)pthread_mutex_lock(&lock);
+    if (!locked)
+      (void)pthread_mutex_lock(&lock);
     (void)hash_free(&cache);
     (void)hash_init(&cache, hash_charset, size, key_offset, key_length, get_key, free_element, 0);
-    if (!locked) (void)pthread_mutex_unlock(&lock);
+    if (!locked)
+      (void)pthread_mutex_unlock(&lock);
     first_link = last_link = 0;
   }
 
@@ -99,7 +101,8 @@ class hash_filo
           entry->next_used->prev_used = entry->prev_used;
           entry->prev_used->next_used = entry->next_used;
         }
-        if ((entry->next_used = first_link)) first_link->prev_used = entry;
+        if ((entry->next_used = first_link))
+          first_link->prev_used = entry;
         first_link = entry;
       }
     }
@@ -116,7 +119,8 @@ class hash_filo
     }
     if (my_hash_insert(&cache, (byte *)entry))
     {
-      if (free_element) (*free_element)(entry);  // This should never happen
+      if (free_element)
+        (*free_element)(entry);  // This should never happen
       return 1;
     }
     if ((entry->next_used = first_link))

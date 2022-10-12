@@ -45,7 +45,8 @@ int mysql_handle_derived(LEX *lex, int (*processor)(THD *, LEX *, TABLE_LIST *))
     {
       for (TABLE_LIST *cursor = sl->get_table_list(); cursor; cursor = cursor->next_local)
       {
-        if ((res = (*processor)(lex->thd, lex, cursor))) goto out;
+        if ((res = (*processor)(lex->thd, lex, cursor)))
+          goto out;
       }
       if (lex->describe)
       {
@@ -104,12 +105,15 @@ int mysql_derived_prepare(THD *thd, LEX *lex, TABLE_LIST *orig_table_list)
     /* prevent name resolving out of derived table */
     for (SELECT_LEX *sl = first_select; sl; sl = sl->next_select()) sl->context.outer_context = 0;
 
-    if (!(derived_result = new select_union)) DBUG_RETURN(1);  // out of memory
+    if (!(derived_result = new select_union))
+      DBUG_RETURN(1);  // out of memory
 
     // st_select_lex_unit::prepare correctly work for single select
-    if ((res = unit->prepare(thd, derived_result, 0))) goto exit;
+    if ((res = unit->prepare(thd, derived_result, 0)))
+      goto exit;
 
-    if ((res = check_duplicate_names(unit->types, 0))) goto exit;
+    if ((res = check_duplicate_names(unit->types, 0)))
+      goto exit;
 
     create_options = (first_select->options | thd->options | TMP_TABLE_ALL_COLUMNS);
     /*
@@ -145,7 +149,8 @@ int mysql_derived_prepare(THD *thd, LEX *lex, TABLE_LIST *orig_table_list)
     */
     if (res)
     {
-      if (table) free_tmp_table(thd, table);
+      if (table)
+        free_tmp_table(thd, table);
       delete derived_result;
     }
     else
@@ -222,7 +227,8 @@ int mysql_derived_filling(THD *thd, LEX *lex, TABLE_LIST *orig_table_list)
     else
     {
       unit->set_limit(first_select);
-      if (unit->select_limit_cnt == HA_POS_ERROR) first_select->options &= ~OPTION_FOUND_ROWS;
+      if (unit->select_limit_cnt == HA_POS_ERROR)
+        first_select->options &= ~OPTION_FOUND_ROWS;
 
       lex->current_select = first_select;
       res = mysql_select(thd, &first_select->ref_pointer_array, (TABLE_LIST *)first_select->table_list.first,
@@ -239,9 +245,11 @@ int mysql_derived_filling(THD *thd, LEX *lex, TABLE_LIST *orig_table_list)
         Here we entirely fix both TABLE_LIST and list of SELECT's as
         there were no derived tables
       */
-      if (derived_result->flush()) res = 1;
+      if (derived_result->flush())
+        res = 1;
 
-      if (!lex->describe) unit->cleanup();
+      if (!lex->describe)
+        unit->cleanup();
     }
     else
       unit->cleanup();

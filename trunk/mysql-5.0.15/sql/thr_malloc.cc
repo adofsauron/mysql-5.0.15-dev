@@ -45,7 +45,8 @@ gptr sql_alloc(uint Size)
 gptr sql_calloc(uint size)
 {
   gptr ptr;
-  if ((ptr = sql_alloc(size))) bzero((char *)ptr, size);
+  if ((ptr = sql_alloc(size)))
+    bzero((char *)ptr, size);
   return ptr;
 }
 
@@ -53,7 +54,8 @@ char *sql_strdup(const char *str)
 {
   uint len = (uint)strlen(str) + 1;
   char *pos;
-  if ((pos = (char *)sql_alloc(len))) memcpy(pos, str, len);
+  if ((pos = (char *)sql_alloc(len)))
+    memcpy(pos, str, len);
   return pos;
 }
 
@@ -71,7 +73,8 @@ char *sql_strmake(const char *str, uint len)
 gptr sql_memdup(const void *ptr, uint len)
 {
   char *pos;
-  if ((pos = (char *)sql_alloc(len))) memcpy(pos, ptr, len);
+  if ((pos = (char *)sql_alloc(len)))
+    memcpy(pos, ptr, len);
   return pos;
 }
 
@@ -85,7 +88,8 @@ char *sql_strmake_with_convert(const char *str, uint32 arg_length, CHARSET_INFO 
   max_res_length--;  // Reserve place for end null
 
   set_if_smaller(new_length, max_res_length);
-  if (!(pos = sql_alloc(new_length + 1))) return pos;  // Error
+  if (!(pos = sql_alloc(new_length + 1)))
+    return pos;  // Error
 
   if ((from_cs == &my_charset_bin) || (to_cs == &my_charset_bin))
   {

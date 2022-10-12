@@ -68,7 +68,8 @@ void Item_sum::make_field(Send_field *tmp_field)
     tmp_field->db_name = (char *)"";
     tmp_field->org_table_name = tmp_field->table_name = (char *)"";
     tmp_field->org_col_name = tmp_field->col_name = name;
-    if (maybe_null) tmp_field->flags &= ~NOT_NULL_FLAG;
+    if (maybe_null)
+      tmp_field->flags &= ~NOT_NULL_FLAG;
   }
   else
     init_make_field(tmp_field, field_type());
@@ -79,7 +80,8 @@ void Item_sum::print(String *str)
   str->append(func_name());
   for (uint i = 0; i < arg_count; i++)
   {
-    if (i) str->append(',');
+    if (i)
+      str->append(',');
     args[i]->print(str);
   }
   str->append(')');
@@ -120,7 +122,8 @@ bool Item_sum::walk(Item_processor processor, byte *argument)
     Item **arg, **arg_end;
     for (arg = args, arg_end = args + arg_count; arg != arg_end; arg++)
     {
-      if ((*arg)->walk(processor, argument)) return 1;
+      if ((*arg)->walk(processor, argument))
+        return 1;
     }
   }
   return (this->*processor)(argument);
@@ -170,7 +173,8 @@ bool Item_sum_num::fix_fields(THD *thd, Item **ref)
   maybe_null = 0;
   for (uint i = 0; i < arg_count; i++)
   {
-    if (args[i]->fix_fields(thd, args + i) || args[i]->check_cols(1)) return TRUE;
+    if (args[i]->fix_fields(thd, args + i) || args[i]->check_cols(1))
+      return TRUE;
     set_if_bigger(decimals, args[i]->decimals);
     maybe_null |= args[i]->maybe_null;
   }
@@ -230,7 +234,8 @@ bool Item_sum_hybrid::fix_fields(THD *thd, Item **ref)
   thd->allow_sum_func = 0;  // No included group funcs
 
   // 'item' can be changed during fix_fields
-  if (!item->fixed && item->fix_fields(thd, args) || (item = args[0])->check_cols(1)) return TRUE;
+  if (!item->fixed && item->fix_fields(thd, args) || (item = args[0])->check_cols(1))
+    return TRUE;
   decimals = item->decimals;
 
   switch (hybrid_type = item->result_type())
@@ -385,7 +390,8 @@ bool Item_sum_sum::add()
   else
   {
     sum += args[0]->val_real();
-    if (!args[0]->null_value) null_value = 0;
+    if (!args[0]->null_value)
+      null_value = 0;
   }
   DBUG_RETURN(0);
 }
@@ -405,19 +411,22 @@ longlong Item_sum_sum::val_int()
 double Item_sum_sum::val_real()
 {
   DBUG_ASSERT(fixed == 1);
-  if (hybrid_type == DECIMAL_RESULT) my_decimal2double(E_DEC_FATAL_ERROR, dec_buffs + curr_dec_buff, &sum);
+  if (hybrid_type == DECIMAL_RESULT)
+    my_decimal2double(E_DEC_FATAL_ERROR, dec_buffs + curr_dec_buff, &sum);
   return sum;
 }
 
 String *Item_sum_sum::val_str(String *str)
 {
-  if (hybrid_type == DECIMAL_RESULT) return val_string_from_decimal(str);
+  if (hybrid_type == DECIMAL_RESULT)
+    return val_string_from_decimal(str);
   return val_string_from_real(str);
 }
 
 my_decimal *Item_sum_sum::val_decimal(my_decimal *val)
 {
-  if (hybrid_type == DECIMAL_RESULT) return (dec_buffs + curr_dec_buff);
+  if (hybrid_type == DECIMAL_RESULT)
+    return (dec_buffs + curr_dec_buff);
   return val_decimal_from_real(val);
 }
 
@@ -503,7 +512,8 @@ void Item_sum_distinct::fix_length_and_dec()
     case STRING_RESULT:
     case REAL_RESULT:
       val.traits = Hybrid_type_traits::instance();
-      if (table_field_type != MYSQL_TYPE_FLOAT) table_field_type = MYSQL_TYPE_DOUBLE;
+      if (table_field_type != MYSQL_TYPE_FLOAT)
+        table_field_type = MYSQL_TYPE_DOUBLE;
       break;
     case INT_RESULT:
       /*
@@ -523,7 +533,8 @@ void Item_sum_distinct::fix_length_and_dec()
     /* fallthrough */
     case DECIMAL_RESULT:
       val.traits = Hybrid_type_traits_decimal::instance();
-      if (table_field_type != MYSQL_TYPE_LONGLONG) table_field_type = MYSQL_TYPE_NEWDECIMAL;
+      if (table_field_type != MYSQL_TYPE_LONGLONG)
+        table_field_type = MYSQL_TYPE_NEWDECIMAL;
       break;
     case ROW_RESULT:
     default:
@@ -544,7 +555,8 @@ bool Item_sum_distinct::setup(THD *thd)
     PS/SP. Hence all further allocations are performed in the runtime
     mem_root.
   */
-  if (field_list.push_back(&field_def)) return TRUE;
+  if (field_list.push_back(&field_def))
+    return TRUE;
 
   null_value = maybe_null = 1;
   quick_group = 0;
@@ -554,7 +566,8 @@ bool Item_sum_distinct::setup(THD *thd)
   field_def.init_for_tmp_table(table_field_type, args[0]->max_length, args[0]->decimals, args[0]->maybe_null,
                                args[0]->unsigned_flag);
 
-  if (!(table = create_virtual_tmp_table(thd, field_list))) return TRUE;
+  if (!(table = create_virtual_tmp_table(thd, field_list)))
+    return TRUE;
 
   /* XXX: check that the case of CHAR(0) works OK */
   tree_key_length = table->s->reclength - table->s->null_bytes;
@@ -641,7 +654,8 @@ double Item_sum_distinct::val_real()
 my_decimal *Item_sum_distinct::val_decimal(my_decimal *to)
 {
   calculate_val_and_count();
-  if (null_value) return 0;
+  if (null_value)
+    return 0;
   return val.traits->val_decimal(&val, to);
 }
 
@@ -654,7 +668,8 @@ longlong Item_sum_distinct::val_int()
 String *Item_sum_distinct::val_str(String *str)
 {
   calculate_val_and_count();
-  if (null_value) return 0;
+  if (null_value)
+    return 0;
   return val.traits->val_str(&val, str, decimals);
 }
 
@@ -676,7 +691,8 @@ void Item_sum_avg_distinct::fix_length_and_dec()
 void Item_sum_avg_distinct::calculate_val_and_count()
 {
   Item_sum_distinct::calculate_val_and_count();
-  if (count) val.traits->div(&val, count);
+  if (count)
+    val.traits->div(&val, count);
 }
 
 Item *Item_sum_count::copy_or_same(THD *thd) { return new (thd->mem_root) Item_sum_count(thd, this); }
@@ -690,7 +706,8 @@ bool Item_sum_count::add()
   else
   {
     (void)args[0]->val_int();
-    if (!args[0]->null_value) count++;
+    if (!args[0]->null_value)
+      count++;
   }
   return 0;
 }
@@ -757,8 +774,10 @@ void Item_sum_avg::clear()
 
 bool Item_sum_avg::add()
 {
-  if (Item_sum_sum::add()) return TRUE;
-  if (!args[0]->null_value) count++;
+  if (Item_sum_sum::add())
+    return TRUE;
+  if (!args[0]->null_value)
+    count++;
   return FALSE;
 }
 
@@ -791,7 +810,8 @@ my_decimal *Item_sum_avg::val_decimal(my_decimal *val)
 
 String *Item_sum_avg::val_str(String *str)
 {
-  if (hybrid_type == DECIMAL_RESULT) return val_string_from_decimal(str);
+  if (hybrid_type == DECIMAL_RESULT)
+    return val_string_from_decimal(str);
   return val_string_from_real(str);
 }
 
@@ -952,7 +972,8 @@ bool Item_sum_variance::add()
 double Item_sum_variance::val_real()
 {
   DBUG_ASSERT(fixed == 1);
-  if (hybrid_type == DECIMAL_RESULT) return val_real_from_decimal();
+  if (hybrid_type == DECIMAL_RESULT)
+    return val_real_from_decimal();
 
   if (count <= sample)
   {
@@ -970,7 +991,8 @@ my_decimal *Item_sum_variance::val_decimal(my_decimal *dec_buf)
 {
   my_decimal count_buf, count1_buf, sum_sqr_buf;
   DBUG_ASSERT(fixed == 1);
-  if (hybrid_type == REAL_RESULT) return val_decimal_from_real(dec_buf);
+  if (hybrid_type == REAL_RESULT)
+    return val_decimal_from_real(dec_buf);
 
   if (count <= sample)
   {
@@ -1096,7 +1118,8 @@ void Item_sum_hybrid::clear()
 double Item_sum_hybrid::val_real()
 {
   DBUG_ASSERT(fixed == 1);
-  if (null_value) return 0.0;
+  if (null_value)
+    return 0.0;
   switch (hybrid_type)
   {
     case STRING_RESULT:
@@ -1108,7 +1131,8 @@ double Item_sum_hybrid::val_real()
       return (res ? my_strntod(res->charset(), (char *)res->ptr(), res->length(), &end_not_used, &err_not_used) : 0.0);
     }
     case INT_RESULT:
-      if (unsigned_flag) return ulonglong2double(sum_int);
+      if (unsigned_flag)
+        return ulonglong2double(sum_int);
       return (double)sum_int;
     case DECIMAL_RESULT:
       my_decimal2double(E_DEC_FATAL_ERROR, &sum_dec, &sum);
@@ -1126,7 +1150,8 @@ double Item_sum_hybrid::val_real()
 longlong Item_sum_hybrid::val_int()
 {
   DBUG_ASSERT(fixed == 1);
-  if (null_value) return 0;
+  if (null_value)
+    return 0;
   switch (hybrid_type)
   {
     case INT_RESULT:
@@ -1145,7 +1170,8 @@ longlong Item_sum_hybrid::val_int()
 my_decimal *Item_sum_hybrid::val_decimal(my_decimal *val)
 {
   DBUG_ASSERT(fixed == 1);
-  if (null_value) return 0;
+  if (null_value)
+    return 0;
   switch (hybrid_type)
   {
     case STRING_RESULT:
@@ -1172,7 +1198,8 @@ my_decimal *Item_sum_hybrid::val_decimal(my_decimal *val)
 String *Item_sum_hybrid::val_str(String *str)
 {
   DBUG_ASSERT(fixed == 1);
-  if (null_value) return 0;
+  if (null_value)
+    return 0;
   switch (hybrid_type)
   {
     case STRING_RESULT:
@@ -1348,7 +1375,8 @@ Item *Item_sum_or::copy_or_same(THD *thd) { return new (thd->mem_root) Item_sum_
 bool Item_sum_or::add()
 {
   ulonglong value = (ulonglong)args[0]->val_int();
-  if (!args[0]->null_value) bits |= value;
+  if (!args[0]->null_value)
+    bits |= value;
   return 0;
 }
 
@@ -1357,7 +1385,8 @@ Item *Item_sum_xor::copy_or_same(THD *thd) { return new (thd->mem_root) Item_sum
 bool Item_sum_xor::add()
 {
   ulonglong value = (ulonglong)args[0]->val_int();
-  if (!args[0]->null_value) bits ^= value;
+  if (!args[0]->null_value)
+    bits ^= value;
   return 0;
 }
 
@@ -1366,7 +1395,8 @@ Item *Item_sum_and::copy_or_same(THD *thd) { return new (thd->mem_root) Item_sum
 bool Item_sum_and::add()
 {
   ulonglong value = (ulonglong)args[0]->val_int();
-  if (!args[0]->null_value) bits &= value;
+  if (!args[0]->null_value)
+    bits &= value;
   return 0;
 }
 
@@ -1505,7 +1535,8 @@ void Item_sum_count::reset_field()
   else
   {
     (void)args[0]->val_int();
-    if (!args[0]->null_value) nr = 1;
+    if (!args[0]->null_value)
+      nr = 1;
   }
   int8store(res, nr);
 }
@@ -1609,7 +1640,8 @@ void Item_sum_count::update_field()
   else
   {
     (void)args[0]->val_int();
-    if (!args[0]->null_value) nr++;
+    if (!args[0]->null_value)
+      nr++;
   }
   int8store(res, nr);
 }
@@ -1692,7 +1724,8 @@ void Item_sum_hybrid::min_max_update_real_field()
   nr = args[0]->val_real();
   if (!args[0]->null_value)
   {
-    if (result_field->is_null(0) || (cmp_sign > 0 ? old_nr > nr : old_nr < nr)) old_nr = nr;
+    if (result_field->is_null(0) || (cmp_sign > 0 ? old_nr > nr : old_nr < nr))
+      old_nr = nr;
     result_field->set_notnull();
   }
   else if (result_field->is_null(0))
@@ -1714,7 +1747,8 @@ void Item_sum_hybrid::min_max_update_int_field()
     {
       bool res = (unsigned_flag ? (ulonglong)old_nr > (ulonglong)nr : old_nr > nr);
       /* (cmp_sign > 0 && res) || (!(cmp_sign > 0) && !res) */
-      if ((cmp_sign > 0) ^ (!res)) old_nr = nr;
+      if ((cmp_sign > 0) ^ (!res))
+        old_nr = nr;
     }
     result_field->set_notnull();
   }
@@ -1737,7 +1771,8 @@ void Item_sum_hybrid::min_max_update_decimal_field()
     {
       bool res = my_decimal_cmp(old_nr, nr) > 0;
       /* (cmp_sign > 0 && res) || (!(cmp_sign > 0) && !res) */
-      if ((cmp_sign > 0) ^ (!res)) old_nr = nr;
+      if ((cmp_sign > 0) ^ (!res))
+        old_nr = nr;
     }
     result_field->set_notnull();
   }
@@ -1771,13 +1806,15 @@ double Item_avg_field::val_real()
   longlong count;
   char *res;
 
-  if (hybrid_type == DECIMAL_RESULT) return val_real_from_decimal();
+  if (hybrid_type == DECIMAL_RESULT)
+    return val_real_from_decimal();
 
   float8get(nr, field->ptr);
   res = (field->ptr + sizeof(double));
   count = sint8korr(res);
 
-  if ((null_value = !count)) return 0.0;
+  if ((null_value = !count))
+    return 0.0;
   return nr / (double)count;
 }
 
@@ -1786,10 +1823,12 @@ longlong Item_avg_field::val_int() { return (longlong)val_real(); }
 my_decimal *Item_avg_field::val_decimal(my_decimal *dec_buf)
 {
   // fix_fields() never calls for this Item
-  if (hybrid_type == REAL_RESULT) return val_decimal_from_real(dec_buf);
+  if (hybrid_type == REAL_RESULT)
+    return val_decimal_from_real(dec_buf);
 
   longlong count = sint8korr(field->ptr + dec_bin_size);
-  if ((null_value = !count)) return 0;
+  if ((null_value = !count))
+    return 0;
 
   my_decimal dec_count, dec_field;
   binary2my_decimal(E_DEC_FATAL_ERROR, field->ptr, &dec_field, f_precision, f_scale);
@@ -1801,7 +1840,8 @@ my_decimal *Item_avg_field::val_decimal(my_decimal *dec_buf)
 String *Item_avg_field::val_str(String *str)
 {
   // fix_fields() never calls for this Item
-  if (hybrid_type == DECIMAL_RESULT) return val_string_from_decimal(str);
+  if (hybrid_type == DECIMAL_RESULT)
+    return val_string_from_decimal(str);
   return val_string_from_real(str);
 }
 
@@ -1840,9 +1880,11 @@ my_decimal *Item_std_field::val_decimal(my_decimal *dec_buf)
   */
   my_decimal tmp_dec, *dec;
   double nr;
-  if (hybrid_type == REAL_RESULT) return val_decimal_from_real(dec_buf);
+  if (hybrid_type == REAL_RESULT)
+    return val_decimal_from_real(dec_buf);
   dec = Item_variance_field::val_decimal(dec_buf);
-  if (!dec) return 0;
+  if (!dec)
+    return 0;
   my_decimal2double(E_DEC_FATAL_ERROR, dec, &nr);
   nr = nr <= 0.0 ? 0.0 : sqrt(nr);
   double2my_decimal(E_DEC_FATAL_ERROR, nr, &tmp_dec);
@@ -1874,7 +1916,8 @@ Item_variance_field::Item_variance_field(Item_sum_variance *item)
 double Item_variance_field::val_real()
 {
   // fix_fields() never calls for this Item
-  if (hybrid_type == DECIMAL_RESULT) return val_real_from_decimal();
+  if (hybrid_type == DECIMAL_RESULT)
+    return val_real_from_decimal();
 
   double sum, sum_sqr;
   longlong count;
@@ -1882,7 +1925,8 @@ double Item_variance_field::val_real()
   float8get(sum_sqr, (field->ptr + sizeof(double)));
   count = sint8korr(field->ptr + sizeof(double) * 2);
 
-  if ((null_value = (count <= sample))) return 0.0;
+  if ((null_value = (count <= sample)))
+    return 0.0;
 
   double tmp = (double)count;
   double tmp2 = (sum_sqr - sum * sum / tmp) / (tmp - (double)sample);
@@ -1891,17 +1935,20 @@ double Item_variance_field::val_real()
 
 String *Item_variance_field::val_str(String *str)
 {
-  if (hybrid_type == DECIMAL_RESULT) return val_string_from_decimal(str);
+  if (hybrid_type == DECIMAL_RESULT)
+    return val_string_from_decimal(str);
   return val_string_from_real(str);
 }
 
 my_decimal *Item_variance_field::val_decimal(my_decimal *dec_buf)
 {
   // fix_fields() never calls for this Item
-  if (hybrid_type == REAL_RESULT) return val_decimal_from_real(dec_buf);
+  if (hybrid_type == REAL_RESULT)
+    return val_decimal_from_real(dec_buf);
 
   longlong count = sint8korr(field->ptr + dec_bin_size0 + dec_bin_size1);
-  if ((null_value = (count <= sample))) return 0;
+  if ((null_value = (count <= sample)))
+    return 0;
 
   my_decimal dec_count, dec1_count, dec_sum, dec_sqr, tmp;
   int2my_decimal(E_DEC_FATAL_ERROR, count, 0, &dec_count);
@@ -1943,7 +1990,8 @@ int composite_key_cmp(void *arg, byte *key1, byte *key2)
     Field *f = *field;
     int len = *lengths++;
     int res = f->cmp((char *)key1, (char *)key2);
-    if (res) return res;
+    if (res)
+      return res;
     key1 += len;
     key2 += len;
   }
@@ -2009,22 +2057,27 @@ bool Item_sum_count_distinct::setup(THD *thd)
     Setup can be called twice for ROLLUP items. This is a bug.
     Please add DBUG_ASSERT(tree == 0) here when it's fixed.
   */
-  if (tree || table || tmp_table_param) return FALSE;
+  if (tree || table || tmp_table_param)
+    return FALSE;
 
-  if (!(tmp_table_param = new TMP_TABLE_PARAM)) return TRUE;
+  if (!(tmp_table_param = new TMP_TABLE_PARAM))
+    return TRUE;
 
   /* Create a table with an unique key over all parameters */
   for (uint i = 0; i < arg_count; i++)
   {
     Item *item = args[i];
-    if (list.push_back(item)) return TRUE;  // End of memory
+    if (list.push_back(item))
+      return TRUE;  // End of memory
     if (item->const_item())
     {
       (void)item->val_int();
-      if (item->null_value) always_null = 1;
+      if (item->null_value)
+        always_null = 1;
     }
   }
-  if (always_null) return FALSE;
+  if (always_null)
+    return FALSE;
   count_field_types(tmp_table_param, list, 0);
   DBUG_ASSERT(table == 0);
   if (!(table = create_tmp_table(thd, tmp_table_param, list, (ORDER *)0, 1, 0, (select_lex->options | thd->options),
@@ -2096,7 +2149,8 @@ bool Item_sum_count_distinct::setup(THD *thd)
       but this has to be handled - otherwise someone can crash
       the server with a DoS attack
     */
-    if (!tree) return TRUE;
+    if (!tree)
+      return TRUE;
   }
   return FALSE;
 }
@@ -2119,12 +2173,14 @@ void Item_sum_count_distinct::clear()
 bool Item_sum_count_distinct::add()
 {
   int error;
-  if (always_null) return 0;
+  if (always_null)
+    return 0;
   copy_fields(tmp_table_param);
   copy_funcs(tmp_table_param->items_to_copy);
 
   for (Field **field = table->field; *field; field++)
-    if ((*field)->is_real_null(0)) return 0;  // Don't count NULL
+    if ((*field)->is_real_null(0))
+      return 0;  // Don't count NULL
 
   if (tree)
   {
@@ -2151,7 +2207,8 @@ longlong Item_sum_count_distinct::val_int()
   {
     ulonglong count;
 
-    if (tree->elements == 0) return (longlong)tree->elements_in_tree();  // everything fits in memory
+    if (tree->elements == 0)
+      return (longlong)tree->elements_in_tree();  // everything fits in memory
     count = 0;
     tree->walk(count_distinct_walk, (void *)&count);
     return (longlong)count;
@@ -2199,7 +2256,8 @@ void Item_udf_sum::print(String *str)
   str->append('(');
   for (uint i = 0; i < arg_count; i++)
   {
-    if (i) str->append(',');
+    if (i)
+      str->append(',');
     args[i]->print(str);
   }
   str->append(')');
@@ -2317,7 +2375,8 @@ int group_concat_key_cmp_with_distinct(void *arg, byte *key1, byte *key2)
     {
       int res;
       uint offset = field->offset() - table->s->null_bytes;
-      if ((res = field->cmp((char *)key1 + offset, (char *)key2 + offset))) return res;
+      if ((res = field->cmp((char *)key1 + offset, (char *)key2 + offset)))
+        return res;
     }
   }
   return 0;
@@ -2351,7 +2410,8 @@ int group_concat_key_cmp_with_order(void *arg, byte *key1, byte *key2)
     {
       int res;
       uint offset = field->offset() - table->s->null_bytes;
-      if ((res = field->cmp((char *)key1 + offset, (char *)key2 + offset))) return (*order_item)->asc ? res : -res;
+      if ((res = field->cmp((char *)key1 + offset, (char *)key2 + offset)))
+        return (*order_item)->asc ? res : -res;
     }
   }
   /*
@@ -2374,7 +2434,8 @@ int group_concat_key_cmp_with_order(void *arg, byte *key1, byte *key2)
 
 int group_concat_key_cmp_with_distinct_and_order(void *arg, byte *key1, byte *key2)
 {
-  if (!group_concat_key_cmp_with_distinct(arg, key1, key2)) return 0;
+  if (!group_concat_key_cmp_with_distinct(arg, key1, key2))
+    return 0;
   return (group_concat_key_cmp_with_order(arg, key1, key2));
 }
 
@@ -2416,7 +2477,8 @@ int dump_leaf_key(byte *key, element_count count __attribute__((unused)), Item_f
     }
     else
       res = (*arg)->val_str(&tmp);
-    if (res) result->append(*res);
+    if (res)
+      result->append(*res);
   }
 
   /* stop if length of result more than max_length */
@@ -2466,7 +2528,8 @@ Item_func_group_concat::Item_func_group_concat(Name_resolution_context *context_
            (for possible order items in temporare tables)
     order - arg_count_order
   */
-  if (!(args = (Item **)sql_alloc(sizeof(Item *) * arg_count + sizeof(ORDER *) * arg_count_order))) return;
+  if (!(args = (Item **)sql_alloc(sizeof(Item *) * arg_count + sizeof(ORDER *) * arg_count_order)))
+    return;
 
   order = (ORDER **)(args + arg_count);
 
@@ -2564,13 +2627,15 @@ void Item_func_group_concat::clear()
   null_value = TRUE;
   warning_for_row = FALSE;
   no_appended = TRUE;
-  if (tree) reset_tree(tree);
+  if (tree)
+    reset_tree(tree);
   /* No need to reset the table as we never call write_row */
 }
 
 bool Item_func_group_concat::add()
 {
-  if (always_null) return 0;
+  if (always_null)
+    return 0;
   copy_fields(tmp_table_param);
   copy_funcs(tmp_table_param->items_to_copy);
 
@@ -2580,14 +2645,16 @@ bool Item_func_group_concat::add()
     if (!show_item->const_item())
     {
       Field *f = show_item->get_tmp_table_field();
-      if (f->is_null_in_record((const uchar *)table->record[0])) return 0;  // Skip row if it contains null
+      if (f->is_null_in_record((const uchar *)table->record[0]))
+        return 0;  // Skip row if it contains null
     }
   }
 
   null_value = FALSE;
 
   TREE_ELEMENT *el = 0;  // Only for safety
-  if (tree) el = tree_insert(tree, table->record[0] + table->s->null_bytes, 0, tree->custom_arg);
+  if (tree)
+    el = tree_insert(tree, table->record[0] + table->s->null_bytes, 0, tree->custom_arg);
   /*
     If the row is not a duplicate (el->count == 1)
     we can dump the row here in case of GROUP_CONCAT(DISTINCT...)
@@ -2619,10 +2686,12 @@ bool Item_func_group_concat::fix_fields(THD *thd, Item **ref)
 
   for (i = 0; i < arg_count; i++)
   {
-    if ((!args[i]->fixed && args[i]->fix_fields(thd, args + i)) || args[i]->check_cols(1)) return TRUE;
+    if ((!args[i]->fixed && args[i]->fix_fields(thd, args + i)) || args[i]->check_cols(1))
+      return TRUE;
   }
 
-  if (agg_item_charsets(collation, func_name(), args, arg_count, MY_COLL_ALLOW_CONV)) return 1;
+  if (agg_item_charsets(collation, func_name(), args, arg_count, MY_COLL_ALLOW_CONV))
+    return 1;
 
   result.set_charset(collation.collation);
   result_field = 0;
@@ -2644,9 +2713,11 @@ bool Item_func_group_concat::setup(THD *thd)
     Currently setup() can be called twice. Please add
     assertion here when this is fixed.
   */
-  if (table || tree) DBUG_RETURN(FALSE);
+  if (table || tree)
+    DBUG_RETURN(FALSE);
 
-  if (!(tmp_table_param = new TMP_TABLE_PARAM)) DBUG_RETURN(TRUE);
+  if (!(tmp_table_param = new TMP_TABLE_PARAM))
+    DBUG_RETURN(TRUE);
 
   /* We'll convert all blobs to varchar fields in the temporary table */
   tmp_table_param->convert_blob_length = max_length;
@@ -2655,7 +2726,8 @@ bool Item_func_group_concat::setup(THD *thd)
   for (uint i = 0; i < arg_count_field; i++)
   {
     Item *item = args[i];
-    if (list.push_back(item)) DBUG_RETURN(TRUE);
+    if (list.push_back(item))
+      DBUG_RETURN(TRUE);
     if (item->const_item())
     {
       if (item->is_null())
@@ -2673,7 +2745,8 @@ bool Item_func_group_concat::setup(THD *thd)
     "all_fields". The resulting field list is used as input to create
     tmp table columns.
   */
-  if (arg_count_order && setup_order(thd, args, context->table_list, list, all_fields, *order)) DBUG_RETURN(TRUE);
+  if (arg_count_order && setup_order(thd, args, context->table_list, list, all_fields, *order))
+    DBUG_RETURN(TRUE);
 
   count_field_types(tmp_table_param, all_fields, 0);
   DBUG_ASSERT(table == 0);
@@ -2739,7 +2812,8 @@ void Item_func_group_concat::make_unique()
 String *Item_func_group_concat::val_str(String *str)
 {
   DBUG_ASSERT(fixed == 1);
-  if (null_value) return 0;
+  if (null_value)
+    return 0;
   if (count_cut_values && !warning)
   {
     /*
@@ -2750,18 +2824,22 @@ String *Item_func_group_concat::val_str(String *str)
     warning = push_warning(table->in_use, MYSQL_ERROR::WARN_LEVEL_WARN, ER_CUT_VALUE_GROUP_CONCAT,
                            ER(ER_CUT_VALUE_GROUP_CONCAT));
   }
-  if (result.length()) return &result;
-  if (tree) tree_walk(tree, (tree_walk_action)&dump_leaf_key, (void *)this, left_root_right);
+  if (result.length())
+    return &result;
+  if (tree)
+    tree_walk(tree, (tree_walk_action)&dump_leaf_key, (void *)this, left_root_right);
   return &result;
 }
 
 void Item_func_group_concat::print(String *str)
 {
   str->append("group_concat(", 13);
-  if (distinct) str->append("distinct ", 9);
+  if (distinct)
+    str->append("distinct ", 9);
   for (uint i = 0; i < arg_count_field; i++)
   {
-    if (i) str->append(',');
+    if (i)
+      str->append(',');
     args[i]->print(str);
   }
   if (arg_count_order)
@@ -2769,7 +2847,8 @@ void Item_func_group_concat::print(String *str)
     str->append(" order by ", 10);
     for (uint i = 0; i < arg_count_order; i++)
     {
-      if (i) str->append(',');
+      if (i)
+        str->append(',');
       (*order[i]->item)->print(str);
     }
   }

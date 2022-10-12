@@ -752,7 +752,8 @@ class Item_splocal : public Item
   /* For error printing */
   inline LEX_STRING *my_name(LEX_STRING *get_name)
   {
-    if (!get_name) return &m_name;
+    if (!get_name)
+      return &m_name;
     (*get_name) = m_name;
     return get_name;
   }
@@ -973,7 +974,8 @@ class Item_field : public Item_ident
   bool reset_query_id_processor(byte *arg)
   {
     field->query_id = *((query_id_t *)arg);
-    if (result_field) result_field->query_id = field->query_id;
+    if (result_field)
+      result_field->query_id = field->query_id;
     return 0;
   }
   void cleanup();
@@ -1864,7 +1866,8 @@ class Item_default_value : public Item_field
   Item *transform(Item_transformer transformer, byte *args)
   {
     Item *new_item = arg->transform(transformer, args);
-    if (!new_item) return 0;
+    if (!new_item)
+      return 0;
     arg = new_item;
     return (this->*transformer)(args);
   }

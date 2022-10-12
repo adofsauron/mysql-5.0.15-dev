@@ -62,7 +62,8 @@ ulonglong find_set(TYPELIB *lib, const char *str, uint length, CHARSET_INFO *cs,
           my_wc_t wc;
           if ((mblen = cs->cset->mb_wc(cs, &wc, (const uchar *)pos, (const uchar *)end)) < 1)
             mblen = 1;  // Not to hang on a wrong multibyte sequence
-          if (wc == (my_wc_t)field_separator) break;
+          if (wc == (my_wc_t)field_separator)
+            break;
         }
       }
       else
@@ -78,7 +79,8 @@ ulonglong find_set(TYPELIB *lib, const char *str, uint length, CHARSET_INFO *cs,
       }
       else
         found |= ((longlong)1 << (find - 1));
-      if (pos >= end) break;
+      if (pos >= end)
+        break;
       start = pos + mblen;
     }
   }
@@ -113,7 +115,8 @@ uint find_type(TYPELIB *lib, const char *find, uint length, bool part_match)
       ;
     if (i == end)
     {
-      if (!*j) return (pos);
+      if (!*j)
+        return (pos);
       found_count++;
       found_pos = pos;
     }
@@ -153,7 +156,8 @@ uint find_type2(TYPELIB *typelib, const char *x, uint length, CHARSET_INFO *cs)
 
   for (pos = 0; (j = typelib->type_names[pos]); pos++)
   {
-    if (!my_strnncoll(cs, (const uchar *)x, length, (const uchar *)j, typelib->type_lengths[pos])) DBUG_RETURN(pos + 1);
+    if (!my_strnncoll(cs, (const uchar *)x, length, (const uchar *)j, typelib->type_lengths[pos]))
+      DBUG_RETURN(pos + 1);
   }
   DBUG_PRINT("exit", ("Couldn't find type"));
   DBUG_RETURN(0);
@@ -218,6 +222,7 @@ uint check_word(TYPELIB *lib, const char *val, const char *end, const char **end
   /* Fiend end of word */
   for (ptr = val; ptr < end && my_isalpha(&my_charset_latin1, *ptr); ptr++)
     ;
-  if ((res = find_type(lib, val, (uint)(ptr - val), 1)) > 0) *end_of_word = ptr;
+  if ((res = find_type(lib, val, (uint)(ptr - val), 1)) > 0)
+    *end_of_word = ptr;
   return res;
 }

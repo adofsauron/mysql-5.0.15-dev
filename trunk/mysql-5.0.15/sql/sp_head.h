@@ -211,7 +211,8 @@ class sp_head : private Query_arena
 
   char *name(uint *lenp = 0) const
   {
-    if (lenp) *lenp = m_name.length;
+    if (lenp)
+      *lenp = m_name.length;
     return m_name.str;
   }
 
@@ -380,7 +381,8 @@ class sp_lex_keeper
   }
   virtual ~sp_lex_keeper()
   {
-    if (m_lex_resp) delete m_lex;
+    if (m_lex_resp)
+      delete m_lex;
   }
 
   /*
@@ -691,7 +693,8 @@ class sp_instr_hpop : public sp_instr
 
   virtual uint opt_mark(sp_head *sp)
   {
-    if (m_count) marked = 1;
+    if (m_count)
+      marked = 1;
     return m_ip + 1;
   }
 
@@ -768,7 +771,8 @@ class sp_instr_cpop : public sp_instr
 
   virtual uint opt_mark(sp_head *sp)
   {
-    if (m_count) marked = 1;
+    if (m_count)
+      marked = 1;
     return m_ip + 1;
   }
 

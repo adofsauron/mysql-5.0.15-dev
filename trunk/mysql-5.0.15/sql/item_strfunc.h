@@ -441,7 +441,8 @@ class Item_func_make_set : public Item_str_func
   Item *transform(Item_transformer transformer, byte *arg)
   {
     Item *new_item = item->transform(transformer, arg);
-    if (!new_item) return 0;
+    if (!new_item)
+      return 0;
     item = new_item;
     return Item_str_func::transform(transformer, arg);
   }
@@ -566,7 +567,8 @@ class Item_func_binary : public Item_str_func
     DBUG_ASSERT(fixed == 1);
     String *tmp = args[0]->val_str(a);
     null_value = args[0]->null_value;
-    if (tmp) tmp->set_charset(&my_charset_bin);
+    if (tmp)
+      tmp->set_charset(&my_charset_bin);
     return tmp;
   }
   void fix_length_and_dec()

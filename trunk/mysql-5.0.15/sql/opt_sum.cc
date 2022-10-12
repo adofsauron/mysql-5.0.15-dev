@@ -83,7 +83,8 @@ int opt_sum_query(TABLE_LIST *tables, List<Item> &all_fields, COND *conds)
   Item *item;
   int error;
 
-  if (conds) where_tables = conds->used_tables();
+  if (conds)
+    where_tables = conds->used_tables();
 
   /*
     Analyze outer join dependencies, and, if possible, compute the number
@@ -102,7 +103,8 @@ int opt_sum_query(TABLE_LIST *tables, List<Item> &all_fields, COND *conds)
           SELECT MAX(t1.a) FROM t1 LEFT JOIN t2 join-condition
           WHERE t2.field IS NULL;
       */
-      if (tl->table->map & where_tables) return 0;
+      if (tl->table->map & where_tables)
+        return 0;
     }
     else
       used_tables |= tl->table->map;
@@ -214,7 +216,8 @@ int opt_sum_query(TABLE_LIST *tables, List<Item> &all_fields, COND *conds)
             table->file->ha_index_end();
             if (error)
             {
-              if (error == HA_ERR_KEY_NOT_FOUND || error == HA_ERR_END_OF_FILE) return -1;  // No rows matching WHERE
+              if (error == HA_ERR_KEY_NOT_FOUND || error == HA_ERR_END_OF_FILE)
+                return -1;  // No rows matching WHERE
               /* HA_ERR_LOCK_DEADLOCK or some other error */
               table->file->print_error(error, MYF(0));
               return (error);
@@ -295,7 +298,8 @@ int opt_sum_query(TABLE_LIST *tables, List<Item> &all_fields, COND *conds)
             table->file->ha_index_end();
             if (error)
             {
-              if (error == HA_ERR_KEY_NOT_FOUND || error == HA_ERR_END_OF_FILE) return -1;  // No rows matching WHERE
+              if (error == HA_ERR_KEY_NOT_FOUND || error == HA_ERR_END_OF_FILE)
+                return -1;  // No rows matching WHERE
               /* HA_ERR_LOCK_DEADLOCK or some other error */
               table->file->print_error(error, MYF(0));
               return (error);
@@ -334,8 +338,10 @@ int opt_sum_query(TABLE_LIST *tables, List<Item> &all_fields, COND *conds)
     }
     else if (const_result)
     {
-      if (recalc_const_item) item->update_used_tables();
-      if (!item->const_item()) const_result = 0;
+      if (recalc_const_item)
+        item->update_used_tables();
+      if (!item->const_item())
+        const_result = 0;
     }
   }
   /*
@@ -345,7 +351,8 @@ int opt_sum_query(TABLE_LIST *tables, List<Item> &all_fields, COND *conds)
     SELECT MIN(key) FROM table_1, empty_table
     removed_tables is != 0 if we have used MIN() or MAX().
   */
-  if (removed_tables && used_tables != removed_tables) const_result = 0;  // We didn't remove all tables
+  if (removed_tables && used_tables != removed_tables)
+    const_result = 0;  // We didn't remove all tables
   return const_result;
 }
 
@@ -377,14 +384,17 @@ bool simple_pred(Item_func *func_item, Item **args, bool *inv_order)
         Item_equal *item_equal = (Item_equal *)func_item;
         Item_equal_iterator it(*item_equal);
         args[0] = it++;
-        if (it++) return 0;
-        if (!(args[1] = item_equal->get_const())) return 0;
+        if (it++)
+          return 0;
+        if (!(args[1] = item_equal->get_const()))
+          return 0;
       }
       break;
     case 1:
       /* field IS NULL */
       item = func_item->arguments()[0];
-      if (item->type() != Item::FIELD_ITEM) return 0;
+      if (item->type() != Item::FIELD_ITEM)
+        return 0;
       args[0] = item;
       break;
     case 2:
@@ -394,14 +404,16 @@ bool simple_pred(Item_func *func_item, Item **args, bool *inv_order)
       {
         args[0] = item;
         item = func_item->arguments()[1];
-        if (!item->const_item()) return 0;
+        if (!item->const_item())
+          return 0;
         args[1] = item;
       }
       else if (item->const_item())
       {
         args[1] = item;
         item = func_item->arguments()[1];
-        if (item->type() != Item::FIELD_ITEM) return 0;
+        if (item->type() != Item::FIELD_ITEM)
+          return 0;
         args[0] = item;
         *inv_order = 1;
       }
@@ -417,7 +429,8 @@ bool simple_pred(Item_func *func_item, Item **args, bool *inv_order)
         for (int i = 1; i <= 2; i++)
         {
           item = func_item->arguments()[i];
-          if (!item->const_item()) return 0;
+          if (!item->const_item())
+            return 0;
           args[i] = item;
         }
       }
@@ -461,7 +474,8 @@ bool simple_pred(Item_func *func_item, Item **args, bool *inv_order)
 static bool matching_cond(bool max_fl, TABLE_REF *ref, KEY *keyinfo, KEY_PART_INFO *field_part, COND *cond,
                           key_part_map *key_part_used, uint *range_fl, uint *prefix_len)
 {
-  if (!cond) return 1;
+  if (!cond)
+    return 1;
   Field *field = field_part->field;
   if (!(cond->used_tables() & field->table->map))
   {
@@ -470,19 +484,22 @@ static bool matching_cond(bool max_fl, TABLE_REF *ref, KEY *keyinfo, KEY_PART_IN
   }
   if (cond->type() == Item::COND_ITEM)
   {
-    if (((Item_cond *)cond)->functype() == Item_func::COND_OR_FUNC) return 0;
+    if (((Item_cond *)cond)->functype() == Item_func::COND_OR_FUNC)
+      return 0;
 
     /* AND */
     List_iterator_fast<Item> li(*((Item_cond *)cond)->argument_list());
     Item *item;
     while ((item = li++))
     {
-      if (!matching_cond(max_fl, ref, keyinfo, field_part, item, key_part_used, range_fl, prefix_len)) return 0;
+      if (!matching_cond(max_fl, ref, keyinfo, field_part, item, key_part_used, range_fl, prefix_len))
+        return 0;
     }
     return 1;
   }
 
-  if (cond->type() != Item::FUNC_ITEM) return 0;  // Not operator, can't optimize
+  if (cond->type() != Item::FUNC_ITEM)
+    return 0;  // Not operator, can't optimize
 
   bool eq_type = 0;    // =, <=> or IS NULL
   bool noeq_type = 0;  // < or >
@@ -521,21 +538,26 @@ static bool matching_cond(bool max_fl, TABLE_REF *ref, KEY *keyinfo, KEY_PART_IN
   bool inv;
 
   /* Test if this is a comparison of a field and constant */
-  if (!simple_pred((Item_func *)cond, args, &inv)) return 0;
+  if (!simple_pred((Item_func *)cond, args, &inv))
+    return 0;
 
-  if (inv && !eq_type) less_fl = 1 - less_fl;  // Convert '<' -> '>' (etc)
+  if (inv && !eq_type)
+    less_fl = 1 - less_fl;  // Convert '<' -> '>' (etc)
 
   /* Check if field is part of the tested partial key */
   byte *key_ptr = ref->key_buff;
   KEY_PART_INFO *part;
   for (part = keyinfo->key_part;; key_ptr += part++->store_length)
   {
-    if (part > field_part) return 0;                             // Field is beyond the tested parts
-    if (part->field->eq(((Item_field *)args[0])->field)) break;  // Found a part od the key for the field
+    if (part > field_part)
+      return 0;  // Field is beyond the tested parts
+    if (part->field->eq(((Item_field *)args[0])->field))
+      break;  // Found a part od the key for the field
   }
 
   bool is_field_part = part == field_part;
-  if (!(is_field_part || eq_type)) return 0;
+  if (!(is_field_part || eq_type))
+    return 0;
 
   key_part_map org_key_part_used = *key_part_used;
   if (eq_type || between || max_fl == less_fl)
@@ -543,8 +565,10 @@ static bool matching_cond(bool max_fl, TABLE_REF *ref, KEY *keyinfo, KEY_PART_IN
     uint length = (key_ptr - ref->key_buff) + part->store_length;
     if (ref->key_length < length) /* Ultimately ref->key_length will contain the length of the search key */
       ref->key_length = length;
-    if (!*prefix_len && part + 1 == field_part) *prefix_len = length;
-    if (is_field_part && eq_type) *prefix_len = ref->key_length;
+    if (!*prefix_len && part + 1 == field_part)
+      *prefix_len = length;
+    if (is_field_part && eq_type)
+      *prefix_len = ref->key_length;
 
     *key_part_used |= (key_part_map)1 << (part - keyinfo->key_part);
   }
@@ -569,7 +593,8 @@ static bool matching_cond(bool max_fl, TABLE_REF *ref, KEY *keyinfo, KEY_PART_IN
     else
     {
       store_val_in_field(part->field, args[between && max_fl ? 2 : 1]);
-      if (part->null_bit) *key_ptr++ = (byte)test(part->field->is_null());
+      if (part->null_bit)
+        *key_ptr++ = (byte)test(part->field->is_null());
       part->field->get_key_image((char *)key_ptr, part->length, Field::itRAW);
     }
     if (is_field_part)
@@ -588,7 +613,8 @@ static bool matching_cond(bool max_fl, TABLE_REF *ref, KEY *keyinfo, KEY_PART_IN
   }
   else if (eq_type)
   {
-    if (!is_null && !cond->val_int() || is_null && !test(part->field->is_null())) return 0;  // Impossible test
+    if (!is_null && !cond->val_int() || is_null && !test(part->field->is_null()))
+      return 0;  // Impossible test
   }
   else if (is_field_part)
     *range_fl &= ~(max_fl ? NO_MIN_RANGE : NO_MAX_RANGE);
@@ -639,7 +665,8 @@ static bool matching_cond(bool max_fl, TABLE_REF *ref, KEY *keyinfo, KEY_PART_IN
 
 static bool find_key_for_maxmin(bool max_fl, TABLE_REF *ref, Field *field, COND *cond, uint *range_fl, uint *prefix_len)
 {
-  if (!(field->flags & PART_KEY_FLAG)) return 0;  // Not key field
+  if (!(field->flags & PART_KEY_FLAG))
+    return 0;  // Not key field
 
   TABLE *table = field->table;
   uint idx = 0;
@@ -654,7 +681,8 @@ static bool find_key_for_maxmin(bool max_fl, TABLE_REF *ref, Field *field, COND 
     for (part = keyinfo->key_part, part_end = part + keyinfo->key_parts; part != part_end;
          part++, jdx++, key_part_to_use = (key_part_to_use << 1) | 1)
     {
-      if (!(table->file->index_flags(idx, jdx, 0) & HA_READ_ORDER)) return 0;
+      if (!(table->file->index_flags(idx, jdx, 0) & HA_READ_ORDER))
+        return 0;
 
       if (field->eq(part->field))
       {
@@ -713,8 +741,10 @@ static bool find_key_for_maxmin(bool max_fl, TABLE_REF *ref, Field *field, COND 
 
 static int reckey_in_range(bool max_fl, TABLE_REF *ref, Field *field, COND *cond, uint range_fl, uint prefix_len)
 {
-  if (key_cmp_if_same(field->table, ref->key_buff, ref->key, prefix_len)) return 1;
-  if (!cond || (range_fl & (max_fl ? NO_MIN_RANGE : NO_MAX_RANGE))) return 0;
+  if (key_cmp_if_same(field->table, ref->key_buff, ref->key, prefix_len))
+    return 1;
+  if (!cond || (range_fl & (max_fl ? NO_MIN_RANGE : NO_MAX_RANGE)))
+    return 0;
   return maxmin_in_range(max_fl, field, cond);
 }
 
@@ -740,12 +770,14 @@ static int maxmin_in_range(bool max_fl, Field *field, COND *cond)
     Item *item;
     while ((item = li++))
     {
-      if (maxmin_in_range(max_fl, field, item)) return 1;
+      if (maxmin_in_range(max_fl, field, item))
+        return 1;
     }
     return 0;
   }
 
-  if (cond->used_tables() != field->table->map) return 0;
+  if (cond->used_tables() != field->table->map)
+    return 0;
   bool less_fl = 0;
   switch (((Item_func *)cond)->functype())
   {
@@ -759,14 +791,16 @@ static int maxmin_in_range(bool max_fl, Field *field, COND *cond)
     {
       Item *item = ((Item_func *)cond)->arguments()[1];
       /* In case of 'const op item' we have to swap the operator */
-      if (!item->const_item()) less_fl = 1 - less_fl;
+      if (!item->const_item())
+        less_fl = 1 - less_fl;
       /*
         We only have to check the expression if we are using an expression like
         SELECT MAX(b) FROM t1 WHERE a=const AND b>const
         not for
         SELECT MAX(b) FROM t1 WHERE a=const AND b<const
       */
-      if (max_fl != less_fl) return cond->val_int() == 0;  // Return 1 if WHERE is false
+      if (max_fl != less_fl)
+        return cond->val_int() == 0;  // Return 1 if WHERE is false
       return 0;
     }
     case Item_func::EQ_FUNC:

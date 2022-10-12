@@ -135,10 +135,13 @@ bool berkeley_init(void)
 {
   DBUG_ENTER("berkeley_init");
 
-  if (have_berkeley_db != SHOW_OPTION_YES) goto error;
+  if (have_berkeley_db != SHOW_OPTION_YES)
+    goto error;
 
-  if (!berkeley_tmpdir) berkeley_tmpdir = mysql_tmpdir;
-  if (!berkeley_home) berkeley_home = mysql_real_data_home;
+  if (!berkeley_tmpdir)
+    berkeley_tmpdir = mysql_tmpdir;
+  if (!berkeley_home)
+    berkeley_home = mysql_real_data_home;
   DBUG_PRINT("bdb", ("berkeley_home: %s", mysql_real_data_home));
 
   /*
@@ -159,22 +162,26 @@ bool berkeley_init(void)
   berkeley_log_file_size = MY_ALIGN(berkeley_log_file_size, 1024 * 1024L);
   berkeley_log_file_size = max(berkeley_log_file_size, 10 * 1024 * 1024L);
 
-  if (db_env_create(&db_env, 0)) goto error;
+  if (db_env_create(&db_env, 0))
+    goto error;
   db_env->set_errcall(db_env, berkeley_print_error);
   db_env->set_errpfx(db_env, "bdb");
   db_env->set_noticecall(db_env, berkeley_noticecall);
   db_env->set_tmp_dir(db_env, berkeley_tmpdir);
   db_env->set_data_dir(db_env, mysql_data_home);
   db_env->set_flags(db_env, berkeley_env_flags, 1);
-  if (berkeley_logdir) db_env->set_lg_dir(db_env, berkeley_logdir); /* purecov: tested */
+  if (berkeley_logdir)
+    db_env->set_lg_dir(db_env, berkeley_logdir); /* purecov: tested */
 
-  if (opt_endinfo) db_env->set_verbose(db_env, DB_VERB_CHKPOINT | DB_VERB_DEADLOCK | DB_VERB_RECOVERY, 1);
+  if (opt_endinfo)
+    db_env->set_verbose(db_env, DB_VERB_CHKPOINT | DB_VERB_DEADLOCK | DB_VERB_RECOVERY, 1);
 
   db_env->set_cachesize(db_env, 0, berkeley_cache_size, 0);
   db_env->set_lg_max(db_env, berkeley_log_file_size);
   db_env->set_lg_bsize(db_env, berkeley_log_buffer_size);
   db_env->set_lk_detect(db_env, berkeley_lock_type);
-  if (berkeley_max_lock) db_env->set_lk_max(db_env, berkeley_max_lock);
+  if (berkeley_max_lock)
+    db_env->set_lk_max(db_env, berkeley_max_lock);
 
   if (db_env->open(
           db_env, berkeley_home,
@@ -197,7 +204,8 @@ bool berkeley_end(void)
 {
   int error;
   DBUG_ENTER("berkeley_end");
-  if (!db_env) return 1; /* purecov: tested */
+  if (!db_env)
+    return 1; /* purecov: tested */
   berkeley_cleanup_log_files();
   error = db_env->close(db_env, 0);  // Error is logged
   db_env = 0;
@@ -239,7 +247,8 @@ static int berkeley_commit(THD *thd, bool all)
   int error = txn_commit(*txn, 0);
   *txn = 0;
 #ifndef DBUG_OFF
-  if (error) DBUG_PRINT("error", ("error: %d", error));
+  if (error)
+    DBUG_PRINT("error", ("error: %d", error));
 #endif
   DBUG_RETURN(error);
 }
@@ -271,7 +280,8 @@ int berkeley_show_logs(Protocol *protocol)
   {
     DBUG_PRINT("error", ("log_archive failed (error %d)", error));
     db_env->err(db_env, error, "log_archive: DB_ARCH_ABS");
-    if (error == DB_NOTFOUND) error = 0;  // No log files
+    if (error == DB_NOTFOUND)
+      error = 0;  // No log files
     goto err;
   }
   /* Error is 0 here */
@@ -395,7 +405,8 @@ ulong ha_berkeley::index_flags(uint idx, uint part, bool all_parts) const
           As BDB stores only one copy of equal strings, we can't use key read
           on these. Binary collations do support key read though.
         */
-        if (!(table->key_info[idx].key_part[i].field->charset()->state & MY_CS_BINSORT)) flags &= ~HA_KEYREAD_ONLY;
+        if (!(table->key_info[idx].key_part[i].field->charset()->state & MY_CS_BINSORT))
+          flags &= ~HA_KEYREAD_ONLY;
         break;
       default:  // Keep compiler happy
         break;
@@ -426,9 +437,11 @@ static int berkeley_cmp_packed_key(DB *file, const DBT *new_key, const DBT *save
     uint length;
     if (key_part->null_bit)
     {
-      if (*new_key_ptr != *saved_key_ptr++) return ((int)*new_key_ptr - (int)saved_key_ptr[-1]);
+      if (*new_key_ptr != *saved_key_ptr++)
+        return ((int)*new_key_ptr - (int)saved_key_ptr[-1]);
       key_length--;
-      if (!*new_key_ptr++) continue;
+      if (!*new_key_ptr++)
+        continue;
     }
     if ((cmp = key_part->field->pack_cmp(new_key_ptr, saved_key_ptr, key_part->length, key->table->insert_or_update)))
       return cmp;
@@ -454,7 +467,8 @@ static int berkeley_cmp_fix_length_key(DB *file, const DBT *new_key, const DBT *
   for (; key_part != end && (int)key_length > 0; key_part++)
   {
     int cmp;
-    if ((cmp = key_part->field->pack_cmp(new_key_ptr, saved_key_ptr, 0, 0))) return cmp;
+    if ((cmp = key_part->field->pack_cmp(new_key_ptr, saved_key_ptr, 0, 0)))
+      return cmp;
     new_key_ptr += key_part->length;
     key_length -= key_part->length;
     saved_key_ptr += key_part->length;
@@ -480,7 +494,8 @@ static bool berkeley_key_cmp(TABLE *table, KEY *key_info, const char *key, uint 
         With the current usage, the following case will always be FALSE,
         because NULL keys are sorted before any other key
       */
-      if (*key != (table->record[0][key_part->null_offset] & key_part->null_bit) ? 0 : 1) return 1;
+      if (*key != (table->record[0][key_part->null_offset] & key_part->null_bit) ? 0 : 1)
+        return 1;
       if (!*key++)  // Null value
         continue;
     }
@@ -488,7 +503,8 @@ static bool berkeley_key_cmp(TABLE *table, KEY *key_info, const char *key, uint 
       Last argument has to be 0 as we are also using this to function to see
       if a key like 'a  ' matched a row with 'a'
     */
-    if ((cmp = key_part->field->pack_cmp(key, key_part->length, 0))) return cmp;
+    if ((cmp = key_part->field->pack_cmp(key, key_part->length, 0)))
+      return cmp;
     length = key_part->field->packed_col_length(key, key_part->length);
     key += length;
     key_length -= length;
@@ -556,7 +572,8 @@ int ha_berkeley::open(const char *name, int mode, uint test_if_locked)
     share->file = file;
 
     file->set_bt_compare(file, (hidden_primary_key ? berkeley_cmp_hidden_key : berkeley_cmp_packed_key));
-    if (!hidden_primary_key) file->app_private = (void *)(table->key_info + table_share->primary_key);
+    if (!hidden_primary_key)
+      file->app_private = (void *)(table->key_info + table_share->primary_key);
     if ((error = txn_begin(db_env, 0, (DB_TXN **)&transaction, 0)) ||
         (error = (file->open(file, transaction, fn_format(name_buff, name, "", ha_berkeley_ext, 2 | 4), "main",
                              DB_BTREE, open_mode, 0))) ||
@@ -689,14 +706,16 @@ int ha_berkeley::pack_row(DBT *row, const byte *record, bool new_row)
     row->size = table->s->reclength + hidden_primary_key;
     if (hidden_primary_key)
     {
-      if (new_row) get_auto_primary_key(current_ident);
+      if (new_row)
+        get_auto_primary_key(current_ident);
       memcpy_fixed((char *)record + table->s->reclength, (char *)current_ident, BDB_HIDDEN_PRIMARY_KEY_LENGTH);
     }
     return 0;
   }
   if (table->s->blob_fields)
   {
-    if (fix_rec_buff_for_blob(max_row_length(record))) return HA_ERR_OUT_OF_MEM; /* purecov: inspected */
+    if (fix_rec_buff_for_blob(max_row_length(record)))
+      return HA_ERR_OUT_OF_MEM; /* purecov: inspected */
   }
 
   /* Copy null bits */
@@ -708,7 +727,8 @@ int ha_berkeley::pack_row(DBT *row, const byte *record, bool new_row)
 
   if (hidden_primary_key)
   {
-    if (new_row) get_auto_primary_key(current_ident);
+    if (new_row)
+      get_auto_primary_key(current_ident);
     memcpy_fixed((char *)ptr, (char *)current_ident, BDB_HIDDEN_PRIMARY_KEY_LENGTH);
     ptr += BDB_HIDDEN_PRIMARY_KEY_LENGTH;
   }
@@ -853,9 +873,12 @@ int ha_berkeley::write_row(byte *record)
   DBUG_ENTER("write_row");
 
   statistic_increment(table->in_use->status_var.ha_write_count, &LOCK_status);
-  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_INSERT) table->timestamp_field->set_time();
-  if (table->next_number_field && record == table->record[0]) update_auto_increment();
-  if ((error = pack_row(&row, record, 1))) DBUG_RETURN(error); /* purecov: inspected */
+  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_INSERT)
+    table->timestamp_field->set_time();
+  if (table->next_number_field && record == table->record[0])
+    update_auto_increment();
+  if ((error = pack_row(&row, record, 1)))
+    DBUG_RETURN(error); /* purecov: inspected */
 
   table->insert_or_update = 1;  // For handling of VARCHAR
   if (table->s->keys + test(hidden_primary_key) == 1)
@@ -877,7 +900,8 @@ int ha_berkeley::write_row(byte *record)
         changed_keys.set_bit(primary_key);
         for (uint keynr = 0; keynr < table->s->keys; keynr++)
         {
-          if (keynr == primary_key) continue;
+          if (keynr == primary_key)
+            continue;
           if ((error = key_file[keynr]->put(key_file[keynr], sub_trans, create_key(&key, keynr, key_buff2, record),
                                             &prim_key, key_type[keynr])))
           {
@@ -903,7 +927,8 @@ int ha_berkeley::write_row(byte *record)
             {
               if (changed_keys.is_set(keynr))
               {
-                if ((new_error = remove_key(sub_trans, keynr, record, &prim_key))) break; /* purecov: inspected */
+                if ((new_error = remove_key(sub_trans, keynr, record, &prim_key)))
+                  break; /* purecov: inspected */
               }
             }
           }
@@ -914,7 +939,8 @@ int ha_berkeley::write_row(byte *record)
           }
         }
       }
-      if (error != DB_LOCK_DEADLOCK) break;
+      if (error != DB_LOCK_DEADLOCK)
+        break;
     }
   }
   table->insert_or_update = 0;
@@ -948,7 +974,8 @@ int ha_berkeley::key_cmp(uint keynr, const byte *old_row, const byte *new_row)
     }
     else
     {
-      if (memcmp(old_row + key_part->offset, new_row + key_part->offset, key_part->length)) return 1;
+      if (memcmp(old_row + key_part->offset, new_row + key_part->offset, key_part->length))
+        return 1;
     }
   }
   return 0;
@@ -992,7 +1019,8 @@ int ha_berkeley::update_primary_key(DB_TXN *trans, bool primary_key_changed, con
   else
   {
     // Primary key didn't change;  just update the row data
-    if (!(error = pack_row(&row, new_row, 0))) error = file->put(file, trans, new_key, &row, 0);
+    if (!(error = pack_row(&row, new_row, 0)))
+      error = file->put(file, trans, new_key, &row, 0);
   }
   DBUG_RETURN(error);
 }
@@ -1051,7 +1079,8 @@ int ha_berkeley::update_row(const byte *old_row, byte *new_row)
   LINT_INIT(error);
 
   statistic_increment(table->in_use->status_var.ha_update_count, &LOCK_status);
-  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_UPDATE) table->timestamp_field->set_time();
+  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_UPDATE)
+    table->timestamp_field->set_time();
 
   table->insert_or_update = 1;  // For handling of VARCHAR
   if (hidden_primary_key)
@@ -1083,7 +1112,8 @@ int ha_berkeley::update_row(const byte *old_row, byte *new_row)
       // Update all other keys
       for (uint keynr = 0; keynr < table->s->keys; keynr++)
       {
-        if (keynr == primary_key) continue;
+        if (keynr == primary_key)
+          continue;
         if (key_cmp(keynr, old_row, new_row) || primary_key_changed)
         {
           if ((error = remove_key(sub_trans, keynr, old_row, &old_prim_key)))
@@ -1118,10 +1148,12 @@ int ha_berkeley::update_row(const byte *old_row, byte *new_row)
         }
       }
     }
-    if (error != DB_LOCK_DEADLOCK) break;
+    if (error != DB_LOCK_DEADLOCK)
+      break;
   }
   table->insert_or_update = 0;
-  if (error == DB_KEYEXIST) error = HA_ERR_FOUND_DUPP_KEY;
+  if (error == DB_KEYEXIST)
+    error = HA_ERR_FOUND_DUPP_KEY;
   DBUG_RETURN(error);
 }
 
@@ -1163,7 +1195,8 @@ int ha_berkeley::remove_key(DB_TXN *trans, uint keynr, const byte *record, DBT *
         error = tmp_cursor->c_del(tmp_cursor, 0);
       }
       int result = tmp_cursor->c_close(tmp_cursor);
-      if (!error) error = result;
+      if (!error)
+        error = result;
     }
   }
   DBUG_RETURN(error);
@@ -1197,9 +1230,11 @@ int ha_berkeley::delete_row(const byte *record)
   DBUG_ENTER("delete_row");
   statistic_increment(table->in_use->status_var.ha_delete_count, &LOCK_status);
 
-  if ((error = pack_row(&row, record, 0))) DBUG_RETURN((error)); /* purecov: inspected */
+  if ((error = pack_row(&row, record, 0)))
+    DBUG_RETURN((error)); /* purecov: inspected */
   create_key(&prim_key, primary_key, key_buff, record);
-  if (hidden_primary_key) keys.set_bit(primary_key);
+  if (hidden_primary_key)
+    keys.set_bit(primary_key);
 
   /* Subtransactions may be used in order to retry the delete in
      case we get a DB_LOCK_DEADLOCK error. */
@@ -1212,10 +1247,12 @@ int ha_berkeley::delete_row(const byte *record)
       DBUG_PRINT("error", ("Got error %d", error));
       break;  // No retry - return error
     }
-    if (error != DB_LOCK_DEADLOCK) break;
+    if (error != DB_LOCK_DEADLOCK)
+      break;
   }
 #ifdef CANT_COUNT_DELETED_ROWS
-  if (!error) changed_rows--;
+  if (!error)
+    changed_rows--;
 #endif
   DBUG_RETURN(error);
 }
@@ -1264,7 +1301,8 @@ int ha_berkeley::read_row(int error, char *buf, uint keynr, DBT *row, DBT *found
   DBUG_ENTER("ha_berkeley::read_row");
   if (error)
   {
-    if (error == DB_NOTFOUND || error == DB_KEYEMPTY) error = read_next ? HA_ERR_END_OF_FILE : HA_ERR_KEY_NOT_FOUND;
+    if (error == DB_NOTFOUND || error == DB_KEYEMPTY)
+      error = read_next ? HA_ERR_END_OF_FILE : HA_ERR_KEY_NOT_FOUND;
     table->status = STATUS_NOT_FOUND;
     DBUG_RETURN(error);
   }
@@ -1279,7 +1317,8 @@ int ha_berkeley::read_row(int error, char *buf, uint keynr, DBT *row, DBT *found
     if (key_read && found_key)
     {
       unpack_key(buf, found_key, keynr);
-      if (!hidden_primary_key) unpack_key(buf, row, primary_key);
+      if (!hidden_primary_key)
+        unpack_key(buf, row, primary_key);
       DBUG_RETURN(0);
     }
     DBT key;
@@ -1336,7 +1375,8 @@ int ha_berkeley::index_read(byte *buf, const byte *key, uint key_len, enum ha_rk
   }
   if (key_len == key_info->key_length && !(table->key_info[active_index].flags & HA_END_SPACE_KEY))
   {
-    if (find_flag == HA_READ_AFTER_KEY) key_info->handler.bdb_return_if_eq = 1;
+    if (find_flag == HA_READ_AFTER_KEY)
+      key_info->handler.bdb_return_if_eq = 1;
     error = read_row(cursor->c_get(cursor, pack_key(&last_key, active_index, key_buff, key, key_len), &row,
                                    (find_flag == HA_READ_KEY_EXACT ? DB_SET : DB_SET_RANGE)),
                      (char *)buf, active_index, &row, (DBT *)0, 0);
@@ -1359,7 +1399,8 @@ int ha_berkeley::index_read(byte *buf, const byte *key, uint key_len, enum ha_rk
     if (!error && find_flag == HA_READ_KEY_EXACT)
     {
       /* Ensure that we found a key that is equal to the current one */
-      if (!error && berkeley_key_cmp(table, key_info, key_buff2, key_len)) error = HA_ERR_KEY_NOT_FOUND;
+      if (!error && berkeley_key_cmp(table, key_info, key_buff2, key_len))
+        error = HA_ERR_KEY_NOT_FOUND;
     }
   }
   if (do_prev)
@@ -1421,7 +1462,8 @@ int ha_berkeley::index_next_same(byte *buf, const byte *key, uint keylen)
   else
   {
     error = read_row(cursor->c_get(cursor, &last_key, &row, DB_NEXT), (char *)buf, active_index, &row, &last_key, 1);
-    if (!error && ::key_cmp_if_same(table, key, active_index, keylen)) error = HA_ERR_END_OF_FILE;
+    if (!error && ::key_cmp_if_same(table, key, active_index, keylen))
+      error = HA_ERR_END_OF_FILE;
   }
   DBUG_RETURN(error);
 }
@@ -1537,7 +1579,8 @@ void ha_berkeley::position(const byte *record)
   else
   {
     create_key(&key, primary_key, (char *)ref, record);
-    if (key.size < ref_length) bzero(ref + key.size, ref_length - key.size);
+    if (key.size < ref_length)
+      bzero(ref + key.size, ref_length - key.size);
   }
   DBUG_VOID_RETURN;
 }
@@ -1559,7 +1602,8 @@ void ha_berkeley::info(uint flag)
     }
   }
   /* Don't return key if we got an error for the internal primary key */
-  if (flag & HA_STATUS_ERRKEY && last_dup_key < table->s->keys) errkey = last_dup_key;
+  if (flag & HA_STATUS_ERRKEY && last_dup_key < table->s->keys)
+    errkey = last_dup_key;
   DBUG_VOID_RETURN;
 }
 
@@ -1623,7 +1667,8 @@ int ha_berkeley::external_lock(THD *thd, int lock_type)
   if (!trx)
   {
     thd->ha_data[berkeley_hton.slot] = trx = (berkeley_trx_data *)my_malloc(sizeof(*trx), MYF(MY_ZEROFILL));
-    if (!trx) DBUG_RETURN(1);
+    if (!trx)
+      DBUG_RETURN(1);
   }
   if (lock_type != F_UNLCK)
   {
@@ -1642,7 +1687,8 @@ int ha_berkeley::external_lock(THD *thd, int lock_type)
           DBUG_RETURN(error);
         }
         trans_register_ha(thd, TRUE, &berkeley_hton);
-        if (thd->in_lock_tables) DBUG_RETURN(0);  // Don't create stmt trans
+        if (thd->in_lock_tables)
+          DBUG_RETURN(0);  // Don't create stmt trans
       }
       DBUG_PRINT("trans", ("starting transaction stmt"));
       if ((error = txn_begin(db_env, trx->all, &trx->stmt, 0)))
@@ -1770,7 +1816,8 @@ static int create_sub_table(const char *table_name, const char *sub_name, DBTYPE
   {
     DBUG_PRINT("error", ("Got error: %d when creting table", error)); /* purecov: inspected */
   }
-  if (error) my_errno = error; /* purecov: inspected */
+  if (error)
+    my_errno = error; /* purecov: inspected */
   DBUG_RETURN(error);
 }
 
@@ -1785,7 +1832,8 @@ int ha_berkeley::create(const char *name, register TABLE *form, HA_CREATE_INFO *
   fn_format(name_buff, name, "", ha_berkeley_ext, 2 | 4);
 
   /* Create the main table that will hold the real rows */
-  if ((error = create_sub_table(name_buff, "main", DB_BTREE, 0))) DBUG_RETURN(error); /* purecov: inspected */
+  if ((error = create_sub_table(name_buff, "main", DB_BTREE, 0)))
+    DBUG_RETURN(error); /* purecov: inspected */
 
   primary_key = table->s->primary_key;
   /* Create the keys */
@@ -1951,7 +1999,8 @@ ulonglong ha_berkeley::get_auto_increment()
       }
     }
   }
-  if (!error) nr = (ulonglong)table->next_number_field->val_int_offset(table->s->rec_buff_length) + 1;
+  if (!error)
+    nr = (ulonglong)table->next_number_field->val_int_offset(table->s->rec_buff_length) + 1;
   ha_berkeley::index_end();
   (void)ha_berkeley::extra(HA_EXTRA_NO_KEYREAD);
   return nr;
@@ -1959,7 +2008,8 @@ ulonglong ha_berkeley::get_auto_increment()
 
 void ha_berkeley::print_error(int error, myf errflag)
 {
-  if (error == DB_LOCK_DEADLOCK) error = HA_ERR_LOCK_DEADLOCK;
+  if (error == DB_LOCK_DEADLOCK)
+    error = HA_ERR_LOCK_DEADLOCK;
   handler::print_error(error, errflag);
 }
 
@@ -1986,7 +2036,8 @@ static void print_msg(THD *thd, const char *table_name, const char *op_name, con
   protocol->store(op_name);
   protocol->store(msg_type);
   protocol->store(msgbuf);
-  if (protocol->write()) thd->killed = THD::KILL_CONNECTION;
+  if (protocol->write())
+    thd->killed = THD::KILL_CONNECTION;
 }
 #endif
 
@@ -2018,8 +2069,10 @@ int ha_berkeley::analyze(THD *thd, HA_CHECK_OPT *check_opt)
     DB_TXN_ACTIVE *end = cur + txn_stat_ptr->st_nactive;
     for (; cur != end && (!atxn_stmt || !atxn_all); cur++)
     {
-      if (cur->txnid == all_id) atxn_all = cur;
-      if (cur->txnid == stmt_id) atxn_stmt = cur;
+      if (cur->txnid == all_id)
+        atxn_all = cur;
+      if (cur->txnid == stmt_id)
+        atxn_stmt = cur;
     }
 
     if (atxn_stmt && atxn_all && log_compare(&atxn_stmt->lsn, &atxn_all->lsn))
@@ -2037,7 +2090,8 @@ int ha_berkeley::analyze(THD *thd, HA_CHECK_OPT *check_opt)
       free(stat);
       stat = 0;
     }
-    if ((key_file[i]->stat)(key_file[i], (void *)&stat, 0)) goto err; /* purecov: inspected */
+    if ((key_file[i]->stat)(key_file[i], (void *)&stat, 0))
+      goto err; /* purecov: inspected */
     share->rec_per_key[i] = (stat->bt_ndata / (stat->bt_nkeys ? stat->bt_nkeys : 1));
   }
   /* A hidden primary key is not in key_file[] */
@@ -2048,7 +2102,8 @@ int ha_berkeley::analyze(THD *thd, HA_CHECK_OPT *check_opt)
       free(stat);
       stat = 0;
     }
-    if ((file->stat)(file, (void *)&stat, 0)) goto err; /* purecov: inspected */
+    if ((file->stat)(file, (void *)&stat, 0))
+      goto err; /* purecov: inspected */
   }
   pthread_mutex_lock(&share->mutex);
   share->rows = stat->bt_ndata;
@@ -2056,7 +2111,8 @@ int ha_berkeley::analyze(THD *thd, HA_CHECK_OPT *check_opt)
   share->version++;                     // Update stat in table
   pthread_mutex_unlock(&share->mutex);
   update_status(share, table);  // Write status to file
-  if (stat) free(stat);
+  if (stat)
+    free(stat);
   return ((share->status & STATUS_BDB_ANALYZE) ? HA_ADMIN_FAILED : HA_ADMIN_OK);
 
 err:
@@ -2177,7 +2233,8 @@ static int free_share(BDB_SHARE *share, TABLE *table, uint hidden_primary_key, b
   int error, result = 0;
   uint keys = table->s->keys + test(hidden_primary_key);
   pthread_mutex_lock(&bdb_mutex);
-  if (mutex_is_locked) pthread_mutex_unlock(&share->mutex); /* purecov: inspected */
+  if (mutex_is_locked)
+    pthread_mutex_unlock(&share->mutex); /* purecov: inspected */
   if (!--share->use_count)
   {
     DB **key_file = share->key_file;
@@ -2185,7 +2242,8 @@ static int free_share(BDB_SHARE *share, TABLE *table, uint hidden_primary_key, b
     /* this does share->file->close() implicitly */
     for (uint i = 0; i < keys; i++)
     {
-      if (key_file[i] && (error = key_file[i]->close(key_file[i], 0))) result = error; /* purecov: inspected */
+      if (key_file[i] && (error = key_file[i]->close(key_file[i], 0)))
+        result = error; /* purecov: inspected */
     }
     if (share->status_block && (error = share->status_block->close(share->status_block, 0)))
       result = error; /* purecov: inspected */
@@ -2212,7 +2270,8 @@ void ha_berkeley::get_status()
     {
       (void)extra(HA_EXTRA_KEYREAD);
       index_init(primary_key);
-      if (!index_last(table->record[1])) share->auto_ident = uint5korr(current_ident);
+      if (!index_last(table->record[1]))
+        share->auto_ident = uint5korr(current_ident);
       index_end();
       (void)extra(HA_EXTRA_NO_KEYREAD);
     }
@@ -2330,7 +2389,8 @@ ha_rows ha_berkeley::estimate_rows_upper_bound() { return share->rows + HA_BERKE
 
 int ha_berkeley::cmp_ref(const byte *ref1, const byte *ref2)
 {
-  if (hidden_primary_key) return memcmp(ref1, ref2, BDB_HIDDEN_PRIMARY_KEY_LENGTH);
+  if (hidden_primary_key)
+    return memcmp(ref1, ref2, BDB_HIDDEN_PRIMARY_KEY_LENGTH);
 
   int result;
   Field *field;
@@ -2342,7 +2402,8 @@ int ha_berkeley::cmp_ref(const byte *ref1, const byte *ref2)
   {
     field = key_part->field;
     result = field->pack_cmp((const char *)ref1, (const char *)ref2, key_part->length, 0);
-    if (result) return result;
+    if (result)
+      return result;
     ref1 += field->packed_col_length((const char *)ref1, key_part->length);
     ref2 += field->packed_col_length((const char *)ref2, key_part->length);
   }

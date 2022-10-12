@@ -210,18 +210,22 @@ String *Item_func_concat::val_str(String *str)
   uint i;
 
   null_value = 0;
-  if (!(res = args[0]->val_str(str))) goto null;
+  if (!(res = args[0]->val_str(str)))
+    goto null;
   use_as_buff = &tmp_value;
   for (i = 1; i < arg_count; i++)
   {
     if (res->length() == 0)
     {
-      if (!(res = args[i]->val_str(str))) goto null;
+      if (!(res = args[i]->val_str(str)))
+        goto null;
     }
     else
     {
-      if (!(res2 = args[i]->val_str(use_as_buff))) goto null;
-      if (res2->length() == 0) continue;
+      if (!(res2 = args[i]->val_str(use_as_buff)))
+        goto null;
+      if (res2->length() == 0)
+        continue;
       if (res->length() + res2->length() > current_thd->variables.max_allowed_packet)
       {
         push_warning_printf(current_thd, MYSQL_ERROR::WARN_LEVEL_WARN, ER_WARN_ALLOWED_PACKET_OVERFLOWED,
@@ -252,7 +256,8 @@ String *Item_func_concat::val_str(String *str)
       }
       else if (res2 == &tmp_value)
       {  // This can happend only 1 time
-        if (tmp_value.replace(0, 0, *res)) goto null;
+        if (tmp_value.replace(0, 0, *res))
+          goto null;
         res = &tmp_value;
         use_as_buff = str;  // Put next arg here
       }
@@ -267,13 +272,15 @@ String *Item_func_concat::val_str(String *str)
         /* Chop the last characters in tmp_value that isn't in res2 */
         tmp_value.length((uint32)(res2->ptr() - tmp_value.ptr()) + res2->length());
         /* Place res2 at start of tmp_value, remove chars before res2 */
-        if (tmp_value.replace(0, (uint32)(res2->ptr() - tmp_value.ptr()), *res)) goto null;
+        if (tmp_value.replace(0, (uint32)(res2->ptr() - tmp_value.ptr()), *res))
+          goto null;
         res = &tmp_value;
         use_as_buff = str;  // Put next arg here
       }
       else
       {  // Two big const strings
-        if (tmp_value.alloc(max_length) || tmp_value.copy(*res) || tmp_value.append(*res2)) goto null;
+        if (tmp_value.alloc(max_length) || tmp_value.copy(*res) || tmp_value.append(*res2))
+          goto null;
         res = &tmp_value;
         use_as_buff = str;
       }
@@ -291,7 +298,8 @@ void Item_func_concat::fix_length_and_dec()
 {
   ulonglong max_result_length = 0;
 
-  if (agg_arg_charsets(collation, args, arg_count, MY_COLL_ALLOW_CONV)) return;
+  if (agg_arg_charsets(collation, args, arg_count, MY_COLL_ALLOW_CONV))
+    return;
 
   for (uint i = 0; i < arg_count; i++) max_result_length += args[i]->max_length;
 
@@ -324,8 +332,10 @@ String *Item_func_des_encrypt::val_str(String *str)
   uint key_number, res_length, tail;
   String *res = args[0]->val_str(str);
 
-  if ((null_value = args[0]->null_value)) return 0;  // ENCRYPT(NULL) == NULL
-  if ((res_length = res->length()) == 0) return &my_empty_string;
+  if ((null_value = args[0]->null_value))
+    return 0;  // ENCRYPT(NULL) == NULL
+  if ((res_length = res->length()) == 0)
+    return &my_empty_string;
 
   if (arg_count == 1)
   {
@@ -337,7 +347,8 @@ String *Item_func_des_encrypt::val_str(String *str)
   else if (args[1]->result_type() == INT_RESULT)
   {
     key_number = (uint)args[1]->val_int();
-    if (key_number > 9) goto error;
+    if (key_number > 9)
+      goto error;
     VOID(pthread_mutex_lock(&LOCK_des_key_file));
     keyschedule = des_keyschedule[key_number];
     VOID(pthread_mutex_unlock(&LOCK_des_key_file));
@@ -345,7 +356,8 @@ String *Item_func_des_encrypt::val_str(String *str)
   else
   {
     String *keystr = args[1]->val_str(&tmp_value);
-    if (!keystr) goto error;
+    if (!keystr)
+      goto error;
     key_number = 127;  // User key string
 
     /* We make good 24-byte (168 bit) key from given plaintext key with MD5 */
@@ -369,7 +381,8 @@ String *Item_func_des_encrypt::val_str(String *str)
   tail = (8 - (res_length) % 8);  // 1..8 marking extra length
   res_length += tail;
   code = ER_OUT_OF_RESOURCES;
-  if (tail && res->append(append_str, tail) || tmp_value.alloc(res_length + 1)) goto error;
+  if (tail && res->append(append_str, tail) || tmp_value.alloc(res_length + 1))
+    goto error;
   (*res)[res_length - 1] = tail;  // save extra length
   tmp_value.length(res_length + 1);
   tmp_value[0] = (char)(128 | key_number);
@@ -400,15 +413,18 @@ String *Item_func_des_decrypt::val_str(String *str)
   String *res = args[0]->val_str(str);
   uint length, tail;
 
-  if ((null_value = args[0]->null_value)) return 0;
+  if ((null_value = args[0]->null_value))
+    return 0;
   length = res->length();
-  if (length < 9 || (length % 8) != 1 || !((*res)[0] & 128)) return res;  // Skip decryption if not encrypted
+  if (length < 9 || (length % 8) != 1 || !((*res)[0] & 128))
+    return res;  // Skip decryption if not encrypted
 
   if (arg_count == 1)  // If automatic uncompression
   {
     uint key_number = (uint)(*res)[0] & 127;
     // Check if automatic key and that we have privilege to uncompress using it
-    if (!(current_thd->security_ctx->master_access & SUPER_ACL) || key_number > 9) goto error;
+    if (!(current_thd->security_ctx->master_access & SUPER_ACL) || key_number > 9)
+      goto error;
 
     VOID(pthread_mutex_lock(&LOCK_des_key_file));
     keyschedule = des_keyschedule[key_number];
@@ -418,7 +434,8 @@ String *Item_func_des_decrypt::val_str(String *str)
   {
     // We make good 24-byte (168 bit) key from given plaintext key with MD5
     String *keystr = args[1]->val_str(&tmp_value);
-    if (!keystr) goto error;
+    if (!keystr)
+      goto error;
 
     bzero((char *)&ivec, sizeof(ivec));
     EVP_BytesToKey(EVP_des_ede3_cbc(), EVP_md5(), NULL, (uchar *)keystr->ptr(), (int)keystr->length(), 1,
@@ -429,13 +446,15 @@ String *Item_func_des_decrypt::val_str(String *str)
     DES_set_key_unchecked(&keyblock.key3, &keyschedule.ks3);
   }
   code = ER_OUT_OF_RESOURCES;
-  if (tmp_value.alloc(length - 1)) goto error;
+  if (tmp_value.alloc(length - 1))
+    goto error;
 
   bzero((char *)&ivec, sizeof(ivec));
   DES_ede3_cbc_encrypt((const uchar *)res->ptr() + 1, (uchar *)(tmp_value.ptr()), length - 1, &keyschedule.ks1,
                        &keyschedule.ks2, &keyschedule.ks3, &ivec, FALSE);
   /* Restore old length of key */
-  if ((tail = (uint)(uchar)tmp_value[length - 2]) > 8) goto wrong_key;  // Wrong key
+  if ((tail = (uint)(uchar)tmp_value[length - 2]) > 8)
+    goto wrong_key;  // Wrong key
   tmp_value.length(length - 1 - tail);
   return &tmp_value;
 
@@ -463,7 +482,8 @@ String *Item_func_concat_ws::val_str(String *str)
   uint i;
 
   null_value = 0;
-  if (!(sep_str = args[0]->val_str(&tmp_sep_str))) goto null;
+  if (!(sep_str = args[0]->val_str(&tmp_sep_str)))
+    goto null;
 
   use_as_buff = &tmp_value;
   str->length(0);  // QQ; Should be removed
@@ -472,12 +492,15 @@ String *Item_func_concat_ws::val_str(String *str)
   // Skip until non-null argument is found.
   // If not, return the empty string
   for (i = 1; i < arg_count; i++)
-    if ((res = args[i]->val_str(str))) break;
-  if (i == arg_count) return &my_empty_string;
+    if ((res = args[i]->val_str(str)))
+      break;
+  if (i == arg_count)
+    return &my_empty_string;
 
   for (i++; i < arg_count; i++)
   {
-    if (!(res2 = args[i]->val_str(use_as_buff))) continue;  // Skip NULL
+    if (!(res2 = args[i]->val_str(use_as_buff)))
+      continue;  // Skip NULL
 
     if (res->length() + sep_str->length() + res2->length() > current_thd->variables.max_allowed_packet)
     {
@@ -510,11 +533,13 @@ String *Item_func_concat_ws::val_str(String *str)
     }
     else if (res == &tmp_value)
     {
-      if (res->append(*sep_str) || res->append(*res2)) goto null;  // Must be a blob
+      if (res->append(*sep_str) || res->append(*res2))
+        goto null;  // Must be a blob
     }
     else if (res2 == &tmp_value)
     {  // This can happend only 1 time
-      if (tmp_value.replace(0, 0, *sep_str) || tmp_value.replace(0, 0, *res)) goto null;
+      if (tmp_value.replace(0, 0, *sep_str) || tmp_value.replace(0, 0, *res))
+        goto null;
       res = &tmp_value;
       use_as_buff = str;  // Put next arg here
     }
@@ -555,7 +580,8 @@ void Item_func_concat_ws::fix_length_and_dec()
 {
   ulonglong max_result_length;
 
-  if (agg_arg_charsets(collation, args, arg_count, MY_COLL_ALLOW_CONV)) return;
+  if (agg_arg_charsets(collation, args, arg_count, MY_COLL_ALLOW_CONV))
+    return;
 
   /*
      arg_count cannot be less than 2,
@@ -579,9 +605,11 @@ String *Item_func_reverse::val_str(String *str)
   String *res = args[0]->val_str(str);
   char *ptr, *end;
 
-  if ((null_value = args[0]->null_value)) return 0;
+  if ((null_value = args[0]->null_value))
+    return 0;
   /* An empty string is a special case as the string pointer may be null */
-  if (!res->length()) return &my_empty_string;
+  if (!res->length())
+    return &my_empty_string;
   res = copy_if_not_alloced(str, res, res->length());
   ptr = (char *)res->ptr();
   end = ptr + res->length();
@@ -643,9 +671,11 @@ String *Item_func_replace::val_str(String *str)
 
   null_value = 0;
   res = args[0]->val_str(str);
-  if (args[0]->null_value) goto null;
+  if (args[0]->null_value)
+    goto null;
   res2 = args[1]->val_str(&tmp_value);
-  if (args[1]->null_value) goto null;
+  if (args[1]->null_value)
+    goto null;
 
   res->set_charset(collation.collation);
 
@@ -653,14 +683,18 @@ String *Item_func_replace::val_str(String *str)
   binary_cmp = ((res->charset()->state & MY_CS_BINSORT) || !use_mb(res->charset()));
 #endif
 
-  if (res2->length() == 0) return res;
+  if (res2->length() == 0)
+    return res;
 #ifndef USE_MB
-  if ((offset = res->strstr(*res2)) < 0) return res;
+  if ((offset = res->strstr(*res2)) < 0)
+    return res;
 #else
   offset = 0;
-  if (binary_cmp && (offset = res->strstr(*res2)) < 0) return res;
+  if (binary_cmp && (offset = res->strstr(*res2)) < 0)
+    return res;
 #endif
-  if (!(res3 = args[2]->val_str(&tmp_value2))) goto null;
+  if (!(res3 = args[2]->val_str(&tmp_value2)))
+    goto null;
   from_length = res2->length();
   to_length = res3->length();
 
@@ -681,7 +715,8 @@ String *Item_func_replace::val_str(String *str)
         i = (char *)ptr + 1;
         j = (char *)search + 1;
         while (j != search_end)
-          if (*i++ != *j++) goto skip;
+          if (*i++ != *j++)
+            goto skip;
         offset = (int)(ptr - res->ptr());
         if (res->length() - from_length + to_length > current_thd->variables.max_allowed_packet)
         {
@@ -749,7 +784,8 @@ void Item_func_replace::fix_length_and_dec()
   }
   max_length = (ulong)max_result_length;
 
-  if (agg_arg_charsets(collation, args, 3, MY_COLL_CMP_CONV)) return;
+  if (agg_arg_charsets(collation, args, 3, MY_COLL_CMP_CONV))
+    return;
 }
 
 String *Item_func_insert::val_str(String *str)
@@ -767,8 +803,10 @@ String *Item_func_insert::val_str(String *str)
     goto null; /* purecov: inspected */
   start = res->charpos(start);
   length = res->charpos(length, start);
-  if (start > res->length() + 1) return res;  // Wrong param; skip insert
-  if (length > res->length() - start) length = res->length() - start;
+  if (start > res->length() + 1)
+    return res;  // Wrong param; skip insert
+  if (length > res->length() - start)
+    length = res->length() - start;
   if (res->length() - length + res2->length() > current_thd->variables.max_allowed_packet)
   {
     push_warning_printf(current_thd, MYSQL_ERROR::WARN_LEVEL_WARN, ER_WARN_ALLOWED_PACKET_OVERFLOWED,
@@ -790,7 +828,8 @@ void Item_func_insert::fix_length_and_dec()
 
   cargs[0] = args[0];
   cargs[1] = args[3];
-  if (agg_arg_charsets(collation, cargs, 2, MY_COLL_ALLOW_CONV)) return;
+  if (agg_arg_charsets(collation, cargs, 2, MY_COLL_ALLOW_CONV))
+    return;
   args[0] = cargs[0];
   args[3] = cargs[1];
   max_result_length = ((ulonglong)args[0]->max_length + (ulonglong)args[3]->max_length);
@@ -839,9 +878,12 @@ String *Item_func_left::val_str(String *str)
   long length = (long)args[1]->val_int();
   uint char_pos;
 
-  if ((null_value = args[0]->null_value)) return 0;
-  if (length <= 0) return &my_empty_string;
-  if (res->length() <= (uint)length || res->length() <= (char_pos = res->charpos(length))) return res;
+  if ((null_value = args[0]->null_value))
+    return 0;
+  if (length <= 0)
+    return &my_empty_string;
+  if (res->length() <= (uint)length || res->length() <= (char_pos = res->charpos(length)))
+    return res;
 
   tmp_value.set(*res, 0, char_pos);
   return &tmp_value;
@@ -872,12 +914,16 @@ String *Item_func_right::val_str(String *str)
   String *res = args[0]->val_str(str);
   long length = (long)args[1]->val_int();
 
-  if ((null_value = args[0]->null_value)) return 0; /* purecov: inspected */
-  if (length <= 0) return &my_empty_string;         /* purecov: inspected */
-  if (res->length() <= (uint)length) return res;    /* purecov: inspected */
+  if ((null_value = args[0]->null_value))
+    return 0; /* purecov: inspected */
+  if (length <= 0)
+    return &my_empty_string; /* purecov: inspected */
+  if (res->length() <= (uint)length)
+    return res; /* purecov: inspected */
 
   uint start = res->numchars();
-  if (start <= (uint)length) return res;
+  if (start <= (uint)length)
+    return res;
   start = res->charpos(start - (uint)length);
   tmp_value.set(*res, start, res->length() - start);
   return &tmp_value;
@@ -902,12 +948,14 @@ String *Item_func_substr::val_str(String *str)
   start = (int32)((start < 0) ? res->numchars() + start : start - 1);
   start = res->charpos(start);
   length = res->charpos(length, start);
-  if (start < 0 || (uint)start + 1 > res->length() || length <= 0) return &my_empty_string;
+  if (start < 0 || (uint)start + 1 > res->length() || length <= 0)
+    return &my_empty_string;
 
   tmp_length = (int32)res->length() - start;
   length = min(length, tmp_length);
 
-  if (!start && res->length() == (uint)length) return res;
+  if (!start && res->length() == (uint)length)
+    return res;
   tmp_value.set(*res, (uint)start, (uint)length);
   return &tmp_value;
 }
@@ -940,7 +988,8 @@ void Item_func_substr_index::fix_length_and_dec()
 {
   max_length = args[0]->max_length;
 
-  if (agg_arg_charsets(collation, args, 2, MY_COLL_CMP_CONV)) return;
+  if (agg_arg_charsets(collation, args, 2, MY_COLL_CMP_CONV))
+    return;
 }
 
 String *Item_func_substr_index::val_str(String *str)
@@ -958,7 +1007,8 @@ String *Item_func_substr_index::val_str(String *str)
   }
   null_value = 0;
   uint delimeter_length = delimeter->length();
-  if (!res->length() || !delimeter_length || !count) return &my_empty_string;  // Wrong parameters
+  if (!res->length() || !delimeter_length || !count)
+    return &my_empty_string;  // Wrong parameters
 
   res->set_charset(collation.collation);
 
@@ -982,7 +1032,8 @@ String *Item_func_substr_index::val_str(String *str)
           i = (char *)ptr + 1;
           j = (char *)search + 1;
           while (j != search_end)
-            if (*i++ != *j++) goto skip;
+            if (*i++ != *j++)
+              goto skip;
           if (pass == 0)
             ++n;
           else if (!--c)
@@ -999,13 +1050,15 @@ String *Item_func_substr_index::val_str(String *str)
       if (pass == 0) /* count<0 */
       {
         c += n + 1;
-        if (c <= 0) return res; /* not found, return original string */
+        if (c <= 0)
+          return res; /* not found, return original string */
         ptr = res->ptr();
       }
       else
       {
-        if (c) return res; /* Not found, return original string */
-        if (count > 0)     /* return left part */
+        if (c)
+          return res;  /* Not found, return original string */
+        if (count > 0) /* return left part */
         {
           tmp_value.set(*res, 0, (ulong)(ptr - res->ptr()));
         }
@@ -1024,7 +1077,8 @@ String *Item_func_substr_index::val_str(String *str)
     {  // start counting from the beginning
       for (offset = 0;; offset += delimeter_length)
       {
-        if ((int)(offset = res->strstr(*delimeter, offset)) < 0) return res;  // Didn't find, return org string
+        if ((int)(offset = res->strstr(*delimeter, offset)) < 0)
+          return res;  // Didn't find, return org string
         if (!--count)
         {
           tmp_value.set(*res, 0, offset);
@@ -1044,11 +1098,12 @@ String *Item_func_substr_index::val_str(String *str)
           address space less than where the found substring is located
           in res
         */
-        if ((int)(offset = res->strrstr(*delimeter, offset)) < 0) return res;  // Didn't find, return org string
-                                                                               /*
-                                                                   At this point, we've searched for the substring
-                                                                   the number of times as supplied by the index value
-                                                                 */
+        if ((int)(offset = res->strrstr(*delimeter, offset)) < 0)
+          return res;  // Didn't find, return org string
+                       /*
+           At this point, we've searched for the substring
+           the number of times as supplied by the index value
+         */
         if (!++count)
         {
           offset += delimeter_length;
@@ -1078,15 +1133,18 @@ String *Item_func_ltrim::val_str(String *str)
   LINT_INIT(remove_length);
 
   res = args[0]->val_str(str);
-  if ((null_value = args[0]->null_value)) return 0;
+  if ((null_value = args[0]->null_value))
+    return 0;
   remove_str = &remove; /* Default value. */
   if (arg_count == 2)
   {
     remove_str = args[1]->val_str(&tmp);
-    if ((null_value = args[1]->null_value)) return 0;
+    if ((null_value = args[1]->null_value))
+      return 0;
   }
 
-  if ((remove_length = remove_str->length()) == 0 || remove_length > res->length()) return res;
+  if ((remove_length = remove_str->length()) == 0 || remove_length > res->length())
+    return res;
 
   ptr = (char *)res->ptr();
   end = ptr + res->length();
@@ -1102,7 +1160,8 @@ String *Item_func_ltrim::val_str(String *str)
     while (ptr <= end && !memcmp(ptr, r_ptr, remove_length)) ptr += remove_length;
     end += remove_length;
   }
-  if (ptr == res->ptr()) return res;
+  if (ptr == res->ptr())
+    return res;
   tmp_value.set(*res, (uint)(ptr - res->ptr()), (uint)(end - ptr));
   return &tmp_value;
 }
@@ -1117,15 +1176,18 @@ String *Item_func_rtrim::val_str(String *str)
   LINT_INIT(remove_length);
 
   res = args[0]->val_str(str);
-  if ((null_value = args[0]->null_value)) return 0;
+  if ((null_value = args[0]->null_value))
+    return 0;
   remove_str = &remove; /* Default value. */
   if (arg_count == 2)
   {
     remove_str = args[1]->val_str(&tmp);
-    if ((null_value = args[1]->null_value)) return 0;
+    if ((null_value = args[1]->null_value))
+      return 0;
   }
 
-  if ((remove_length = remove_str->length()) == 0 || remove_length > res->length()) return res;
+  if ((remove_length = remove_str->length()) == 0 || remove_length > res->length())
+    return res;
 
   ptr = (char *)res->ptr();
   end = ptr + res->length();
@@ -1178,7 +1240,8 @@ String *Item_func_rtrim::val_str(String *str)
       while (ptr + remove_length <= end && !memcmp(end - remove_length, r_ptr, remove_length)) end -= remove_length;
     }
   }
-  if (end == res->ptr() + res->length()) return res;
+  if (end == res->ptr() + res->length())
+    return res;
   tmp_value.set(*res, 0, (uint)(end - res->ptr()));
   return &tmp_value;
 }
@@ -1194,15 +1257,18 @@ String *Item_func_trim::val_str(String *str)
   LINT_INIT(remove_length);
 
   res = args[0]->val_str(str);
-  if ((null_value = args[0]->null_value)) return 0;
+  if ((null_value = args[0]->null_value))
+    return 0;
   remove_str = &remove; /* Default value. */
   if (arg_count == 2)
   {
     remove_str = args[1]->val_str(&tmp);
-    if ((null_value = args[1]->null_value)) return 0;
+    if ((null_value = args[1]->null_value))
+      return 0;
   }
 
-  if ((remove_length = remove_str->length()) == 0 || remove_length > res->length()) return res;
+  if ((remove_length = remove_str->length()) == 0 || remove_length > res->length())
+    return res;
 
   ptr = (char *)res->ptr();
   end = ptr + res->length();
@@ -1234,7 +1300,8 @@ String *Item_func_trim::val_str(String *str)
   {
     while (ptr + remove_length <= end && !memcmp(end - remove_length, r_ptr, remove_length)) end -= remove_length;
   }
-  if (ptr == res->ptr() && end == ptr + res->length()) return res;
+  if (ptr == res->ptr() && end == ptr + res->length())
+    return res;
   tmp_value.set(*res, (uint)(ptr - res->ptr()), (uint)(end - ptr));
   return &tmp_value;
 }
@@ -1253,7 +1320,8 @@ void Item_func_trim::fix_length_and_dec()
     Item *cargs[2];
     cargs[0] = args[1];
     cargs[1] = args[0];
-    if (agg_arg_charsets(collation, cargs, 2, MY_COLL_CMP_CONV)) return;
+    if (agg_arg_charsets(collation, cargs, 2, MY_COLL_CMP_CONV))
+      return;
     args[0] = cargs[1];
     args[1] = cargs[0];
   }
@@ -1265,8 +1333,10 @@ String *Item_func_password::val_str(String *str)
 {
   DBUG_ASSERT(fixed == 1);
   String *res = args[0]->val_str(str);
-  if ((null_value = args[0]->null_value)) return 0;
-  if (res->length() == 0) return &my_empty_string;
+  if ((null_value = args[0]->null_value))
+    return 0;
+  if (res->length() == 0)
+    return &my_empty_string;
   make_scrambled_password(tmp_value, res->c_ptr());
   str->set(tmp_value, SCRAMBLED_PASSWORD_CHAR_LENGTH, res->charset());
   return str;
@@ -1275,7 +1345,8 @@ String *Item_func_password::val_str(String *str)
 char *Item_func_password::alloc(THD *thd, const char *password)
 {
   char *buff = (char *)thd->alloc(SCRAMBLED_PASSWORD_CHAR_LENGTH + 1);
-  if (buff) make_scrambled_password(buff, password);
+  if (buff)
+    make_scrambled_password(buff, password);
   return buff;
 }
 
@@ -1285,8 +1356,10 @@ String *Item_func_old_password::val_str(String *str)
 {
   DBUG_ASSERT(fixed == 1);
   String *res = args[0]->val_str(str);
-  if ((null_value = args[0]->null_value)) return 0;
-  if (res->length() == 0) return &my_empty_string;
+  if ((null_value = args[0]->null_value))
+    return 0;
+  if (res->length() == 0)
+    return &my_empty_string;
   make_scrambled_password_323(tmp_value, res->c_ptr());
   str->set(tmp_value, SCRAMBLED_PASSWORD_CHAR_LENGTH_323, res->charset());
   return str;
@@ -1295,7 +1368,8 @@ String *Item_func_old_password::val_str(String *str)
 char *Item_func_old_password::alloc(THD *thd, const char *password)
 {
   char *buff = (char *)thd->alloc(SCRAMBLED_PASSWORD_CHAR_LENGTH_323 + 1);
-  if (buff) make_scrambled_password_323(buff, password);
+  if (buff)
+    make_scrambled_password_323(buff, password);
   return buff;
 }
 
@@ -1308,8 +1382,10 @@ String *Item_func_encrypt::val_str(String *str)
 
 #ifdef HAVE_CRYPT
   char salt[3], *salt_ptr;
-  if ((null_value = args[0]->null_value)) return 0;
-  if (res->length() == 0) return &my_empty_string;
+  if ((null_value = args[0]->null_value))
+    return 0;
+  if (res->length() == 0)
+    return &my_empty_string;
 
   if (arg_count == 1)
   {  // generate random salt
@@ -1322,7 +1398,8 @@ String *Item_func_encrypt::val_str(String *str)
   else
   {  // obtain salt from the first two bytes
     String *salt_str = args[1]->val_str(&tmp_value);
-    if ((null_value = (args[1]->null_value || salt_str->length() < 2))) return 0;
+    if ((null_value = (args[1]->null_value || salt_str->length() < 2)))
+      return 0;
     salt_ptr = salt_str->c_ptr();
   }
   pthread_mutex_lock(&LOCK_crypt);
@@ -1435,7 +1512,8 @@ String *Item_func_user::val_str(String *str)
   }
 
   // For system threads (e.g. replication SQL thread) user may be empty
-  if (!user) return &my_empty_string;
+  if (!user)
+    return &my_empty_string;
   res_length = (strlen(user) + strlen(host) + 2) * cs->mbmaxlen;
 
   if (str->alloc(res_length))
@@ -1482,25 +1560,29 @@ String *Item_func_soundex::val_str(String *str)
   char last_ch, ch;
   CHARSET_INFO *cs = collation.collation;
 
-  if ((null_value = args[0]->null_value)) return 0; /* purecov: inspected */
+  if ((null_value = args[0]->null_value))
+    return 0; /* purecov: inspected */
 
-  if (tmp_value.alloc(max(res->length(), 4))) return str; /* purecov: inspected */
+  if (tmp_value.alloc(max(res->length(), 4)))
+    return str; /* purecov: inspected */
   char *to = (char *)tmp_value.ptr();
   char *from = (char *)res->ptr(), *end = from + res->length();
   tmp_value.set_charset(cs);
 
   while (from != end && !my_isalpha(cs, *from))  // Skip pre-space
     from++;                                      /* purecov: inspected */
-  if (from == end) return &my_empty_string;      // No alpha characters.
-  *to++ = soundex_toupper(*from);                // Copy first letter
-  last_ch = get_scode(from);                     // code of the first letter
-                                                 // for the first 'double-letter check.
-                                                 // Loop on input letters until
-                                                 // end of input (null) or output
-                                                 // letter code count = 3
+  if (from == end)
+    return &my_empty_string;       // No alpha characters.
+  *to++ = soundex_toupper(*from);  // Copy first letter
+  last_ch = get_scode(from);       // code of the first letter
+                                   // for the first 'double-letter check.
+                                   // Loop on input letters until
+                                   // end of input (null) or output
+                                   // letter code count = 3
   for (from++; from < end; from++)
   {
-    if (!my_isalpha(cs, *from)) continue;
+    if (!my_isalpha(cs, *from))
+      continue;
     ch = get_scode(from);
     if ((ch != '0') && (ch != last_ch))  // if not skipped or double
     {
@@ -1537,22 +1619,27 @@ String *Item_func_format::val_str(String *str)
   {
     my_decimal dec_val, rnd_dec, *res;
     res = args[0]->val_decimal(&dec_val);
-    if ((null_value = args[0]->null_value)) return 0; /* purecov: inspected */
+    if ((null_value = args[0]->null_value))
+      return 0; /* purecov: inspected */
     my_decimal_round(E_DEC_FATAL_ERROR, res, decimals, false, &rnd_dec);
     my_decimal2string(E_DEC_FATAL_ERROR, &rnd_dec, 0, 0, 0, str);
     str_length = str->length();
-    if (rnd_dec.sign()) str_length--;
+    if (rnd_dec.sign())
+      str_length--;
   }
   else
   {
     double nr = args[0]->val_real();
-    if ((null_value = args[0]->null_value)) return 0; /* purecov: inspected */
+    if ((null_value = args[0]->null_value))
+      return 0; /* purecov: inspected */
     nr = my_double_round(nr, decimals, FALSE);
     /* Here default_charset() is right as this is not an automatic conversion */
     str->set(nr, decimals, default_charset());
-    if (isnan(nr)) return str;
+    if (isnan(nr))
+      return str;
     str_length = str->length();
-    if (nr < 0) str_length--;  // Don't count sign
+    if (nr < 0)
+      str_length--;  // Don't count sign
   }
   /* We need this test to handle 'nan' values */
   if (str_length >= dec + 4)
@@ -1597,7 +1684,8 @@ void Item_func_elt::fix_length_and_dec()
   max_length = 0;
   decimals = 0;
 
-  if (agg_arg_charsets(collation, args + 1, arg_count - 1, MY_COLL_ALLOW_CONV)) return;
+  if (agg_arg_charsets(collation, args + 1, arg_count - 1, MY_COLL_ALLOW_CONV))
+    return;
 
   for (uint i = 1; i < arg_count; i++)
   {
@@ -1612,7 +1700,8 @@ double Item_func_elt::val_real()
   DBUG_ASSERT(fixed == 1);
   uint tmp;
   null_value = 1;
-  if ((tmp = (uint)args[0]->val_int()) == 0 || tmp >= arg_count) return 0.0;
+  if ((tmp = (uint)args[0]->val_int()) == 0 || tmp >= arg_count)
+    return 0.0;
   double result = args[tmp]->val_real();
   null_value = args[tmp]->null_value;
   return result;
@@ -1623,7 +1712,8 @@ longlong Item_func_elt::val_int()
   DBUG_ASSERT(fixed == 1);
   uint tmp;
   null_value = 1;
-  if ((tmp = (uint)args[0]->val_int()) == 0 || tmp >= arg_count) return 0;
+  if ((tmp = (uint)args[0]->val_int()) == 0 || tmp >= arg_count)
+    return 0;
 
   longlong result = args[tmp]->val_int();
   null_value = args[tmp]->null_value;
@@ -1635,10 +1725,12 @@ String *Item_func_elt::val_str(String *str)
   DBUG_ASSERT(fixed == 1);
   uint tmp;
   null_value = 1;
-  if ((tmp = (uint)args[0]->val_int()) == 0 || tmp >= arg_count) return NULL;
+  if ((tmp = (uint)args[0]->val_int()) == 0 || tmp >= arg_count)
+    return NULL;
 
   String *result = args[tmp]->val_str(str);
-  if (result) result->set_charset(collation.collation);
+  if (result)
+    result->set_charset(collation.collation);
   null_value = args[tmp]->null_value;
   return result;
 }
@@ -1653,7 +1745,8 @@ void Item_func_make_set::fix_length_and_dec()
 {
   max_length = arg_count - 1;
 
-  if (agg_arg_charsets(collation, args, arg_count, MY_COLL_ALLOW_CONV)) return;
+  if (agg_arg_charsets(collation, args, arg_count, MY_COLL_ALLOW_CONV))
+    return;
 
   for (uint i = 0; i < arg_count; i++) max_length += args[i]->max_length;
 
@@ -1680,9 +1773,11 @@ String *Item_func_make_set::val_str(String *str)
   String *result = &my_empty_string;
 
   bits = item->val_int();
-  if ((null_value = item->null_value)) return NULL;
+  if ((null_value = item->null_value))
+    return NULL;
 
-  if (arg_count < 64) bits &= ((ulonglong)1 << arg_count) - 1;
+  if (arg_count < 64)
+    bits &= ((ulonglong)1 << arg_count) - 1;
 
   for (; bits; bits >>= 1, ptr++)
   {
@@ -1707,10 +1802,12 @@ String *Item_func_make_set::val_str(String *str)
         {
           if (result != &tmp_str)
           {  // Copy data to tmp_str
-            if (tmp_str.alloc(result->length() + res->length() + 1) || tmp_str.copy(*result)) return &my_empty_string;
+            if (tmp_str.alloc(result->length() + res->length() + 1) || tmp_str.copy(*result))
+              return &my_empty_string;
             result = &tmp_str;
           }
-          if (tmp_str.append(',') || tmp_str.append(*res)) return &my_empty_string;
+          if (tmp_str.append(',') || tmp_str.append(*res))
+            return &my_empty_string;
         }
       }
     }
@@ -1796,7 +1893,8 @@ inline String *alloc_buffer(String *res, String *str, String *tmp_value, ulong l
       str->length(length);
       return str;
     }
-    if (tmp_value->alloc(length)) return 0;
+    if (tmp_value->alloc(length))
+      return 0;
     (void)tmp_value->copy(*res);
     tmp_value->length(length);
     return tmp_value;
@@ -1838,7 +1936,8 @@ String *Item_func_repeat::val_str(String *str)
   long count = (long)args[1]->val_int();
   String *res = args[0]->val_str(str);
 
-  if (args[0]->null_value || args[1]->null_value) goto err;  // string and/or delim are null
+  if (args[0]->null_value || args[1]->null_value)
+    goto err;  // string and/or delim are null
   null_value = 0;
   if (count <= 0)  // For nicer SQL code
     return &my_empty_string;
@@ -1853,7 +1952,8 @@ String *Item_func_repeat::val_str(String *str)
     goto err;
   }
   tot_length = length * (uint)count;
-  if (!(res = alloc_buffer(res, str, &tmp_value, tot_length))) goto err;
+  if (!(res = alloc_buffer(res, str, &tmp_value, tot_length)))
+    goto err;
 
   to = (char *)res->ptr() + length;
   while (--count)
@@ -1874,7 +1974,8 @@ void Item_func_rpad::fix_length_and_dec()
 
   cargs[0] = args[0];
   cargs[1] = args[2];
-  if (agg_arg_charsets(collation, cargs, 2, MY_COLL_ALLOW_CONV)) return;
+  if (agg_arg_charsets(collation, cargs, 2, MY_COLL_ALLOW_CONV))
+    return;
   args[0] = cargs[0];
   args[2] = cargs[1];
   if (args[1]->const_item())
@@ -1905,7 +2006,8 @@ String *Item_func_rpad::val_str(String *str)
   String *res = args[0]->val_str(str);
   String *rpad = args[2]->val_str(&rpad_str);
 
-  if (!res || args[1]->null_value || !rpad || count < 0) goto err;
+  if (!res || args[1]->null_value || !rpad || count < 0)
+    goto err;
   null_value = 0;
   if (count <= (int32)(res_char_length = res->numchars()))
   {                                    // String to pad is big enough
@@ -1919,9 +2021,11 @@ String *Item_func_rpad::val_str(String *str)
                         ER(ER_WARN_ALLOWED_PACKET_OVERFLOWED), func_name(), current_thd->variables.max_allowed_packet);
     goto err;
   }
-  if (args[2]->null_value || !pad_char_length) goto err;
+  if (args[2]->null_value || !pad_char_length)
+    goto err;
   res_byte_length = res->length(); /* Must be done before alloc_buffer */
-  if (!(res = alloc_buffer(res, str, &tmp_value, byte_count))) goto err;
+  if (!(res = alloc_buffer(res, str, &tmp_value, byte_count)))
+    goto err;
 
   to = (char *)res->ptr() + res_byte_length;
   ptr_pad = rpad->ptr();
@@ -1951,7 +2055,8 @@ void Item_func_lpad::fix_length_and_dec()
   Item *cargs[2];
   cargs[0] = args[0];
   cargs[1] = args[2];
-  if (agg_arg_charsets(collation, cargs, 2, MY_COLL_ALLOW_CONV)) return;
+  if (agg_arg_charsets(collation, cargs, 2, MY_COLL_ALLOW_CONV))
+    return;
   args[0] = cargs[0];
   args[2] = cargs[1];
 
@@ -1980,7 +2085,8 @@ String *Item_func_lpad::val_str(String *str)
   String *res = args[0]->val_str(&tmp_value);
   String *pad = args[2]->val_str(&lpad_str);
 
-  if (!res || args[1]->null_value || !pad) goto err;
+  if (!res || args[1]->null_value || !pad)
+    goto err;
 
   null_value = 0;
   res_char_length = res->numchars();
@@ -2001,7 +2107,8 @@ String *Item_func_lpad::val_str(String *str)
     goto err;
   }
 
-  if (args[2]->null_value || !pad_char_length || str->alloc(byte_count)) goto err;
+  if (args[2]->null_value || !pad_char_length || str->alloc(byte_count))
+    goto err;
 
   str->length(0);
   str->set_charset(collation.collation);
@@ -2011,7 +2118,8 @@ String *Item_func_lpad::val_str(String *str)
     str->append(*pad);
     count -= pad_char_length;
   }
-  if (count > 0) str->append(pad->ptr(), pad->charpos(count), collation.collation);
+  if (count > 0)
+    str->append(pad->ptr(), pad->charpos(count), collation.collation);
 
   str->append(*res);
   null_value = 0;
@@ -2045,7 +2153,8 @@ String *Item_func_conv::val_str(String *str)
   else
     dec = (longlong)my_strntoull(res->charset(), res->ptr(), res->length(), from_base, &endptr, &err);
   ptr = longlong2str(dec, ans, to_base);
-  if (str->copy(ans, (uint32)(ptr - ans), default_charset())) return &my_empty_string;
+  if (str->copy(ans, (uint32)(ptr - ans), default_charset()))
+    return &my_empty_string;
   return str;
 }
 
@@ -2082,7 +2191,8 @@ String *Item_func_set_collation::val_str(String *str)
 {
   DBUG_ASSERT(fixed == 1);
   str = args[0]->val_str(str);
-  if ((null_value = args[0]->null_value)) return 0;
+  if ((null_value = args[0]->null_value))
+    return 0;
   str->set_charset(collation.collation);
   return str;
 }
@@ -2116,14 +2226,19 @@ void Item_func_set_collation::fix_length_and_dec()
 bool Item_func_set_collation::eq(const Item *item, bool binary_cmp) const
 {
   /* Assume we don't have rtti */
-  if (this == item) return 1;
-  if (item->type() != FUNC_ITEM) return 0;
+  if (this == item)
+    return 1;
+  if (item->type() != FUNC_ITEM)
+    return 0;
   Item_func *item_func = (Item_func *)item;
-  if (arg_count != item_func->arg_count || functype() != item_func->functype()) return 0;
+  if (arg_count != item_func->arg_count || functype() != item_func->functype())
+    return 0;
   Item_func_set_collation *item_func_sc = (Item_func_set_collation *)item;
-  if (collation.collation != item_func_sc->collation.collation) return 0;
+  if (collation.collation != item_func_sc->collation.collation)
+    return 0;
   for (uint i = 0; i < arg_count; i++)
-    if (!args[i]->eq(item_func_sc->args[i], binary_cmp)) return 0;
+    if (!args[i]->eq(item_func_sc->args[i], binary_cmp))
+      return 0;
   return 1;
 }
 
@@ -2179,9 +2294,11 @@ String *Item_func_hex::val_str(String *str)
     else
       dec = (ulonglong)args[0]->val_int();
 
-    if ((null_value = args[0]->null_value)) return 0;
+    if ((null_value = args[0]->null_value))
+      return 0;
     ptr = longlong2str(dec, ans, 16);
-    if (str->copy(ans, (uint32)(ptr - ans), default_charset())) return &my_empty_string;  // End of memory
+    if (str->copy(ans, (uint32)(ptr - ans), default_charset()))
+      return &my_empty_string;  // End of memory
     return str;
   }
 
@@ -2224,15 +2341,18 @@ String *Item_func_unhex::val_str(String *str)
   {
     int hex_char;
     *to++ = hex_char = hexchar_to_int(*from++);
-    if ((null_value = (hex_char == -1))) return 0;
+    if ((null_value = (hex_char == -1)))
+      return 0;
   }
   for (end = res->ptr() + res->length(); from < end; from += 2, to++)
   {
     int hex_char;
     *to = (hex_char = hexchar_to_int(from[0])) << 4;
-    if ((null_value = (hex_char == -1))) return 0;
+    if ((null_value = (hex_char == -1)))
+      return 0;
     *to |= hex_char = hexchar_to_int(from[1]);
-    if ((null_value = (hex_char == -1))) return 0;
+    if ((null_value = (hex_char == -1)))
+      return 0;
   }
   return &tmp_value;
 }
@@ -2264,7 +2384,8 @@ String *Item_load_file::val_str(String *str)
 
   (void)fn_format(path, file_name->c_ptr(), mysql_real_data_home, "", MY_RELATIVE_PATH | MY_UNPACK_FILENAME);
 
-  if (!my_stat(path, &stat_info, MYF(MY_WME))) goto err;
+  if (!my_stat(path, &stat_info, MYF(MY_WME)))
+    goto err;
 
   if (!(stat_info.st_mode & S_IROTH))
   {
@@ -2277,8 +2398,10 @@ String *Item_load_file::val_str(String *str)
                         ER(ER_WARN_ALLOWED_PACKET_OVERFLOWED), func_name(), current_thd->variables.max_allowed_packet);
     goto err;
   }
-  if (tmp_value.alloc(stat_info.st_size)) goto err;
-  if ((file = my_open(file_name->c_ptr(), O_RDONLY, MYF(0))) < 0) goto err;
+  if (tmp_value.alloc(stat_info.st_size))
+    goto err;
+  if ((file = my_open(file_name->c_ptr(), O_RDONLY, MYF(0))) < 0)
+    goto err;
   if (my_read(file, (byte *)tmp_value.ptr(), stat_info.st_size, MYF(MY_NABP)))
   {
     my_close(file, MYF(0));
@@ -2323,7 +2446,8 @@ String *Item_func_export_set::val_str(String *str)
   {
     case 5:
       num_set_values = (uint)args[4]->val_int();
-      if (num_set_values > 64) num_set_values = 64;
+      if (num_set_values > 64)
+        num_set_values = 64;
       if (args[4]->null_value)
       {
         null_value = 1;
@@ -2352,7 +2476,8 @@ String *Item_func_export_set::val_str(String *str)
       str->append(*yes);
     else
       str->append(*no);
-    if (i != num_set_values - 1) str->append(*sep);
+    if (i != num_set_values - 1)
+      str->append(*sep);
   }
   return str;
 }
@@ -2363,7 +2488,8 @@ void Item_func_export_set::fix_length_and_dec()
   uint sep_length = (arg_count > 3 ? args[3]->max_length : 1);
   max_length = length * 64 + sep_length * 63;
 
-  if (agg_arg_charsets(collation, args + 1, min(4, arg_count) - 1), MY_COLL_ALLOW_CONV) return;
+  if (agg_arg_charsets(collation, args + 1, min(4, arg_count) - 1), MY_COLL_ALLOW_CONV)
+    return;
 }
 
 String *Item_func_inet_ntoa::val_str(String *str)
@@ -2379,7 +2505,8 @@ String *Item_func_inet_ntoa::val_str(String *str)
 
     Also return null if n > 255.255.255.255
   */
-  if ((null_value = (args[0]->null_value || n > (ulonglong)LL(4294967295)))) return 0;  // Null value
+  if ((null_value = (args[0]->null_value || n > (ulonglong)LL(4294967295))))
+    return 0;  // Null value
 
   str->length(0);
   int4store(buf, n);
@@ -2455,7 +2582,8 @@ String *Item_func_quote::val_str(String *str)
   for (from = (char *)arg->ptr(), end = from + arg_length; from < end; from++)
     new_length += get_esc_bit(escmask, (uchar)*from);
 
-  if (tmp_value.alloc(new_length)) goto null;
+  if (tmp_value.alloc(new_length))
+    goto null;
 
   /*
     We replace characters from the end to the beginning
@@ -2509,7 +2637,8 @@ longlong Item_func_uncompressed_length::val_int()
     return 0; /* purecov: inspected */
   }
   null_value = 0;
-  if (res->is_empty()) return 0;
+  if (res->is_empty())
+    return 0;
 
   /*
     res->ptr() using is safe because we have tested that string is not empty,
@@ -2551,7 +2680,8 @@ String *Item_func_compress::val_str(String *str)
     null_value = 1;
     return 0;
   }
-  if (res->is_empty()) return res;
+  if (res->is_empty())
+    return res;
 
   /*
     Citation from zlib.h (comment for compress function):
@@ -2605,8 +2735,10 @@ String *Item_func_uncompress::val_str(String *str)
   int err;
   uint code;
 
-  if (!res) goto err;
-  if (res->is_empty()) return res;
+  if (!res)
+    goto err;
+  if (res->is_empty())
+    return res;
 
   new_size = uint4korr(res->ptr()) & 0x3FFFFFFF;
   if (new_size > current_thd->variables.max_allowed_packet)
@@ -2615,7 +2747,8 @@ String *Item_func_uncompress::val_str(String *str)
                         ER(ER_TOO_BIG_FOR_UNCOMPRESS), current_thd->variables.max_allowed_packet);
     goto err;
   }
-  if (buffer.realloc((uint32)new_size)) goto err;
+  if (buffer.realloc((uint32)new_size))
+    goto err;
 
   if ((err = uncompress((Byte *)buffer.ptr(), &new_size, ((const Bytef *)res->ptr()) + 4, res->length())) == Z_OK)
   {

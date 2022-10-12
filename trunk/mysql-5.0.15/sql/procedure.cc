@@ -42,21 +42,24 @@ static struct st_procedure_def
 
 my_decimal *Item_proc_string::val_decimal(my_decimal *decimal_value)
 {
-  if (null_value) return 0;
+  if (null_value)
+    return 0;
   string2my_decimal(E_DEC_FATAL_ERROR, &str_value, decimal_value);
   return (decimal_value);
 }
 
 my_decimal *Item_proc_int::val_decimal(my_decimal *decimal_value)
 {
-  if (null_value) return 0;
+  if (null_value)
+    return 0;
   int2my_decimal(E_DEC_FATAL_ERROR, value, unsigned_flag, decimal_value);
   return (decimal_value);
 }
 
 my_decimal *Item_proc_real::val_decimal(my_decimal *decimal_value)
 {
-  if (null_value) return 0;
+  if (null_value)
+    return 0;
   double2my_decimal(E_DEC_FATAL_ERROR, value, decimal_value);
   return (decimal_value);
 }
@@ -71,7 +74,8 @@ Procedure *setup_procedure(THD *thd, ORDER *param, select_result *result, List<I
   uint i;
   DBUG_ENTER("setup_procedure");
   *error = 0;
-  if (!param) DBUG_RETURN(0);
+  if (!param)
+    DBUG_RETURN(0);
   for (i = 0; i < array_elements(sql_procs); i++)
   {
     if (!my_strcasecmp(system_charset_info, (*param->item)->name, sql_procs[i].name))

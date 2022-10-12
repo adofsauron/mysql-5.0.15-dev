@@ -149,7 +149,8 @@ void insert_into_hash(hash_lex_struct *root, const char *name, int len_from_begi
   if (root->first_char > (*name))
   {
     size_t new_size = root->last_char - (*name) + 1;
-    if (new_size < real_size) printf("error!!!!\n");
+    if (new_size < real_size)
+      printf("error!!!!\n");
     tails = root->char_tails;
     tails = (hash_lex_struct *)realloc((char *)tails, sizeof(hash_lex_struct) * new_size);
     root->char_tails = tails;
@@ -162,7 +163,8 @@ void insert_into_hash(hash_lex_struct *root, const char *name, int len_from_begi
   if (root->last_char < (*name))
   {
     size_t new_size = (*name) - root->first_char + 1;
-    if (new_size < real_size) printf("error!!!!\n");
+    if (new_size < real_size)
+      printf("error!!!!\n");
     tails = root->char_tails;
     tails = (hash_lex_struct *)realloc((char *)tails, sizeof(hash_lex_struct) * new_size);
     root->char_tails = tails;
@@ -322,7 +324,8 @@ void print_find_structs()
 static void usage(int version)
 {
   printf("%s  Ver 3.6 Distrib %s, for %s (%s)\n", my_progname, MYSQL_SERVER_VERSION, SYSTEM_TYPE, MACHINE_TYPE);
-  if (version) return;
+  if (version)
+    return;
   puts("Copyright (C) 2001 MySQL AB, by VVA and Monty");
   puts(
       "This software comes with ABSOLUTELY NO WARRANTY. This is free software,\n\
@@ -355,7 +358,8 @@ static int get_options(int argc, char **argv)
 {
   int ho_error;
 
-  if ((ho_error = handle_options(&argc, &argv, my_long_options, get_one_option))) exit(ho_error);
+  if ((ho_error = handle_options(&argc, &argv, my_long_options, get_one_option)))
+    exit(ho_error);
 
   if (argc >= 1)
   {
@@ -367,7 +371,8 @@ static int get_options(int argc, char **argv)
 
 int check_dup_symbols(SYMBOL *s1, SYMBOL *s2)
 {
-  if (s1->length != s2->length || strncmp(s1->name, s2->name, s1->length)) return 0;
+  if (s1->length != s2->length || strncmp(s1->name, s2->name, s1->length))
+    return 0;
 
   const char *err_tmpl =
       "\ngen_lex_hash fatal error : \
@@ -390,11 +395,13 @@ int check_duplicates()
   {
     for (cur2 = cur1 + 1; cur2 < s_end; cur2++)
     {
-      if (check_dup_symbols(cur1, cur2)) return 1;
+      if (check_dup_symbols(cur1, cur2))
+        return 1;
     }
     for (cur2 = sql_functions; cur2 < f_end; cur2++)
     {
-      if (check_dup_symbols(cur1, cur2)) return 1;
+      if (check_dup_symbols(cur1, cur2))
+        return 1;
     }
   }
 
@@ -402,7 +409,8 @@ int check_duplicates()
   {
     for (cur2 = cur1 + 1; cur2 < f_end; cur2++)
     {
-      if (check_dup_symbols(cur1, cur2)) return 1;
+      if (check_dup_symbols(cur1, cur2))
+        return 1;
     }
   }
   return 0;
@@ -413,7 +421,8 @@ int main(int argc, char **argv)
   MY_INIT(argv[0]);
   DBUG_PROCESS(argv[0]);
 
-  if (get_options(argc, (char **)argv)) exit(1);
+  if (get_options(argc, (char **)argv))
+    exit(1);
 
   printf(
       "/* Copyright (C) 2001-2004 MySQL AB\n\
@@ -428,7 +437,8 @@ int main(int argc, char **argv)
 
   calc_length();
 
-  if (check_duplicates()) exit(1);
+  if (check_duplicates())
+    exit(1);
 
   generate_find_structs();
   print_find_structs();

@@ -112,7 +112,8 @@ int set_field_to_null(Field *field)
     field->set_warning(MYSQL_ERROR::WARN_LEVEL_WARN, WARN_DATA_TRUNCATED, 1);
     return 0;
   }
-  if (!current_thd->no_errors) my_error(ER_BAD_NULL_ERROR, MYF(0), field->field_name);
+  if (!current_thd->no_errors)
+    my_error(ER_BAD_NULL_ERROR, MYF(0), field->field_name);
   return -1;
 }
 
@@ -142,7 +143,8 @@ int set_field_to_null_with_conversions(Field *field, bool no_conversions)
     field->reset();
     return 0;
   }
-  if (no_conversions) return -1;
+  if (no_conversions)
+    return -1;
 
   /*
     Check if this is a special type, which will get a special walue
@@ -165,7 +167,8 @@ int set_field_to_null_with_conversions(Field *field, bool no_conversions)
     field->set_warning(MYSQL_ERROR::WARN_LEVEL_WARN, ER_WARN_NULL_TO_NOTNULL, 1);
     return 0;
   }
-  if (!current_thd->no_errors) my_error(ER_BAD_NULL_ERROR, MYF(0), field->field_name);
+  if (!current_thd->no_errors)
+    my_error(ER_BAD_NULL_ERROR, MYF(0), field->field_name);
   return -1;
 }
 
@@ -315,7 +318,8 @@ static void do_cut_string_complex(Copy_field *copy)
   const char *from_end = copy->from_ptr + copy->from_length;
   uint copy_length =
       cs->cset->well_formed_len(cs, copy->from_ptr, from_end, copy->to_length / cs->mbmaxlen, &well_formed_error);
-  if (copy->to_length < copy_length) copy_length = copy->to_length;
+  if (copy->to_length < copy_length)
+    copy_length = copy->to_length;
   memcpy(copy->to_ptr, copy->from_ptr, copy_length);
 
   /* Check if we lost any important characters */
@@ -325,7 +329,8 @@ static void do_cut_string_complex(Copy_field *copy)
     copy->to_field->set_warning(MYSQL_ERROR::WARN_LEVEL_WARN, WARN_DATA_TRUNCATED, 1);
   }
 
-  if (copy_length < copy->to_length) cs->cset->fill(cs, copy->to_ptr + copy_length, copy->to_length - copy_length, ' ');
+  if (copy_length < copy->to_length)
+    cs->cset->fill(cs, copy->to_ptr + copy_length, copy->to_length - copy_length, ' ');
 }
 
 static void do_expand_string(Copy_field *copy)
@@ -466,7 +471,8 @@ void (*Copy_field::get_copy_func(Field *to, Field *from))(Copy_field *)
   bool compatible_db_low_byte_first = (to->table->s->db_low_byte_first == from->table->s->db_low_byte_first);
   if (to->flags & BLOB_FLAG)
   {
-    if (!(from->flags & BLOB_FLAG) || from->charset() != to->charset()) return do_conv_blob;
+    if (!(from->flags & BLOB_FLAG) || from->charset() != to->charset())
+      return do_conv_blob;
     if (from_length != to_length || !compatible_db_low_byte_first)
     {
       // Correct pointer to point at char pointer
@@ -477,7 +483,8 @@ void (*Copy_field::get_copy_func(Field *to, Field *from))(Copy_field *)
   }
   else
   {
-    if (to->real_type() == FIELD_TYPE_BIT || from->real_type() == FIELD_TYPE_BIT) return do_field_int;
+    if (to->real_type() == FIELD_TYPE_BIT || from->real_type() == FIELD_TYPE_BIT)
+      return do_field_int;
     // Check if identical fields
     if (from->result_type() == STRING_RESULT)
     {
@@ -491,18 +498,21 @@ void (*Copy_field::get_copy_func(Field *to, Field *from))(Copy_field *)
            to->type() == FIELD_TYPE_DATETIME))
       {
         if (from->real_type() == FIELD_TYPE_ENUM || from->real_type() == FIELD_TYPE_SET)
-          if (to->result_type() != STRING_RESULT) return do_field_int;  // Convert SET to number
+          if (to->result_type() != STRING_RESULT)
+            return do_field_int;  // Convert SET to number
         return do_field_string;
       }
       if (to->real_type() == FIELD_TYPE_ENUM || to->real_type() == FIELD_TYPE_SET)
       {
-        if (!to->eq_def(from)) return do_field_string;
+        if (!to->eq_def(from))
+          return do_field_string;
       }
       else if (to->charset() != from->charset())
         return do_field_string;
       else if (to->real_type() == MYSQL_TYPE_VARCHAR)
       {
-        if (((Field_varstring *)to)->length_bytes != ((Field_varstring *)from)->length_bytes) return do_field_string;
+        if (((Field_varstring *)to)->length_bytes != ((Field_varstring *)from)->length_bytes)
+          return do_field_string;
         if (to_length != from_length)
           return (((Field_varstring *)to)->length_bytes == 1 ? do_varstring1 : do_varstring2);
       }
@@ -513,15 +523,18 @@ void (*Copy_field::get_copy_func(Field *to, Field *from))(Copy_field *)
     }
     else if (to->real_type() != from->real_type() || to_length != from_length || !compatible_db_low_byte_first)
     {
-      if (to->real_type() == FIELD_TYPE_DECIMAL || to->result_type() == STRING_RESULT) return do_field_string;
-      if (to->result_type() == INT_RESULT) return do_field_int;
+      if (to->real_type() == FIELD_TYPE_DECIMAL || to->result_type() == STRING_RESULT)
+        return do_field_string;
+      if (to->result_type() == INT_RESULT)
+        return do_field_int;
       return do_field_real;
     }
     else
     {
       if (!to->eq_def(from) || !compatible_db_low_byte_first)
       {
-        if (to->real_type() == FIELD_TYPE_DECIMAL) return do_field_string;
+        if (to->real_type() == FIELD_TYPE_DECIMAL)
+          return do_field_string;
         if (to->result_type() == INT_RESULT)
           return do_field_int;
         else

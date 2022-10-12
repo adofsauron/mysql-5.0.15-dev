@@ -157,7 +157,8 @@ static my_bool tz_load(const char *name, TIME_ZONE_INFO *sp, MEM_ROOT *storage)
   uint i;
   FILE *file;
 
-  if (!(file = my_fopen(name, O_RDONLY | O_BINARY, MYF(MY_WME)))) return 1;
+  if (!(file = my_fopen(name, O_RDONLY | O_BINARY, MYF(MY_WME))))
+    return 1;
   {
     union
     {
@@ -175,9 +176,11 @@ static my_bool tz_load(const char *name, TIME_ZONE_INFO *sp, MEM_ROOT *storage)
 
     read_from_file = my_fread(file, u.buf, sizeof(u.buf), MYF(MY_WME));
 
-    if (my_fclose(file, MYF(MY_WME)) != 0) return 1;
+    if (my_fclose(file, MYF(MY_WME)) != 0)
+      return 1;
 
-    if (read_from_file < (int)sizeof(struct tzhead)) return 1;
+    if (read_from_file < (int)sizeof(struct tzhead))
+      return 1;
 
     ttisstdcnt = int4net(u.tzhead.tzh_ttisgmtcnt);
     ttisgmtcnt = int4net(u.tzhead.tzh_ttisstdcnt);
@@ -225,7 +228,8 @@ static my_bool tz_load(const char *name, TIME_ZONE_INFO *sp, MEM_ROOT *storage)
     for (i = 0; i < sp->timecnt; i++)
     {
       sp->types[i] = (unsigned char)*p++;
-      if (sp->types[i] >= sp->typecnt) return 1;
+      if (sp->types[i] >= sp->typecnt)
+        return 1;
     }
     for (i = 0; i < sp->typecnt; i++)
     {
@@ -235,9 +239,11 @@ static my_bool tz_load(const char *name, TIME_ZONE_INFO *sp, MEM_ROOT *storage)
       ttisp->tt_gmtoff = int4net(p);
       p += 4;
       ttisp->tt_isdst = (unsigned char)*p++;
-      if (ttisp->tt_isdst != 0 && ttisp->tt_isdst != 1) return 1;
+      if (ttisp->tt_isdst != 0 && ttisp->tt_isdst != 1)
+        return 1;
       ttisp->tt_abbrind = (unsigned char)*p++;
-      if (ttisp->tt_abbrind > sp->charcnt) return 1;
+      if (ttisp->tt_abbrind > sp->charcnt)
+        return 1;
     }
     for (i = 0; i < sp->charcnt; i++) sp->chars[i] = *p++;
     sp->chars[i] = '\0'; /* ensure '\0' at end */
@@ -319,7 +325,8 @@ static my_bool prepare_tz_info(TIME_ZONE_INFO *sp, MEM_ROOT *storage)
   */
   for (i = 0; i < sp->typecnt && sp->ttis[i].tt_isdst; i++) /* no-op */
     ;
-  if (i == sp->typecnt) i = 0;
+  if (i == sp->typecnt)
+    i = 0;
   sp->fallback_tti = &(sp->ttis[i]);
 
   /*
@@ -364,7 +371,8 @@ static my_bool prepare_tz_info(TIME_ZONE_INFO *sp, MEM_ROOT *storage)
       We assuming that cur_t could be only overflowed downwards,
       we also assume that end_t won't be overflowed in this case.
     */
-    if (cur_off_and_corr < 0 && cur_t < MY_TIME_T_MIN - cur_off_and_corr) cur_t = MY_TIME_T_MIN - cur_off_and_corr;
+    if (cur_off_and_corr < 0 && cur_t < MY_TIME_T_MIN - cur_off_and_corr)
+      cur_t = MY_TIME_T_MIN - cur_off_and_corr;
 
     cur_l = cur_t + cur_off_and_corr;
 
@@ -378,7 +386,8 @@ static my_bool prepare_tz_info(TIME_ZONE_INFO *sp, MEM_ROOT *storage)
       again assuming that end_t can be overlowed only in positive side
       we also assume that end_t won't be overflowed in this case.
     */
-    if (cur_off_and_corr > 0 && end_t > MY_TIME_T_MAX - cur_off_and_corr) end_t = MY_TIME_T_MAX - cur_off_and_corr;
+    if (cur_off_and_corr > 0 && end_t > MY_TIME_T_MAX - cur_off_and_corr)
+      end_t = MY_TIME_T_MAX - cur_off_and_corr;
 
     end_l = end_t + cur_off_and_corr;
 
@@ -402,7 +411,8 @@ static my_bool prepare_tz_info(TIME_ZONE_INFO *sp, MEM_ROOT *storage)
           revtis[sp->revcnt].rt_offset = revtis[sp->revcnt - 1].rt_offset;
           revtis[sp->revcnt].rt_type = 1;
           sp->revcnt++;
-          if (sp->revcnt == TZ_MAX_TIMES + TZ_MAX_LEAPS + 1) break; /* That was too much */
+          if (sp->revcnt == TZ_MAX_TIMES + TZ_MAX_LEAPS + 1)
+            break; /* That was too much */
           cur_max_seen_l = cur_l - 1;
         }
 
@@ -444,7 +454,8 @@ static my_bool prepare_tz_info(TIME_ZONE_INFO *sp, MEM_ROOT *storage)
   }
 
   /* check if we have had enough space */
-  if (sp->revcnt == TZ_MAX_REV_RANGES - 1) return 1;
+  if (sp->revcnt == TZ_MAX_REV_RANGES - 1)
+    return 1;
 
   /* set maximum end_l as finisher */
   revts[sp->revcnt] = end_l;
@@ -530,7 +541,8 @@ static void sec_to_TIME(TIME *tmp, my_time_t t, long offset)
     int newy;
 
     newy = y + days / DAYS_PER_NYEAR;
-    if (days < 0) newy--;
+    if (days < 0)
+      newy--;
     days -= (newy - y) * DAYS_PER_NYEAR + LEAPS_THRU_END_OF(newy - 1) - LEAPS_THRU_END_OF(y - 1);
     y = newy;
   }
@@ -1341,9 +1353,11 @@ TABLE_LIST *my_tz_get_table_list(THD *thd, TABLE_LIST ***global_next_ptr)
   TABLE_LIST *tz_tabs;
   DBUG_ENTER("my_tz_get_table_list");
 
-  if (!time_zone_tables_exist) DBUG_RETURN(0);
+  if (!time_zone_tables_exist)
+    DBUG_RETURN(0);
 
-  if (!(tz_tabs = (TABLE_LIST *)thd->alloc(sizeof(TABLE_LIST) * 4))) DBUG_RETURN(&fake_time_zone_tables_list);
+  if (!(tz_tabs = (TABLE_LIST *)thd->alloc(sizeof(TABLE_LIST) * 4)))
+    DBUG_RETURN(&fake_time_zone_tables_list);
 
   tz_init_table_list(tz_tabs, global_next_ptr);
 
@@ -1389,7 +1403,8 @@ my_bool my_tz_init(THD *org_thd, const char *default_tzname, my_bool bootstrap)
   /*
     To be able to run this from boot, we allocate a temporary THD
   */
-  if (!(thd = new THD)) DBUG_RETURN(1);
+  if (!(thd = new THD))
+    DBUG_RETURN(1);
   thd->store_globals();
 
   /* Init all memory structures that require explicit destruction */
@@ -1542,7 +1557,8 @@ end_with_close:
 end_with_cleanup:
 
   /* if there were error free time zone describing structs */
-  if (return_val) my_tz_free();
+  if (return_val)
+    my_tz_free();
 end:
   delete thd;
   if (org_thd)
@@ -1880,7 +1896,8 @@ static Time_zone *tz_load_from_open_tables(const String *tz_name, TABLE_LIST *tz
 
 end:
 
-  if (table) (void)table->file->ha_index_end();
+  if (table)
+    (void)table->file->ha_index_end();
 
   DBUG_RETURN(return_val);
 }
@@ -1910,7 +1927,8 @@ my_bool str_to_offset(const char *str, uint length, long *offset)
   ulong number_tmp;
   long offset_tmp;
 
-  if (length < 4) return 1;
+  if (length < 4)
+    return 1;
 
   if (*str == '+')
     negative = 0;
@@ -1928,7 +1946,8 @@ my_bool str_to_offset(const char *str, uint length, long *offset)
     str++;
   }
 
-  if (str + 1 >= end || *str != ':') return 1;
+  if (str + 1 >= end || *str != ':')
+    return 1;
   str++;
 
   offset_tmp = number_tmp * MINS_PER_HOUR;
@@ -1940,18 +1959,21 @@ my_bool str_to_offset(const char *str, uint length, long *offset)
     str++;
   }
 
-  if (str != end) return 1;
+  if (str != end)
+    return 1;
 
   offset_tmp = (offset_tmp + number_tmp) * SECS_PER_MIN;
 
-  if (negative) offset_tmp = -offset_tmp;
+  if (negative)
+    offset_tmp = -offset_tmp;
 
   /*
     Check if offset is in range prescribed by standard
     (from -12:59 to 13:00).
   */
 
-  if (number_tmp > 59 || offset_tmp < -13 * SECS_PER_HOUR + 1 || offset_tmp > 13 * SECS_PER_HOUR) return 1;
+  if (number_tmp > 59 || offset_tmp < -13 * SECS_PER_HOUR + 1 || offset_tmp > 13 * SECS_PER_HOUR)
+    return 1;
 
   *offset = offset_tmp;
 
@@ -2008,7 +2030,8 @@ Time_zone *my_tz_find(const String *name, TABLE_LIST *tz_tables)
 
   DBUG_ASSERT(!time_zone_tables_exist || tz_tables || current_thd->slave_thread);
 
-  if (!name) DBUG_RETURN(0);
+  if (!name)
+    DBUG_RETURN(0);
 
   VOID(pthread_mutex_lock(&tz_LOCK));
 
@@ -2084,7 +2107,8 @@ Time_zone *my_tz_find_with_opening_tz_tables(THD *thd, const String *name)
     TABLE_LIST *dummy;
     TABLE_LIST **dummyp = &dummy;
     tz_init_table_list(tables, &dummyp);
-    if (simple_open_n_lock_tables(thd, tables)) DBUG_RETURN(0);
+    if (simple_open_n_lock_tables(thd, tables))
+      DBUG_RETURN(0);
     tz = my_tz_find(name, tables);
     /* We need to close tables _now_ to not pollute coming query */
     close_thread_tables(thd);
@@ -2209,7 +2233,8 @@ my_bool scan_tz_dir(char *name_end)
   char *name_end_tmp;
   uint i;
 
-  if (!(cur_dir = my_dir(fullname, MYF(MY_WANT_STAT)))) return 1;
+  if (!(cur_dir = my_dir(fullname, MYF(MY_WANT_STAT))))
+    return 1;
 
   name_end = strmake(name_end, "/", FN_REFLEN - (name_end - fullname));
 
@@ -2510,7 +2535,8 @@ int main(int argc, char **argv)
 
                 t2 = mktime(&tmp);
 
-                if (t1 == t2) continue;
+                if (t1 == t2)
+                  continue;
 
                 printf("Problem: %u/%u/%u %u:%u:%u with times t=%d, t1=%d\n", time_tmp.year, time_tmp.month,
                        time_tmp.day, time_tmp.hour, time_tmp.minute, time_tmp.second, (int)t, (int)t1);

@@ -87,7 +87,8 @@ static int binlog_end_trans(THD *thd, IO_CACHE *trans_log, Log_event *end_ev)
 {
   int error = 0;
   DBUG_ENTER("binlog_end_trans");
-  if (end_ev) error = mysql_bin_log.write(thd, trans_log, end_ev);
+  if (end_ev)
+    error = mysql_bin_log.write(thd, trans_log, end_ev);
 
   statistic_increment(binlog_cache_use, &LOCK_status);
   if (trans_log->disk_writes != 0)
@@ -245,7 +246,8 @@ File open_binlog(IO_CACHE *log, const char *log_file_name, const char **errmsg)
     *errmsg = "Could not open log file";
     goto err;
   }
-  if (check_binlog_magic(log, errmsg)) goto err;
+  if (check_binlog_magic(log, errmsg))
+    goto err;
   DBUG_RETURN(file);
 
 err:
@@ -461,7 +463,8 @@ bool MYSQL_LOG::open_index_file(const char *index_file_name_arg, const char *log
       init_io_cache(&index_file, index_file_nr, IO_SIZE, WRITE_CACHE, my_seek(index_file_nr, 0L, MY_SEEK_END, MYF(0)),
                     0, MYF(MY_WME | MY_WAIT_IF_FULL)))
   {
-    if (index_file_nr >= 0) my_close(index_file_nr, MYF(0));
+    if (index_file_nr >= 0)
+      my_close(index_file_nr, MYF(0));
     return TRUE;
   }
   return FALSE;
@@ -539,7 +542,8 @@ bool MYSQL_LOG::open(const char *log_name, enum_log_type log_type_arg, const cha
 #endif
       );
       end = strnmov(buff + len, "Time                 Id Command    Argument\n", sizeof(buff) - len);
-      if (my_b_write(&log_file, (byte *)buff, (uint)(end - buff)) || flush_io_cache(&log_file)) goto err;
+      if (my_b_write(&log_file, (byte *)buff, (uint)(end - buff)) || flush_io_cache(&log_file))
+        goto err;
       break;
     }
     case LOG_NEW:
@@ -552,7 +556,8 @@ bool MYSQL_LOG::open(const char *log_name, enum_log_type log_type_arg, const cha
       len = my_snprintf(buff, sizeof(buff), "# %s, Version: %s at %02d%02d%02d %2d:%02d:%02d\n", my_progname,
                         server_version, tm_tmp.tm_year % 100, tm_tmp.tm_mon + 1, tm_tmp.tm_mday, tm_tmp.tm_hour,
                         tm_tmp.tm_min, tm_tmp.tm_sec);
-      if (my_b_write(&log_file, (byte *)buff, len) || flush_io_cache(&log_file)) goto err;
+      if (my_b_write(&log_file, (byte *)buff, len) || flush_io_cache(&log_file))
+        goto err;
       break;
     }
     case LOG_BIN:
@@ -567,7 +572,8 @@ bool MYSQL_LOG::open(const char *log_name, enum_log_type log_type_arg, const cha
           an extension for the binary log files.
           In this case we write a standard header to it.
         */
-        if (my_b_safe_write(&log_file, (byte *)BINLOG_MAGIC, BIN_LOG_HEADER_SIZE)) goto err;
+        if (my_b_safe_write(&log_file, (byte *)BINLOG_MAGIC, BIN_LOG_HEADER_SIZE))
+          goto err;
         bytes_written += BIN_LOG_HEADER_SIZE;
         write_file_name_to_index_file = 1;
       }
@@ -585,10 +591,14 @@ bool MYSQL_LOG::open(const char *log_name, enum_log_type log_type_arg, const cha
           don't set LOG_EVENT_BINLOG_IN_USE_F for SEQ_READ_APPEND io_cache
           as we won't be able to reset it later
         */
-        if (io_cache_type == WRITE_CACHE) s.flags |= LOG_EVENT_BINLOG_IN_USE_F;
-        if (!s.is_valid()) goto err;
-        if (null_created_arg) s.created = 0;
-        if (s.write(&log_file)) goto err;
+        if (io_cache_type == WRITE_CACHE)
+          s.flags |= LOG_EVENT_BINLOG_IN_USE_F;
+        if (!s.is_valid())
+          goto err;
+        if (null_created_arg)
+          s.created = 0;
+        if (s.write(&log_file))
+          goto err;
         bytes_written += s.data_written;
       }
       if (description_event_for_queue && description_event_for_queue->binlog_version >= 4)
@@ -617,10 +627,12 @@ bool MYSQL_LOG::open(const char *log_name, enum_log_type log_type_arg, const cha
         /* Don't set log_pos in event header */
         description_event_for_queue->artificial_event = 1;
 
-        if (description_event_for_queue->write(&log_file)) goto err;
+        if (description_event_for_queue->write(&log_file))
+          goto err;
         bytes_written += description_event_for_queue->data_written;
       }
-      if (flush_io_cache(&log_file) || my_sync(log_file.file, MYF(MY_WME))) goto err;
+      if (flush_io_cache(&log_file) || my_sync(log_file.file, MYF(MY_WME)))
+        goto err;
 
       if (write_file_name_to_index_file)
       {
@@ -649,7 +661,8 @@ Turning logging off for the whole duration of the MySQL server process. \
 To turn it on again: fix the cause, \
 shutdown the MySQL server and restart it.",
       name, errno);
-  if (file >= 0) my_close(file, MYF(0));
+  if (file >= 0)
+    my_close(file, MYF(0));
   end_io_cache(&log_file);
   end_io_cache(&index_file);
   safeFree(name);
@@ -698,13 +711,17 @@ static bool copy_up_file_and_fill(IO_CACHE *index_file, my_off_t offset)
   for (;; offset += bytes_read)
   {
     (void)my_seek(file, offset, MY_SEEK_SET, MYF(0));
-    if ((bytes_read = (int)my_read(file, io_buf, sizeof(io_buf), MYF(MY_WME))) < 0) goto err;
-    if (!bytes_read) break;  // end of file
+    if ((bytes_read = (int)my_read(file, io_buf, sizeof(io_buf), MYF(MY_WME))) < 0)
+      goto err;
+    if (!bytes_read)
+      break;  // end of file
     (void)my_seek(file, offset - init_offset, MY_SEEK_SET, MYF(0));
-    if (my_write(file, (byte *)io_buf, bytes_read, MYF(MY_WME | MY_NABP))) goto err;
+    if (my_write(file, (byte *)io_buf, bytes_read, MYF(MY_WME | MY_NABP)))
+      goto err;
   }
   /* The following will either truncate the file or fill the end with \n' */
-  if (my_chsize(file, offset - init_offset, '\n', MYF(MY_WME)) || my_sync(file, MYF(MY_WME))) goto err;
+  if (my_chsize(file, offset - init_offset, '\n', MYF(MY_WME)) || my_sync(file, MYF(MY_WME)))
+    goto err;
 
   /* Reset data in old index cache */
   reinit_io_cache(index_file, READ_CACHE, (my_off_t)0, 0, 1);
@@ -748,7 +765,8 @@ int MYSQL_LOG::find_log_pos(LOG_INFO *linfo, const char *log_name, bool need_loc
     Mutex needed because we need to make sure the file pointer does not
     move from under our feet
   */
-  if (need_lock) pthread_mutex_lock(&LOCK_index);
+  if (need_lock)
+    pthread_mutex_lock(&LOCK_index);
   safe_mutex_assert_owner(&LOCK_index);
 
   /* As the file is flushed, we can't get an error here */
@@ -779,7 +797,8 @@ int MYSQL_LOG::find_log_pos(LOG_INFO *linfo, const char *log_name, bool need_loc
     }
   }
 
-  if (need_lock) pthread_mutex_unlock(&LOCK_index);
+  if (need_lock)
+    pthread_mutex_unlock(&LOCK_index);
   DBUG_RETURN(error);
 }
 
@@ -811,7 +830,8 @@ int MYSQL_LOG::find_next_log(LOG_INFO *linfo, bool need_lock)
   uint length;
   char *fname = linfo->log_file_name;
 
-  if (need_lock) pthread_mutex_lock(&LOCK_index);
+  if (need_lock)
+    pthread_mutex_lock(&LOCK_index);
   safe_mutex_assert_owner(&LOCK_index);
 
   /* As the file is flushed, we can't get an error here */
@@ -827,7 +847,8 @@ int MYSQL_LOG::find_next_log(LOG_INFO *linfo, bool need_lock)
   linfo->index_file_offset = my_b_tell(&index_file);
 
 err:
-  if (need_lock) pthread_mutex_unlock(&LOCK_index);
+  if (need_lock)
+    pthread_mutex_unlock(&LOCK_index);
   return error;
 }
 
@@ -888,13 +909,15 @@ bool MYSQL_LOG::reset_logs(THD *thd)
   for (;;)
   {
     my_delete(linfo.log_file_name, MYF(MY_WME));
-    if (find_next_log(&linfo, 0)) break;
+    if (find_next_log(&linfo, 0))
+      break;
   }
 
   /* Start logging with a new file */
   close(LOG_CLOSE_INDEX);
   my_delete(index_file_name, MYF(MY_WME));  // Reset (open will update)
-  if (!thd->slave_thread) need_start_event = 1;
+  if (!thd->slave_thread)
+    need_start_event = 1;
   if (!open_index_file(index_file_name, 0))
     open(save_name, save_log_type, 0, io_cache_type, no_auto_events, max_size, 0);
   my_free((gptr)save_name, MYF(0));
@@ -1014,10 +1037,12 @@ err:
 
 int MYSQL_LOG::update_log_index(LOG_INFO *log_info, bool need_update_threads)
 {
-  if (copy_up_file_and_fill(&index_file, log_info->index_file_start_offset)) return LOG_INFO_IO;
+  if (copy_up_file_and_fill(&index_file, log_info->index_file_start_offset))
+    return LOG_INFO_IO;
 
   // now update offsets in index file for running threads
-  if (need_update_threads) adjust_linfo_offsets(log_info->index_file_start_offset);
+  if (need_update_threads)
+    adjust_linfo_offsets(log_info->index_file_start_offset);
   return 0;
 }
 
@@ -1052,14 +1077,17 @@ int MYSQL_LOG::purge_logs(const char *to_log, bool included, bool need_mutex, bo
   DBUG_ENTER("purge_logs");
   DBUG_PRINT("info", ("to_log= %s", to_log));
 
-  if (need_mutex) pthread_mutex_lock(&LOCK_index);
-  if ((error = find_log_pos(&log_info, to_log, 0 /*no mutex*/))) goto err;
+  if (need_mutex)
+    pthread_mutex_lock(&LOCK_index);
+  if ((error = find_log_pos(&log_info, to_log, 0 /*no mutex*/)))
+    goto err;
 
   /*
     File name exists in index file; delete until we find this file
     or a file that is used.
   */
-  if ((error = find_log_pos(&log_info, NullS, 0 /*no mutex*/))) goto err;
+  if ((error = find_log_pos(&log_info, NullS, 0 /*no mutex*/)))
+    goto err;
   while ((strcmp(to_log, log_info.log_file_name) || (exit_loop = included)) && !log_in_use(log_info.log_file_name))
   {
     ulong file_size = 0;
@@ -1082,8 +1110,10 @@ int MYSQL_LOG::purge_logs(const char *to_log, bool included, bool need_mutex, bo
       if we could delete it, take its size into account
     */
     DBUG_PRINT("info", ("purging %s", log_info.log_file_name));
-    if (!my_delete(log_info.log_file_name, MYF(0)) && decrease_log_space) *decrease_log_space -= file_size;
-    if (find_next_log(&log_info, 0) || exit_loop) break;
+    if (!my_delete(log_info.log_file_name, MYF(0)) && decrease_log_space)
+      *decrease_log_space -= file_size;
+    if (find_next_log(&log_info, 0) || exit_loop)
+      break;
   }
 
   /*
@@ -1093,7 +1123,8 @@ int MYSQL_LOG::purge_logs(const char *to_log, bool included, bool need_mutex, bo
   error = update_log_index(&log_info, need_update_threads);
 
 err:
-  if (need_mutex) pthread_mutex_unlock(&LOCK_index);
+  if (need_mutex)
+    pthread_mutex_unlock(&LOCK_index);
   DBUG_RETURN(error);
 }
 
@@ -1130,14 +1161,17 @@ int MYSQL_LOG::purge_logs_before_date(time_t purge_time)
     or a file that is used or a file
     that is older than purge_time.
   */
-  if ((error = find_log_pos(&log_info, NullS, 0 /*no mutex*/))) goto err;
+  if ((error = find_log_pos(&log_info, NullS, 0 /*no mutex*/)))
+    goto err;
 
   while (strcmp(log_file_name, log_info.log_file_name) && !log_in_use(log_info.log_file_name))
   {
     /* It's not fatal even if we can't delete a log file */
-    if (!my_stat(log_info.log_file_name, &stat_area, MYF(0)) || stat_area.st_mtime >= purge_time) break;
+    if (!my_stat(log_info.log_file_name, &stat_area, MYF(0)) || stat_area.st_mtime >= purge_time)
+      break;
     my_delete(log_info.log_file_name, MYF(0));
-    if (find_next_log(&log_info, 0)) break;
+    if (find_next_log(&log_info, 0))
+      break;
   }
 
   /*
@@ -1167,7 +1201,8 @@ err:
 void MYSQL_LOG::make_log_name(char *buf, const char *log_ident)
 {
   uint dir_len = dirname_length(log_file_name);
-  if (dir_len > FN_REFLEN) dir_len = FN_REFLEN - 1;
+  if (dir_len > FN_REFLEN)
+    dir_len = FN_REFLEN - 1;
   strnmov(buf, log_file_name, dir_len);
   strmake(buf + dir_len, log_ident, FN_REFLEN - dir_len);
 }
@@ -1201,7 +1236,8 @@ void MYSQL_LOG::new_file(bool need_lock)
     DBUG_VOID_RETURN;
   }
 
-  if (need_lock) pthread_mutex_lock(&LOCK_log);
+  if (need_lock)
+    pthread_mutex_lock(&LOCK_log);
   pthread_mutex_lock(&LOCK_index);
 
   safe_mutex_assert_owner(&LOCK_log);
@@ -1232,7 +1268,8 @@ void MYSQL_LOG::new_file(bool need_lock)
     We have to do this here and not in open as we want to store the
     new file name in the current binary log file.
   */
-  if (generate_new_name(new_name, name)) goto end;
+  if (generate_new_name(new_name, name))
+    goto end;
   new_name_ptr = new_name;
 
   if (log_type == LOG_BIN)
@@ -1278,7 +1315,8 @@ void MYSQL_LOG::new_file(bool need_lock)
   my_free(old_name, MYF(0));
 
 end:
-  if (need_lock) pthread_mutex_unlock(&LOCK_log);
+  if (need_lock)
+    pthread_mutex_unlock(&LOCK_log);
   pthread_mutex_unlock(&LOCK_index);
 
   DBUG_VOID_RETURN;
@@ -1302,7 +1340,8 @@ bool MYSQL_LOG::append(Log_event *ev)
   }
   bytes_written += ev->data_written;
   DBUG_PRINT("info", ("max_size: %lu", max_size));
-  if ((uint)my_b_append_tell(&log_file) > max_size) new_file(0);
+  if ((uint)my_b_append_tell(&log_file) > max_size)
+    new_file(0);
 
 err:
   pthread_mutex_unlock(&LOCK_log);
@@ -1330,10 +1369,12 @@ bool MYSQL_LOG::appendv(const char *buf, uint len, ...)
     bytes_written += len;
   } while ((buf = va_arg(args, const char *)) && (len = va_arg(args, uint)));
   DBUG_PRINT("info", ("max_size: %lu", max_size));
-  if ((uint)my_b_append_tell(&log_file) > max_size) new_file(0);
+  if ((uint)my_b_append_tell(&log_file) > max_size)
+    new_file(0);
 
 err:
-  if (!error) signal_update();
+  if (!error)
+    signal_update();
   DBUG_RETURN(error);
 }
 
@@ -1371,7 +1412,8 @@ bool MYSQL_LOG::write(THD *thd, enum enum_server_command command, const char *fo
           return 0;  // No logging
         }
         id = thd->thread_id;
-        if (thd->user_time || !(skr = thd->query_start())) skr = time(NULL);  // Connected
+        if (thd->user_time || !(skr = thd->query_start()))
+          skr = time(NULL);  // Connected
       }
       else
       {  // Log from connect handler
@@ -1388,17 +1430,21 @@ bool MYSQL_LOG::write(THD *thd, enum enum_server_command command, const char *fo
         /* Note that my_b_write() assumes it knows the length for this */
         sprintf(buff, "%02d%02d%02d %2d:%02d:%02d\t", start->tm_year % 100, start->tm_mon + 1, start->tm_mday,
                 start->tm_hour, start->tm_min, start->tm_sec);
-        if (my_b_write(&log_file, (byte *)buff, 16)) error = errno;
+        if (my_b_write(&log_file, (byte *)buff, 16))
+          error = errno;
       }
       else if (my_b_write(&log_file, (byte *)"\t\t", 2) < 0)
         error = errno;
       length = my_sprintf(buff, (buff, "%7ld %-11.11s", id, command_name[(uint)command]));
-      if (my_b_write(&log_file, (byte *)buff, length)) error = errno;
+      if (my_b_write(&log_file, (byte *)buff, length))
+        error = errno;
       if (format)
       {
-        if (my_b_write(&log_file, (byte *)" ", 1) || my_b_vprintf(&log_file, format, args) == (uint)-1) error = errno;
+        if (my_b_write(&log_file, (byte *)" ", 1) || my_b_vprintf(&log_file, format, args) == (uint)-1)
+          error = errno;
       }
-      if (my_b_write(&log_file, (byte *)"\n", 1) || flush_io_cache(&log_file)) error = errno;
+      if (my_b_write(&log_file, (byte *)"\n", 1) || flush_io_cache(&log_file))
+        error = errno;
       if (error && !write_error)
       {
         write_error = 1;
@@ -1416,7 +1462,8 @@ bool MYSQL_LOG::flush_and_sync()
 {
   int err = 0, fd = log_file.file;
   safe_mutex_assert_owner(&LOCK_log);
-  if (flush_io_cache(&log_file)) return 1;
+  if (flush_io_cache(&log_file))
+    return 1;
   if (++sync_binlog_counter >= sync_binlog_period && sync_binlog_period)
   {
     sync_binlog_counter = 0;
@@ -1544,17 +1591,20 @@ bool MYSQL_LOG::write(Log_event *event_info)
       if (thd->last_insert_id_used)
       {
         Intvar_log_event e(thd, (uchar)LAST_INSERT_ID_EVENT, thd->current_insert_id);
-        if (e.write(file)) goto err;
+        if (e.write(file))
+          goto err;
       }
       if (thd->insert_id_used)
       {
         Intvar_log_event e(thd, (uchar)INSERT_ID_EVENT, thd->last_insert_id);
-        if (e.write(file)) goto err;
+        if (e.write(file))
+          goto err;
       }
       if (thd->rand_used)
       {
         Rand_log_event e(thd, thd->rand_saved_seed1, thd->rand_saved_seed2);
-        if (e.write(file)) goto err;
+        if (e.write(file))
+          goto err;
       }
       if (thd->user_var_events.elements)
       {
@@ -1565,7 +1615,8 @@ bool MYSQL_LOG::write(Log_event *event_info)
           User_var_log_event e(thd, user_var_event->user_var_event->name.str,
                                user_var_event->user_var_event->name.length, user_var_event->value,
                                user_var_event->length, user_var_event->type, user_var_event->charset_number);
-          if (e.write(file)) goto err;
+          if (e.write(file))
+            goto err;
         }
       }
     }
@@ -1574,11 +1625,13 @@ bool MYSQL_LOG::write(Log_event *event_info)
        Write the SQL command
      */
 
-    if (event_info->write(file)) goto err;
+    if (event_info->write(file))
+      goto err;
 
     if (file == &log_file)  // we are writing to the real log (disk)
     {
-      if (flush_and_sync()) goto err;
+      if (flush_and_sync())
+        goto err;
       signal_update();
       rotate_and_purge(RP_LOCK_LOG_IS_ALREADY_LOCKED);
     }
@@ -1601,7 +1654,8 @@ bool MYSQL_LOG::write(Log_event *event_info)
 
 void MYSQL_LOG::rotate_and_purge(uint flags)
 {
-  if (!(flags & RP_LOCK_LOG_IS_ALREADY_LOCKED)) pthread_mutex_lock(&LOCK_log);
+  if (!(flags & RP_LOCK_LOG_IS_ALREADY_LOCKED))
+    pthread_mutex_lock(&LOCK_log);
   if ((flags & RP_FORCE_ROTATE) || (my_b_tell(&log_file) >= (my_off_t)max_size))
   {
     new_file(0);
@@ -1609,11 +1663,13 @@ void MYSQL_LOG::rotate_and_purge(uint flags)
     if (expire_logs_days)
     {
       long purge_time = time(0) - expire_logs_days * 24 * 60 * 60;
-      if (purge_time >= 0) purge_logs_before_date(purge_time);
+      if (purge_time >= 0)
+        purge_logs_before_date(purge_time);
     }
 #endif
   }
-  if (!(flags & RP_LOCK_LOG_IS_ALREADY_LOCKED)) pthread_mutex_unlock(&LOCK_log);
+  if (!(flags & RP_LOCK_LOG_IS_ALREADY_LOCKED))
+    pthread_mutex_unlock(&LOCK_log);
 }
 
 uint MYSQL_LOG::next_file_id()
@@ -1677,25 +1733,30 @@ bool MYSQL_LOG::write(THD *thd, IO_CACHE *cache, Log_event *commit_event)
         master's binlog, which would result in wrong positions being shown to
         the user, MASTER_POS_WAIT undue waiting etc.
       */
-      if (qinfo.write(&log_file)) goto err;
+      if (qinfo.write(&log_file))
+        goto err;
     }
     /* Read from the file used to cache the queries .*/
-    if (reinit_io_cache(cache, READ_CACHE, 0, 0, 0)) goto err;
+    if (reinit_io_cache(cache, READ_CACHE, 0, 0, 0))
+      goto err;
     length = my_b_bytes_in_cache(cache);
     DBUG_EXECUTE_IF("half_binlogged_transaction", length -= 100;);
     do
     {
       /* Write data to the binary log file */
-      if (my_b_write(&log_file, cache->read_pos, length)) goto err;
+      if (my_b_write(&log_file, cache->read_pos, length))
+        goto err;
       cache->read_pos = cache->read_end;  // Mark buffer used up
       DBUG_EXECUTE_IF("half_binlogged_transaction", goto DBUG_skip_commit;);
     } while ((length = my_b_fill(cache)));
 
-    if (commit_event->write(&log_file)) goto err;
+    if (commit_event->write(&log_file))
+      goto err;
 #ifndef DBUG_OFF
   DBUG_skip_commit:
 #endif
-    if (flush_and_sync()) goto err;
+    if (flush_and_sync())
+      goto err;
     DBUG_EXECUTE_IF("half_binlogged_transaction", abort(););
     if (cache->error)  // Error on read
     {
@@ -1739,7 +1800,8 @@ bool MYSQL_LOG::write(THD *thd, const char *query, uint query_length, time_t que
 {
   bool error = 0;
   time_t current_time;
-  if (!is_open()) return 0;
+  if (!is_open())
+    return 0;
   DBUG_ENTER("MYSQL_LOG::write");
 
   VOID(pthread_mutex_lock(&LOCK_log));
@@ -1767,7 +1829,8 @@ bool MYSQL_LOG::write(THD *thd, const char *query, uint query_length, time_t que
         /* Note that my_b_write() assumes it knows the length for this */
         sprintf(buff, "# Time: %02d%02d%02d %2d:%02d:%02d\n", start->tm_year % 100, start->tm_mon + 1, start->tm_mday,
                 start->tm_hour, start->tm_min, start->tm_sec);
-        if (my_b_write(&log_file, (byte *)buff, 24)) tmp_errno = errno;
+        if (my_b_write(&log_file, (byte *)buff, 24))
+          tmp_errno = errno;
       }
       if (my_b_printf(&log_file, "# User@Host: %s[%s] @ %s [%s]\n", sctx->priv_user ? sctx->priv_user : "",
                       sctx->user ? sctx->user : "", sctx->host ? sctx->host : "", sctx->ip ? sctx->ip : "") == (uint)-1)
@@ -1785,7 +1848,8 @@ bool MYSQL_LOG::write(THD *thd, const char *query, uint query_length, time_t que
     }
     if (thd->db && strcmp(thd->db, db))
     {  // Database changed
-      if (my_b_printf(&log_file, "use %s;\n", thd->db) == (uint)-1) tmp_errno = errno;
+      if (my_b_printf(&log_file, "use %s;\n", thd->db) == (uint)-1)
+        tmp_errno = errno;
       strmov(db, thd->db);
     }
     if (thd->last_insert_id_used)
@@ -1954,7 +2018,8 @@ void MYSQL_LOG::set_max_size(ulong max_size_arg)
   */
   DBUG_ENTER("MYSQL_LOG::set_max_size");
   pthread_mutex_lock(&LOCK_log);
-  if (is_open()) max_size = max_size_arg;
+  if (is_open())
+    max_size = max_size_arg;
   pthread_mutex_unlock(&LOCK_log);
   DBUG_VOID_RETURN;
 }
@@ -1987,7 +2052,8 @@ static bool test_if_number(register const char *str, long *res, bool allow_wildc
   start = str;
   while (*str++ == ' ')
     ;
-  if (*--str == '-' || *str == '+') str++;
+  if (*--str == '-' || *str == '+')
+    str++;
   while (my_isdigit(files_charset_info, *str) || (allow_wildcards && (*str == wild_many || *str == wild_one)))
   {
     flag = 1;
@@ -1999,8 +2065,10 @@ static bool test_if_number(register const char *str, long *res, bool allow_wildc
          str++, flag = 1)
       ;
   }
-  if (*str != 0 || flag == 0) DBUG_RETURN(0);
-  if (res) *res = atol(start);
+  if (*str != 0 || flag == 0)
+    DBUG_RETURN(0);
+  if (res)
+    *res = atol(start);
   DBUG_RETURN(1); /* Number ok */
 } /* test_if_number */
 
@@ -2061,7 +2129,8 @@ bool flush_error_log()
       freopen(err_temp, "a+", stderr);
       (void)my_delete(err_renamed, MYF(0));
       my_rename(log_error_file, err_renamed, MYF(0));
-      if (freopen(log_error_file, "a+", stdout)) freopen(log_error_file, "a+", stderr);
+      if (freopen(log_error_file, "a+", stdout))
+        freopen(log_error_file, "a+", stderr);
       int fd, bytes;
       char buf[IO_SIZE];
       if ((fd = my_open(err_temp, O_RDONLY, MYF(0))) >= 0)
@@ -2130,7 +2199,8 @@ void print_buffer_to_nt_eventlog(enum loglevel level, char *buff, uint length, i
   }
 
   /* if we created a string buffer, then delete it */
-  if (buffptr != buff) delete[] buffptr;
+  if (buffptr != buff)
+    delete[] buffptr;
 
   DBUG_VOID_RETURN;
 }
@@ -2272,12 +2342,16 @@ int TC_LOG_MMAP::open(const char *opt_name)
   fn_format(logname, opt_name, mysql_data_home, "", MY_UNPACK_FILENAME);
   if ((fd = my_open(logname, O_RDWR, MYF(0))) < 0)
   {
-    if (my_errno != ENOENT) goto err;
-    if (using_heuristic_recover()) return 1;
-    if ((fd = my_create(logname, O_RDWR, 0, MYF(MY_WME))) < 0) goto err;
+    if (my_errno != ENOENT)
+      goto err;
+    if (using_heuristic_recover())
+      return 1;
+    if ((fd = my_create(logname, O_RDWR, 0, MYF(MY_WME))) < 0)
+      goto err;
     inited = 1;
     file_length = opt_tc_log_size;
-    if (my_chsize(fd, file_length, 0, MYF(MY_WME))) goto err;
+    if (my_chsize(fd, file_length, 0, MYF(MY_WME)))
+      goto err;
   }
   else
   {
@@ -2292,7 +2366,8 @@ int TC_LOG_MMAP::open(const char *opt_name)
       goto err;
     }
     file_length = my_seek(fd, 0L, MY_SEEK_END, MYF(MY_WME + MY_FAE));
-    if (file_length == MY_FILEPOS_ERROR || file_length % tc_log_page_size) goto err;
+    if (file_length == MY_FILEPOS_ERROR || file_length % tc_log_page_size)
+      goto err;
   }
 
   data = (uchar *)my_mmap(0, (size_t)file_length, PROT_READ | PROT_WRITE, MAP_NOSYNC | MAP_SHARED, fd, 0);
@@ -2305,7 +2380,8 @@ int TC_LOG_MMAP::open(const char *opt_name)
 
   npages = (uint)file_length / tc_log_page_size;
   DBUG_ASSERT(npages >= 3);  // to guarantee non-empty pool
-  if (!(pages = (PAGE *)my_malloc(npages * sizeof(PAGE), MYF(MY_WME | MY_ZEROFILL)))) goto err;
+  if (!(pages = (PAGE *)my_malloc(npages * sizeof(PAGE), MYF(MY_WME | MY_ZEROFILL))))
+    goto err;
   inited = 3;
   for (pg = pages, i = 0; i < npages; i++, pg++)
   {
@@ -2323,7 +2399,8 @@ int TC_LOG_MMAP::open(const char *opt_name)
   pages[npages - 1].next = 0;
   inited = 4;
 
-  if (crashed && recover()) goto err;
+  if (crashed && recover())
+    goto err;
 
   memcpy(data, tc_log_magic, sizeof(tc_log_magic));
   data[sizeof(tc_log_magic)] = (uchar)total_ha_2pc;
@@ -2365,7 +2442,8 @@ void TC_LOG_MMAP::get_active_from_pool()
   PAGE **p, **best_p = 0;
   int best_free;
 
-  if (syncing) pthread_mutex_lock(&LOCK_pool);
+  if (syncing)
+    pthread_mutex_lock(&LOCK_pool);
 
   do
   {
@@ -2396,7 +2474,8 @@ void TC_LOG_MMAP::get_active_from_pool()
   else
     pool_last = *best_p;
 
-  if (syncing) pthread_mutex_unlock(&LOCK_pool);
+  if (syncing)
+    pthread_mutex_unlock(&LOCK_pool);
 }
 
 int TC_LOG_MMAP::overflow()
@@ -2444,7 +2523,8 @@ int TC_LOG_MMAP::log(THD *thd, my_xid xid)
   while (unlikely(active && active->free == 0)) pthread_cond_wait(&COND_active, &LOCK_active);
 
   /* no active page ? take one from the pool */
-  if (active == 0) get_active_from_pool();
+  if (active == 0)
+    get_active_from_pool();
 
   p = active;
   pthread_mutex_lock(&p->lock);
@@ -2479,7 +2559,8 @@ int TC_LOG_MMAP::log(THD *thd, my_xid xid)
     err = p->state == ERROR;
     if (p->state != DIRTY)  // page was synced
     {
-      if (p->waiters == 0) pthread_cond_signal(&COND_pool);  // in case somebody's waiting
+      if (p->waiters == 0)
+        pthread_cond_signal(&COND_pool);  // in case somebody's waiting
       pthread_mutex_unlock(&LOCK_sync);
       goto done;  // we're done
     }
@@ -2566,7 +2647,8 @@ void TC_LOG_MMAP::close()
     case 4:
       for (i = 0; i < npages; i++)
       {
-        if (pages[i].ptr == 0) break;
+        if (pages[i].ptr == 0)
+          break;
         pthread_mutex_destroy(&pages[i].lock);
         pthread_cond_destroy(&pages[i].cond);
       }
@@ -2607,15 +2689,18 @@ int TC_LOG_MMAP::recover()
     goto err1;
   }
 
-  if (hash_init(&xids, &my_charset_bin, tc_log_page_size / 3, 0, sizeof(my_xid), 0, 0, MYF(0))) goto err1;
+  if (hash_init(&xids, &my_charset_bin, tc_log_page_size / 3, 0, sizeof(my_xid), 0, 0, MYF(0)))
+    goto err1;
 
   for (; p < end_p; p++)
   {
     for (my_xid *x = p->start; x < p->end; x++)
-      if (*x && my_hash_insert(&xids, (byte *)x)) goto err2;  // OOM
+      if (*x && my_hash_insert(&xids, (byte *)x))
+        goto err2;  // OOM
   }
 
-  if (ha_recover(&xids)) goto err2;
+  if (ha_recover(&xids))
+    goto err2;
 
   hash_free(&xids);
   bzero(data, (size_t)file_length);
@@ -2651,10 +2736,12 @@ TC_LOG_MMAP tc_log_mmap;
 
 int TC_LOG::using_heuristic_recover()
 {
-  if (!tc_heuristic_recover) return 0;
+  if (!tc_heuristic_recover)
+    return 0;
 
   sql_print_information("Heuristic crash recovery mode");
-  if (ha_recover(0)) sql_print_error("Heuristic crash recovery failed");
+  if (ha_recover(0))
+    sql_print_error("Heuristic crash recovery failed");
   sql_print_information("Please restart mysqld without --tc-heuristic-recover");
   return 1;
 }
@@ -2712,7 +2799,8 @@ int TC_LOG_BINLOG::open(const char *opt_name)
     Format_description_log_event fdle(BINLOG_VERSION);
     char log_name[FN_REFLEN];
 
-    if (!fdle.is_valid()) goto err;
+    if (!fdle.is_valid())
+      goto err;
 
     do
     {
@@ -2744,7 +2832,8 @@ int TC_LOG_BINLOG::open(const char *opt_name)
     end_io_cache(&log);
     my_close(file, MYF(MY_WME));
 
-    if (error) goto err;
+    if (error)
+      goto err;
   }
 
 err:
@@ -2776,7 +2865,8 @@ int TC_LOG_BINLOG::log(THD *thd, my_xid xid)
 void TC_LOG_BINLOG::unlog(ulong cookie, my_xid xid)
 {
   pthread_mutex_lock(&LOCK_prep_xids);
-  if (--prepared_xids == 0) pthread_cond_signal(&COND_prep_xids);
+  if (--prepared_xids == 0)
+    pthread_cond_signal(&COND_prep_xids);
   pthread_mutex_unlock(&LOCK_prep_xids);
   rotate_and_purge(0);  // as ::write() did not rotate
 }
@@ -2800,13 +2890,15 @@ int TC_LOG_BINLOG::recover(IO_CACHE *log, Format_description_log_event *fdle)
     {
       Xid_log_event *xev = (Xid_log_event *)ev;
       byte *x = (byte *)memdup_root(&mem_root, (char *)&xev->xid, sizeof(xev->xid));
-      if (!x) goto err2;
+      if (!x)
+        goto err2;
       my_hash_insert(&xids, x);
     }
     delete ev;
   }
 
-  if (ha_recover(&xids)) goto err2;
+  if (ha_recover(&xids))
+    goto err2;
 
   free_root(&mem_root, MYF(0));
   hash_free(&xids);

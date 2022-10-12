@@ -1267,7 +1267,8 @@ inline void mark_as_null_row(TABLE *table)
 
 inline void table_case_convert(char *name, uint length)
 {
-  if (lower_case_table_names) files_charset_info->cset->casedn(files_charset_info, name, length, name, length);
+  if (lower_case_table_names)
+    files_charset_info->cset->casedn(files_charset_info, name, length, name, length);
 }
 
 inline const char *table_case_name(HA_CREATE_INFO *info, const char *name)
@@ -1329,9 +1330,11 @@ inline void setup_table_map(TABLE *table, TABLE_LIST *table_list, uint tablenr)
 
 inline int hexchar_to_int(char c)
 {
-  if (c <= '9' && c >= '0') return c - '0';
+  if (c <= '9' && c >= '0')
+    return c - '0';
   c |= 32;
-  if (c <= 'f' && c >= 'a') return c - 'a' + 10;
+  if (c <= 'f' && c >= 'a')
+    return c - 'a' + 10;
   return -1;
 }
 

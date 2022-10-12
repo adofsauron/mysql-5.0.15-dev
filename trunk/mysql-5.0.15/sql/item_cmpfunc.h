@@ -698,7 +698,8 @@ class cmp_item_sort_string : public cmp_item_string
   {
     char buff[STRING_BUFFER_USUAL_SIZE];
     String tmp(buff, sizeof(buff), cmp_charset), *res;
-    if (!(res = arg->val_str(&tmp))) return 1; /* Can't be right */
+    if (!(res = arg->val_str(&tmp)))
+      return 1; /* Can't be right */
     return sortcmp(value_res, res, cmp_charset);
   }
   int compare(cmp_item *c)
@@ -1190,7 +1191,8 @@ class Item_cond_and : public Item_cond
   Item *copy_andor_structure(THD *thd)
   {
     Item_cond_and *item;
-    if ((item = new Item_cond_and(thd, this))) item->copy_andor_arguments(thd, this);
+    if ((item = new Item_cond_and(thd, this)))
+      item->copy_andor_arguments(thd, this);
     return item;
   }
   Item *neg_transformer(THD *thd);
@@ -1210,7 +1212,8 @@ class Item_cond_or : public Item_cond
   Item *copy_andor_structure(THD *thd)
   {
     Item_cond_or *item;
-    if ((item = new Item_cond_or(thd, this))) item->copy_andor_arguments(thd, this);
+    if ((item = new Item_cond_or(thd, this)))
+      item->copy_andor_arguments(thd, this);
     return item;
   }
   Item *neg_transformer(THD *thd);
@@ -1238,8 +1241,10 @@ class Item_cond_xor : public Item_cond
 
 inline Item *and_conds(Item *a, Item *b)
 {
-  if (!b) return a;
-  if (!a) return b;
+  if (!b)
+    return a;
+  if (!a)
+    return b;
   return new Item_cond_and(a, b);
 }
 

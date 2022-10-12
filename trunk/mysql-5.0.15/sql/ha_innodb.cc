@@ -1132,7 +1132,8 @@ bool innobase_init(void)
 
   DBUG_ENTER("innobase_init");
 
-  if (have_innodb != SHOW_OPTION_YES) goto error;
+  if (have_innodb != SHOW_OPTION_YES)
+    goto error;
 
   ut_a(DATA_MYSQL_TRUE_VARCHAR == (ulint)MYSQL_TYPE_VARCHAR);
 
@@ -3143,7 +3144,8 @@ int ha_innobase::write_row(
 
   statistic_increment(current_thd->status_var.ha_write_count, &LOCK_status);
 
-  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_INSERT) table->timestamp_field->set_time();
+  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_INSERT)
+    table->timestamp_field->set_time();
 
   if ((user_thd->lex->sql_command == SQLCOM_ALTER_TABLE || user_thd->lex->sql_command == SQLCOM_OPTIMIZE ||
        user_thd->lex->sql_command == SQLCOM_CREATE_INDEX || user_thd->lex->sql_command == SQLCOM_DROP_INDEX) &&
@@ -3502,7 +3504,8 @@ int ha_innobase::update_row(
 
   ut_ad(prebuilt->trx == (trx_t *)current_thd->ha_data[innobase_hton.slot]);
 
-  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_UPDATE) table->timestamp_field->set_time();
+  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_UPDATE)
+    table->timestamp_field->set_time();
 
   if (last_query_id != user_thd->query_id)
   {
@@ -5732,7 +5735,8 @@ int ha_innobase::get_foreign_key_list(THD *thd, List<FOREIGN_KEY_INFO> *f_key_li
       tmp_buff = foreign->referenced_col_names[i];
       name = make_lex_string(thd, name, tmp_buff, (uint)strlen(tmp_buff), 1);
       f_key_info.referenced_fields.push_back(name);
-      if (++i >= foreign->n_fields) break;
+      if (++i >= foreign->n_fields)
+        break;
     }
 
     ulong length = 0;
@@ -6427,7 +6431,8 @@ bool innodb_mutex_show_status(
   field_list.push_back(new Item_uint("OS_yields", 21));
   field_list.push_back(new Item_uint("OS_waits_time", 21));
 
-  if (protocol->send_fields(&field_list, Protocol::SEND_NUM_ROWS | Protocol::SEND_EOF)) DBUG_RETURN(TRUE);
+  if (protocol->send_fields(&field_list, Protocol::SEND_NUM_ROWS | Protocol::SEND_EOF))
+    DBUG_RETURN(TRUE);
 
 #ifdef MUTEX_PROTECT_TO_BE_ADDED_LATER
   mutex_enter(&mutex_list_mutex);

@@ -161,7 +161,8 @@ void lex_start(THD *thd, uchar *buf, uint length)
   lex->proc_list.first = 0;
   lex->query_tables_own_last = 0;
 
-  if (lex->sroutines.records) my_hash_reset(&lex->sroutines);
+  if (lex->sroutines.records)
+    my_hash_reset(&lex->sroutines);
   lex->sroutines_list.empty();
   lex->sroutines_list_own_last = lex->sroutines_list.next;
   lex->sroutines_list_own_elements = 0;
@@ -185,8 +186,10 @@ static int find_keyword(LEX *lex, uint len, bool function)
     lex->yylval->symbol.str = (char *)tok;
     lex->yylval->symbol.length = len;
 
-    if ((symbol->tok == NOT_SYM) && (lex->thd->variables.sql_mode & MODE_HIGH_NOT_PRECEDENCE)) return NOT2_SYM;
-    if ((symbol->tok == OR_OR_SYM) && !(lex->thd->variables.sql_mode & MODE_PIPES_AS_CONCAT)) return OR2_SYM;
+    if ((symbol->tok == NOT_SYM) && (lex->thd->variables.sql_mode & MODE_HIGH_NOT_PRECEDENCE))
+      return NOT2_SYM;
+    if ((symbol->tok == OR_OR_SYM) && !(lex->thd->variables.sql_mode & MODE_PIPES_AS_CONCAT))
+      return OR2_SYM;
 
     return symbol->tok;
   }
@@ -235,7 +238,8 @@ static LEX_STRING get_quoted_token(LEX *lex, uint length, char quote)
   tmp.str = (char *)lex->thd->alloc(tmp.length + 1);
   for (from = (byte *)lex->tok_start, to = (byte *)tmp.str, end = to + length; to != end;)
   {
-    if ((*to++ = *from++) == quote) from++;  // Skip double quotes
+    if ((*to++ = *from++) == quote)
+      from++;  // Skip double quotes
   }
   *to = 0;  // End null for safety
   return tmp;
@@ -268,7 +272,8 @@ static char *get_text(LEX *lex)
     if (c == '\\' && !(lex->thd->variables.sql_mode & MODE_NO_BACKSLASH_ESCAPES))
     {  // Escaped character
       found_escape = 1;
-      if (lex->ptr == lex->end_of_query) return 0;
+      if (lex->ptr == lex->end_of_query)
+        return 0;
 #ifdef USE_MB
       int l;
       if (use_mb(cs) && (l = my_ismbchar(cs, (const char *)lex->ptr, (const char *)lex->end_of_query)))
@@ -413,7 +418,8 @@ static inline uint int_token(const char *str, uint length)
     str++;
     length--;
   }
-  if (length < long_len) return NUM;
+  if (length < long_len)
+    return NUM;
 
   uint smaller, bigger;
   const char *cmp;
@@ -448,7 +454,8 @@ static inline uint int_token(const char *str, uint length)
       return LONG_NUM;
     else if (length > longlong_len)
     {
-      if (length > unsigned_longlong_len) return DECIMAL_NUM;
+      if (length > unsigned_longlong_len)
+        return DECIMAL_NUM;
       cmp = unsigned_longlong_str;
       smaller = ULONGLONG_NUM;
       bigger = DECIMAL_NUM;
@@ -503,7 +510,8 @@ int yylex(void *arg, void *yythd)
         // Skip startspace
         for (c = yyGet(); (state_map[c] == MY_LEX_SKIP); c = yyGet())
         {
-          if (c == '\n') lex->yylineno++;
+          if (c == '\n')
+            lex->yylineno++;
         }
         lex->tok_start = lex->ptr - 1;  // Start of real token
         state = (enum my_lex_states)state_map[c];
@@ -525,14 +533,16 @@ int yylex(void *arg, void *yythd)
         yylval->lex_str.str = (char *)(lex->ptr = lex->tok_start);  // Set to first chr
         yylval->lex_str.length = 1;
         c = yyGet();
-        if (c != ')') lex->next_state = MY_LEX_START;  // Allow signed numbers
-        if (c == ',') lex->tok_start = lex->ptr;       // Let tok_start point at next item
-                                                       /*
-                            Check for a placeholder: it should not precede a possible identifier
-                            because of binlogging: when a placeholder is replaced with
-                            its value in a query for the binlog, the query must stay
-                            grammatically correct.
-                          */
+        if (c != ')')
+          lex->next_state = MY_LEX_START;  // Allow signed numbers
+        if (c == ',')
+          lex->tok_start = lex->ptr;  // Let tok_start point at next item
+                                      /*
+           Check for a placeholder: it should not precede a possible identifier
+           because of binlogging: when a placeholder is replaced with
+           its value in a query for the binlog, the query must stay
+           grammatically correct.
+         */
         else if (c == '?' && lex->stmt_prepare_mode && !ident_map[yyPeek()])
           return (PARAM_MARKER);
         return ((int)c);
@@ -591,7 +601,8 @@ int yylex(void *arg, void *yythd)
             if (my_mbcharlen(cs, c) > 1)
             {
               int l;
-              if ((l = my_ismbchar(cs, (const char *)lex->ptr - 1, (const char *)lex->end_of_query)) == 0) break;
+              if ((l = my_ismbchar(cs, (const char *)lex->ptr - 1, (const char *)lex->end_of_query)) == 0)
+                break;
               lex->ptr += l - 1;
             }
           }
@@ -714,7 +725,8 @@ int yylex(void *arg, void *yythd)
             if (my_mbcharlen(cs, c) > 1)
             {
               int l;
-              if ((l = my_ismbchar(cs, (const char *)lex->ptr - 1, (const char *)lex->end_of_query)) == 0) break;
+              if ((l = my_ismbchar(cs, (const char *)lex->ptr - 1, (const char *)lex->end_of_query)) == 0)
+                break;
               lex->ptr += l - 1;
             }
           }
@@ -727,7 +739,8 @@ int yylex(void *arg, void *yythd)
           /* If there were non-ASCII characters, mark that we must convert */
           result_state = result_state & 0x80 ? IDENT_QUOTED : IDENT;
         }
-        if (c == '.' && ident_map[yyPeek()]) lex->next_state = MY_LEX_IDENT_SEP;  // Next is '.'
+        if (c == '.' && ident_map[yyPeek()])
+          lex->next_state = MY_LEX_IDENT_SEP;  // Next is '.'
 
         yylval->lex_str = get_token(lex, yyLength());
         return (result_state);
@@ -742,10 +755,12 @@ int yylex(void *arg, void *yythd)
           int length;
           if ((length = my_mbcharlen(cs, c)) == 1)
           {
-            if (c == (uchar)NAMES_SEP_CHAR) break; /* Old .frm format can't handle this char */
+            if (c == (uchar)NAMES_SEP_CHAR)
+              break; /* Old .frm format can't handle this char */
             if (c == quote_char)
             {
-              if (yyPeek() != quote_char) break;
+              if (yyPeek() != quote_char)
+                break;
               c = yyGet();
               double_quotes++;
               continue;
@@ -761,7 +776,8 @@ int yylex(void *arg, void *yythd)
           yylval->lex_str = get_quoted_token(lex, yyLength() - double_quotes, quote_char);
         else
           yylval->lex_str = get_token(lex, yyLength());
-        if (c == quote_char) yySkip();  // Skip end `
+        if (c == quote_char)
+          yySkip();  // Skip end `
         lex->next_state = MY_LEX_START;
         return (IDENT_QUOTED);
       }
@@ -779,7 +795,8 @@ int yylex(void *arg, void *yythd)
         if (c == 'e' || c == 'E')
         {
           c = yyGet();
-          if (c == '-' || c == '+') c = yyGet();  // Skip sign
+          if (c == '-' || c == '+')
+            c = yyGet();  // Skip sign
           if (!my_isdigit(cs, c))
           {  // No digit after sign
             state = MY_LEX_CHAR;
@@ -814,8 +831,9 @@ int yylex(void *arg, void *yythd)
         while ((c = yyGet()) == '0' || c == '1')
           ;
         length = (lex->ptr - lex->tok_start);  // Length of bin-num + 3
-        if (c != '\'') return (ABORT_SYM);     // Illegal hex constant
-        yyGet();                               // get_token makes an unget
+        if (c != '\'')
+          return (ABORT_SYM);  // Illegal hex constant
+        yyGet();               // get_token makes an unget
         yylval->lex_str = get_token(lex, length);
         yylval->lex_str.str += 2;     // Skip b'
         yylval->lex_str.length -= 3;  // Don't count b' and last '
@@ -823,7 +841,8 @@ int yylex(void *arg, void *yythd)
         return (BIN_NUM);
 
       case MY_LEX_CMP_OP:  // Incomplete comparison operator
-        if (state_map[yyPeek()] == MY_LEX_CMP_OP || state_map[yyPeek()] == MY_LEX_LONG_CMP_OP) yySkip();
+        if (state_map[yyPeek()] == MY_LEX_CMP_OP || state_map[yyPeek()] == MY_LEX_LONG_CMP_OP)
+          yySkip();
         if ((tokval = find_keyword(lex, (uint)(lex->ptr - lex->tok_start), 0)))
         {
           lex->next_state = MY_LEX_START;  // Allow signed numbers
@@ -836,7 +855,8 @@ int yylex(void *arg, void *yythd)
         if (state_map[yyPeek()] == MY_LEX_CMP_OP || state_map[yyPeek()] == MY_LEX_LONG_CMP_OP)
         {
           yySkip();
-          if (state_map[yyPeek()] == MY_LEX_CMP_OP) yySkip();
+          if (state_map[yyPeek()] == MY_LEX_CMP_OP)
+            yySkip();
         }
         if ((tokval = find_keyword(lex, (uint)(lex->ptr - lex->tok_start), 0)))
         {
@@ -905,10 +925,12 @@ int yylex(void *arg, void *yythd)
         }
         while (lex->ptr != lex->end_of_query && ((c = yyGet()) != '*' || yyPeek() != '/'))
         {
-          if (c == '\n') lex->yylineno++;
+          if (c == '\n')
+            lex->yylineno++;
         }
-        if (lex->ptr != lex->end_of_query) yySkip();  // remove last '/'
-        state = MY_LEX_START;                         // Try again
+        if (lex->ptr != lex->end_of_query)
+          yySkip();            // remove last '/'
+        state = MY_LEX_START;  // Try again
         break;
       case MY_LEX_END_LONG_COMMENT:
         if (lex->in_comment && yyPeek() == '/')
@@ -1007,7 +1029,8 @@ int yylex(void *arg, void *yythd)
         /* If there were non-ASCII characters, mark that we must convert */
         result_state = result_state & 0x80 ? IDENT_QUOTED : IDENT;
 
-        if (c == '.') lex->next_state = MY_LEX_IDENT_SEP;
+        if (c == '.')
+          lex->next_state = MY_LEX_IDENT_SEP;
         length = (uint)(lex->ptr - lex->tok_start) - 1;
         if ((tokval = find_keyword(lex, length, 0)))
         {
@@ -1119,7 +1142,8 @@ void st_select_lex::init_select()
 /* include on level down */
 void st_select_lex_node::include_down(st_select_lex_node *upper)
 {
-  if ((next = upper->slave)) next->prev = &next;
+  if ((next = upper->slave))
+    next->prev = &next;
   prev = &upper->slave;
   upper->slave = this;
   master = upper;
@@ -1145,7 +1169,8 @@ void st_select_lex_node::include_standalone(st_select_lex_node *upper, st_select
 /* include neighbour (on same level) */
 void st_select_lex_node::include_neighbour(st_select_lex_node *before)
 {
-  if ((next = before->next)) next->prev = &next;
+  if ((next = before->next))
+    next->prev = &next;
   prev = &before->next;
   before->next = this;
   master = before->master;
@@ -1155,7 +1180,8 @@ void st_select_lex_node::include_neighbour(st_select_lex_node *before)
 /* including in global SELECT_LEX list */
 void st_select_lex_node::include_global(st_select_lex_node **plink)
 {
-  if ((link_next = *plink)) link_next->link_prev = &link_next;
+  if ((link_next = *plink))
+    link_next->link_prev = &link_next;
   link_prev = plink;
   *plink = this;
 }
@@ -1165,7 +1191,8 @@ void st_select_lex_node::fast_exclude()
 {
   if (link_prev)
   {
-    if ((*link_prev = link_next)) link_next->link_prev = link_prev;
+    if ((*link_prev = link_next))
+      link_next->link_prev = link_prev;
   }
   // Remove slave structure
   for (; slave; slave = slave->next) slave->fast_exclude();
@@ -1180,7 +1207,8 @@ void st_select_lex_node::exclude()
   // exclude from global list
   fast_exclude();
   // exclude from other structures
-  if ((*prev = next)) next->prev = prev;
+  if ((*prev = next))
+    next->prev = prev;
   /*
      We do not need following statements, because prev pointer of first
      list element point to master->slave
@@ -1204,7 +1232,8 @@ void st_select_lex_unit::exclude_level()
   for (SELECT_LEX *sl = first_select(); sl; sl = sl->next_select())
   {
     // unlink current level from global SELECTs list
-    if (sl->link_prev && (*sl->link_prev = sl->link_next)) sl->link_next->link_prev = sl->link_prev;
+    if (sl->link_prev && (*sl->link_prev = sl->link_next))
+      sl->link_next->link_prev = sl->link_prev;
 
     // bring up underlay levels
     SELECT_LEX_UNIT **last = 0;
@@ -1224,14 +1253,16 @@ void st_select_lex_unit::exclude_level()
     // include brought up levels in place of current
     (*prev) = units;
     (*units_last) = (SELECT_LEX_UNIT *)next;
-    if (next) next->prev = (SELECT_LEX_NODE **)units_last;
+    if (next)
+      next->prev = (SELECT_LEX_NODE **)units_last;
     units->prev = prev;
   }
   else
   {
     // exclude currect unit from list of nodes
     (*prev) = next;
-    if (next) next->prev = prev;
+    if (next)
+      next->prev = prev;
   }
 }
 
@@ -1246,7 +1277,8 @@ void st_select_lex_unit::exclude_tree()
   for (SELECT_LEX *sl = first_select(); sl; sl = sl->next_select())
   {
     // unlink current level from global SELECTs list
-    if (sl->link_prev && (*sl->link_prev = sl->link_next)) sl->link_next->link_prev = sl->link_prev;
+    if (sl->link_prev && (*sl->link_prev = sl->link_next))
+      sl->link_next->link_prev = sl->link_prev;
 
     // unlink underlay levels
     for (SELECT_LEX_UNIT *u = sl->first_inner_unit(); u; u = u->next_unit())
@@ -1256,7 +1288,8 @@ void st_select_lex_unit::exclude_tree()
   }
   // exclude currect unit from list of nodes
   (*prev) = next;
-  if (next) next->prev = prev;
+  if (next)
+    next->prev = prev;
 }
 
 /*
@@ -1374,7 +1407,8 @@ ulong st_select_lex::get_table_join_options() { return table_join_options; }
 
 bool st_select_lex::setup_ref_array(THD *thd, uint order_group_num)
 {
-  if (ref_pointer_array) return 0;
+  if (ref_pointer_array)
+    return 0;
 
   /*
     We have to create array in prepared statement memory if it is
@@ -1398,9 +1432,11 @@ void st_select_lex_unit::print(String *str)
       else if (union_distinct == sl)
         union_all = TRUE;
     }
-    if (sl->braces) str->append('(');
+    if (sl->braces)
+      str->append('(');
     sl->print(thd, str);
-    if (sl->braces) str->append(')');
+    if (sl->braces)
+      str->append(')');
   }
   if (fake_select_lex == global_parameters)
   {
@@ -1425,8 +1461,10 @@ void st_select_lex::print_order(String *str, ORDER *order)
     }
     else
       (*order->item)->print(str);
-    if (!order->asc) str->append(" desc", 5);
-    if (order->next) str->append(',');
+    if (!order->asc)
+      str->append(" desc", 5);
+    if (order->next)
+      str->append(',');
   }
 }
 
@@ -1658,7 +1696,8 @@ bool st_lex::need_correct_ident()
 
 uint8 st_lex::get_effective_with_check(st_table_list *view)
 {
-  if (view->select_lex->master_unit() == &unit && which_check_option_applicable()) return (uint8)view->with_check;
+  if (view->select_lex->master_unit() == &unit && which_check_option_applicable())
+    return (uint8)view->with_check;
   return VIEW_CHECK_NONE;
 }
 
@@ -1678,7 +1717,8 @@ void st_select_lex_unit::set_limit(SELECT_LEX *sl)
   select_limit_val = (ha_rows)(sl->select_limit ? sl->select_limit->val_uint() : HA_POS_ERROR);
   offset_limit_cnt = (ha_rows)(sl->offset_limit ? sl->offset_limit->val_uint() : ULL(0));
   select_limit_cnt = select_limit_val + offset_limit_cnt;
-  if (select_limit_cnt < select_limit_val) select_limit_cnt = HA_POS_ERROR;  // no limit
+  if (select_limit_cnt < select_limit_val)
+    select_limit_cnt = HA_POS_ERROR;  // no limit
 }
 
 /*
@@ -1754,9 +1794,11 @@ void st_lex::first_lists_tables_same()
   if (query_tables != first_table && first_table != 0)
   {
     TABLE_LIST *next;
-    if (query_tables_last == &first_table->next_global) query_tables_last = first_table->prev_global;
+    if (query_tables_last == &first_table->next_global)
+      query_tables_last = first_table->prev_global;
 
-    if ((next = *first_table->prev_global = first_table->next_global)) next->prev_global = first_table->prev_global;
+    if ((next = *first_table->prev_global = first_table->next_global))
+      next->prev_global = first_table->prev_global;
     /* include in new place */
     first_table->next_global = query_tables;
     /*
@@ -1789,7 +1831,8 @@ bool st_lex::add_time_zone_tables_to_query_tables(THD *thd)
   if (!time_zone_tables_used)
   {
     time_zone_tables_used = my_tz_get_table_list(thd, &query_tables_last);
-    if (time_zone_tables_used == &fake_time_zone_tables_list) return TRUE;
+    if (time_zone_tables_used == &fake_time_zone_tables_list)
+      return TRUE;
   }
   return FALSE;
 }
@@ -1853,7 +1896,8 @@ void st_lex::cleanup_after_one_table_open()
     select_lex.cut_subtree();
   }
   time_zone_tables_used = 0;
-  if (sroutines.records) my_hash_reset(&sroutines);
+  if (sroutines.records)
+    my_hash_reset(&sroutines);
   sroutines_list.empty();
   sroutines_list_own_last = sroutines_list.next;
   sroutines_list_own_elements = 0;

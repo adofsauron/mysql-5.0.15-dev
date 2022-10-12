@@ -48,7 +48,8 @@ class Gis_read_stream
   inline bool skip_char(char skip)
   {
     skip_space();
-    if ((m_cur >= m_limit) || *m_cur != skip) return 1; /* Didn't find char */
+    if ((m_cur >= m_limit) || *m_cur != skip)
+      return 1; /* Didn't find char */
     m_cur++;
     return 0;
   }

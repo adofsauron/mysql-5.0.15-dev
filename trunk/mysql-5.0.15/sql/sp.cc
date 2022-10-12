@@ -106,7 +106,8 @@ TABLE *open_proc_table_for_read(THD *thd, Open_tables_state *backup)
     Speed up things if mysql.proc doesn't exists. mysql_proc_table_exists
     is set when we create or read stored procedure or on flush privileges.
   */
-  if (!mysql_proc_table_exists) DBUG_RETURN(0);
+  if (!mysql_proc_table_exists)
+    DBUG_RETURN(0);
 
   thd->reset_n_backup_open_tables_state(backup);
 
@@ -169,7 +170,8 @@ static TABLE *open_proc_table_for_update(THD *thd)
     open and lock it for writing since this condition may be
     transient.
   */
-  if (!(thd->locked_tables || thd->prelocked_mode) || table) mysql_proc_table_exists = test(table);
+  if (!(thd->locked_tables || thd->prelocked_mode) || table)
+    mysql_proc_table_exists = test(table);
 
   DBUG_RETURN(table);
 }
@@ -202,7 +204,8 @@ static int db_find_routine_aux(THD *thd, int type, sp_name *name, TABLE *table)
     'db', 'name' and 'type' and the first key is the primary key over the
     same fields.
   */
-  if (name->m_name.length > table->field[1]->field_length) DBUG_RETURN(SP_KEY_NOT_FOUND);
+  if (name->m_name.length > table->field[1]->field_length)
+    DBUG_RETURN(SP_KEY_NOT_FOUND);
   table->field[0]->store(name->m_db.str, name->m_db.length, &my_charset_bin);
   table->field[1]->store(name->m_name.str, name->m_name.length, &my_charset_bin);
   table->field[2]->store((longlong)type, TRUE);
@@ -255,9 +258,11 @@ static int db_find_routine(THD *thd, int type, sp_name *name, sp_head **sphp)
   DBUG_PRINT("enter", ("type: %d name: %.*s", type, name->m_name.length, name->m_name.str));
 
   *sphp = 0;  // In case of errors
-  if (!(table = open_proc_table_for_read(thd, &open_tables_state_backup))) DBUG_RETURN(SP_OPEN_TABLE_FAILED);
+  if (!(table = open_proc_table_for_read(thd, &open_tables_state_backup)))
+    DBUG_RETURN(SP_OPEN_TABLE_FAILED);
 
-  if ((ret = db_find_routine_aux(thd, type, name, table)) != SP_OK) goto done;
+  if ((ret = db_find_routine_aux(thd, type, name, table)) != SP_OK)
+    goto done;
 
   if (table->s->fields != MYSQL_PROC_FIELD_COUNT)
   {
@@ -337,7 +342,8 @@ static int db_find_routine(THD *thd, int type, sp_name *name, sp_head **sphp)
   table->field[MYSQL_PROC_FIELD_COMMENT]->val_str(&str, &str);
 
   ptr = 0;
-  if ((length = str.length())) ptr = thd->strmake(str.ptr(), length);
+  if ((length = str.length()))
+    ptr = thd->strmake(str.ptr(), length);
   chistics.comment.str = ptr;
   chistics.comment.length = length;
 
@@ -365,7 +371,8 @@ static int db_find_routine(THD *thd, int type, sp_name *name, sp_head **sphp)
     }
 
     dbchanged = FALSE;
-    if ((ret = sp_use_new_db(thd, name->m_db.str, olddb, sizeof(olddb), 1, &dbchanged))) goto done;
+    if ((ret = sp_use_new_db(thd, name->m_db.str, olddb, sizeof(olddb), 1, &dbchanged)))
+      goto done;
 
     {
       /* This is something of a kludge. We need to initialize some fields
@@ -387,7 +394,8 @@ static int db_find_routine(THD *thd, int type, sp_name *name, sp_head **sphp)
       LEX *newlex = thd->lex;
       sp_head *sp = newlex->sphead;
 
-      if (dbchanged && (ret = mysql_change_db(thd, olddb, 1))) goto done;
+      if (dbchanged && (ret = mysql_change_db(thd, olddb, 1)))
+        goto done;
       if (sp)
       {
         delete sp;
@@ -397,7 +405,8 @@ static int db_find_routine(THD *thd, int type, sp_name *name, sp_head **sphp)
     }
     else
     {
-      if (dbchanged && (ret = mysql_change_db(thd, olddb, 1))) goto done;
+      if (dbchanged && (ret = mysql_change_db(thd, olddb, 1)))
+        goto done;
       *sphp = thd->lex->sphead;
       (*sphp)->set_info((char *)definer, (uint)strlen(definer), created, modified, &chistics, sql_mode);
       (*sphp)->optimize();
@@ -408,7 +417,8 @@ static int db_find_routine(THD *thd, int type, sp_name *name, sp_head **sphp)
   }
 
 done:
-  if (table) close_proc_table(thd, &open_tables_state_backup);
+  if (table)
+    close_proc_table(thd, &open_tables_state_backup);
   DBUG_RETURN(ret);
 }
 
@@ -527,7 +537,8 @@ static int db_create_routine(THD *thd, int type, sp_head *sp)
 
 done:
   close_thread_tables(thd);
-  if (dbchanged) (void)mysql_change_db(thd, olddb, 1);
+  if (dbchanged)
+    (void)mysql_change_db(thd, olddb, 1);
   DBUG_RETURN(ret);
 }
 
@@ -538,10 +549,12 @@ static int db_drop_routine(THD *thd, int type, sp_name *name)
   DBUG_ENTER("db_drop_routine");
   DBUG_PRINT("enter", ("type: %d name: %.*s", type, name->m_name.length, name->m_name.str));
 
-  if (!(table = open_proc_table_for_update(thd))) DBUG_RETURN(SP_OPEN_TABLE_FAILED);
+  if (!(table = open_proc_table_for_update(thd)))
+    DBUG_RETURN(SP_OPEN_TABLE_FAILED);
   if ((ret = db_find_routine_aux(thd, type, name, table)) == SP_OK)
   {
-    if (table->file->delete_row(table->record[0])) ret = SP_DELETE_ROW_FAILED;
+    if (table->file->delete_row(table->record[0]))
+      ret = SP_DELETE_ROW_FAILED;
   }
   close_thread_tables(thd);
   DBUG_RETURN(ret);
@@ -555,7 +568,8 @@ static int db_update_routine(THD *thd, int type, sp_name *name, st_sp_chistics *
   DBUG_ENTER("db_update_routine");
   DBUG_PRINT("enter", ("type: %d name: %.*s", type, name->m_name.length, name->m_name.str));
 
-  if (!(table = open_proc_table_for_update(thd))) DBUG_RETURN(SP_OPEN_TABLE_FAILED);
+  if (!(table = open_proc_table_for_update(thd)))
+    DBUG_RETURN(SP_OPEN_TABLE_FAILED);
   if ((ret = db_find_routine_aux(thd, type, name, table)) == SP_OK)
   {
     store_record(table, record[1]);
@@ -568,7 +582,8 @@ static int db_update_routine(THD *thd, int type, sp_name *name, st_sp_chistics *
     if (chistics->comment.str)
       table->field[MYSQL_PROC_FIELD_COMMENT]->store(chistics->comment.str, chistics->comment.length,
                                                     system_charset_info);
-    if ((table->file->update_row(table->record[1], table->record[0]))) ret = SP_WRITE_ROW_FAILED;
+    if ((table->file->update_row(table->record[1], table->record[0])))
+      ret = SP_WRITE_ROW_FAILED;
   }
   close_thread_tables(thd);
   DBUG_RETURN(ret);
@@ -602,7 +617,8 @@ static int print_field_values(THD *thd, TABLE *table, struct st_used_field *used
     String name_string;
     struct st_used_field *used_field = used_fields;
 
-    if (get_field(thd->mem_root, used_field->field, &db_string)) db_string.set_ascii("", 0);
+    if (get_field(thd->mem_root, used_field->field, &db_string))
+      db_string.set_ascii("", 0);
     used_field += 1;
     get_field(thd->mem_root, used_field->field, &name_string);
 
@@ -634,7 +650,8 @@ static int print_field_values(THD *thd, TABLE *table, struct st_used_field *used
           break;
         }
       }
-      if (protocol->write()) return SP_INTERNAL_ERROR;
+      if (protocol->write())
+        return SP_INTERNAL_ERROR;
     }
   }
   return SP_OK;
@@ -709,10 +726,12 @@ static int db_show_routine_status(THD *thd, int type, const char *wild)
       res = (res == HA_ERR_END_OF_FILE) ? 0 : SP_INTERNAL_ERROR;
       goto err_case1;
     }
-    if ((res = print_field_values(thd, table, used_fields, type, wild))) goto err_case1;
+    if ((res = print_field_values(thd, table, used_fields, type, wild)))
+      goto err_case1;
     while (!table->file->index_next(table->record[0]))
     {
-      if ((res = print_field_values(thd, table, used_fields, type, wild))) goto err_case1;
+      if ((res = print_field_values(thd, table, used_fields, type, wild)))
+        goto err_case1;
     }
     res = SP_OK;
   }
@@ -738,13 +757,15 @@ int sp_drop_db_routines(THD *thd, char *db)
 
   // Put the key used to read the row together
   keylen = strlen(db);
-  if (keylen > 64) keylen = 64;
+  if (keylen > 64)
+    keylen = 64;
   memcpy(key, db, keylen);
   memset(key + keylen, (int)' ', 64 - keylen);  // Pad with space
   keylen = sizeof(key);
 
   ret = SP_OPEN_TABLE_FAILED;
-  if (!(table = open_proc_table_for_update(thd))) goto err;
+  if (!(table = open_proc_table_for_update(thd)))
+    goto err;
 
   ret = SP_OK;
   table->file->ha_index_init(0);
@@ -764,8 +785,10 @@ int sp_drop_db_routines(THD *thd, char *db)
         break;
       }
     } while (!(nxtres = table->file->index_next_same(table->record[0], key, keylen)));
-    if (nxtres != HA_ERR_END_OF_FILE) ret = SP_KEY_NOT_FOUND;
-    if (deleted) sp_cache_invalidate();
+    if (nxtres != HA_ERR_END_OF_FILE)
+      ret = SP_KEY_NOT_FOUND;
+    if (deleted)
+      sp_cache_invalidate();
   }
   table->file->ha_index_end();
 
@@ -808,7 +831,8 @@ sp_head *sp_find_procedure(THD *thd, sp_name *name, bool cache_only)
 
   if (!(sp = sp_cache_lookup(&thd->sp_proc_cache, name)) && !cache_only)
   {
-    if (db_find_routine(thd, TYPE_ENUM_PROCEDURE, name, &sp) == SP_OK) sp_cache_insert(&thd->sp_proc_cache, sp);
+    if (db_find_routine(thd, TYPE_ENUM_PROCEDURE, name, &sp) == SP_OK)
+      sp_cache_insert(&thd->sp_proc_cache, sp);
   }
 
   DBUG_RETURN(sp);
@@ -832,7 +856,8 @@ int sp_exists_routine(THD *thd, TABLE_LIST *tables, bool any, bool no_error)
     name->init_qname(thd);
     if (sp_find_procedure(thd, name) != NULL || sp_find_function(thd, name) != NULL)
     {
-      if (any) DBUG_RETURN(1);
+      if (any)
+        DBUG_RETURN(1);
       result = 1;
     }
     else if (!any)
@@ -865,7 +890,8 @@ int sp_drop_procedure(THD *thd, sp_name *name)
   DBUG_PRINT("enter", ("name: %.*s", name->m_name.length, name->m_name.str));
 
   ret = db_drop_routine(thd, TYPE_ENUM_PROCEDURE, name);
-  if (!ret) sp_cache_invalidate();
+  if (!ret)
+    sp_cache_invalidate();
   DBUG_RETURN(ret);
 }
 
@@ -876,7 +902,8 @@ int sp_update_procedure(THD *thd, sp_name *name, st_sp_chistics *chistics)
   DBUG_PRINT("enter", ("name: %.*s", name->m_name.length, name->m_name.str));
 
   ret = db_update_routine(thd, TYPE_ENUM_PROCEDURE, name, chistics);
-  if (!ret) sp_cache_invalidate();
+  if (!ret)
+    sp_cache_invalidate();
   DBUG_RETURN(ret);
 }
 
@@ -936,7 +963,8 @@ sp_head *sp_find_function(THD *thd, sp_name *name, bool cache_only)
 
   if (!(sp = sp_cache_lookup(&thd->sp_func_cache, name)) && !cache_only)
   {
-    if (db_find_routine(thd, TYPE_ENUM_FUNCTION, name, &sp) == SP_OK) sp_cache_insert(&thd->sp_func_cache, sp);
+    if (db_find_routine(thd, TYPE_ENUM_FUNCTION, name, &sp) == SP_OK)
+      sp_cache_insert(&thd->sp_func_cache, sp);
   }
   DBUG_RETURN(sp);
 }
@@ -958,7 +986,8 @@ int sp_drop_function(THD *thd, sp_name *name)
   DBUG_PRINT("enter", ("name: %.*s", name->m_name.length, name->m_name.str));
 
   ret = db_drop_routine(thd, TYPE_ENUM_FUNCTION, name);
-  if (!ret) sp_cache_invalidate();
+  if (!ret)
+    sp_cache_invalidate();
   DBUG_RETURN(ret);
 }
 
@@ -969,7 +998,8 @@ int sp_update_function(THD *thd, sp_name *name, st_sp_chistics *chistics)
   DBUG_PRINT("enter", ("name: %.*s", name->m_name.length, name->m_name.str));
 
   ret = db_update_routine(thd, TYPE_ENUM_FUNCTION, name, chistics);
-  if (!ret) sp_cache_invalidate();
+  if (!ret)
+    sp_cache_invalidate();
   DBUG_RETURN(ret);
 }
 
@@ -1180,7 +1210,8 @@ void sp_update_sp_used_routines(HASH *dst, HASH *src)
   for (uint i = 0; i < src->records; i++)
   {
     Sroutine_hash_entry *rt = (Sroutine_hash_entry *)hash_element(src, i);
-    if (!hash_search(dst, (byte *)rt->key.str, rt->key.length)) my_hash_insert(dst, (byte *)rt);
+    if (!hash_search(dst, (byte *)rt->key.str, rt->key.length))
+      my_hash_insert(dst, (byte *)rt);
   }
 }
 
@@ -1414,8 +1445,10 @@ static bool create_string(THD *thd, String *buf, int type, sp_name *name, const 
       /* Do nothing */
       break;
   }
-  if (chistics->detistic) buf->append("    DETERMINISTIC\n", 18);
-  if (chistics->suid == SP_IS_NOT_SUID) buf->append("    SQL SECURITY INVOKER\n", 25);
+  if (chistics->detistic)
+    buf->append("    DETERMINISTIC\n", 18);
+  if (chistics->suid == SP_IS_NOT_SUID)
+    buf->append("    SQL SECURITY INVOKER\n", 25);
   if (chistics->comment.length)
   {
     buf->append("    COMMENT ");
@@ -1436,7 +1469,8 @@ int sp_use_new_db(THD *thd, char *newdb, char *olddb, uint olddblen, bool no_acc
   DBUG_ENTER("sp_use_new_db");
   DBUG_PRINT("enter", ("newdb: %s", newdb));
 
-  if (!newdb) newdb = (char *)"";
+  if (!newdb)
+    newdb = (char *)"";
   if (thd->db && thd->db[0])
   {
     if (my_strcasecmp(system_charset_info, thd->db, newdb) == 0)
@@ -1464,7 +1498,8 @@ int sp_use_new_db(THD *thd, char *newdb, char *olddb, uint olddblen, bool no_acc
   {
     int ret = mysql_change_db(thd, newdb, no_access_check);
 
-    if (!ret) *dbchangedp = TRUE;
+    if (!ret)
+      *dbchangedp = TRUE;
     DBUG_RETURN(ret);
   }
 }

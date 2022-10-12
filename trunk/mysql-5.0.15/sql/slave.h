@@ -331,7 +331,8 @@ typedef struct st_relay_log_info
   */
   inline void notify_group_relay_log_name_update()
   {
-    if (until_condition == UNTIL_RELAY_POS) until_log_names_cmp_result = UNTIL_LOG_NAMES_CMP_UNKNOWN;
+    if (until_condition == UNTIL_RELAY_POS)
+      until_log_names_cmp_result = UNTIL_LOG_NAMES_CMP_UNKNOWN;
   }
 
   /*
@@ -339,7 +340,8 @@ typedef struct st_relay_log_info
   */
   inline void notify_group_master_log_name_update()
   {
-    if (until_condition == UNTIL_MASTER_POS) until_log_names_cmp_result = UNTIL_LOG_NAMES_CMP_UNKNOWN;
+    if (until_condition == UNTIL_MASTER_POS)
+      until_log_names_cmp_result = UNTIL_LOG_NAMES_CMP_UNKNOWN;
   }
 
   inline void inc_event_relay_log_pos() { event_relay_log_pos = future_event_relay_log_pos; }

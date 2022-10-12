@@ -755,7 +755,8 @@ class Query_arena
   inline gptr calloc(unsigned int size)
   {
     gptr ptr;
-    if ((ptr = alloc_root(mem_root, size))) bzero((char *)ptr, size);
+    if ((ptr = alloc_root(mem_root, size)))
+      bzero((char *)ptr, size);
     return ptr;
   }
   inline char *strdup(const char *str) { return strdup_root(mem_root, str); }
@@ -764,7 +765,8 @@ class Query_arena
   inline char *memdup_w_gap(const char *str, uint size, uint gap)
   {
     gptr ptr;
-    if ((ptr = alloc_root(mem_root, size + gap))) memcpy(ptr, str, size);
+    if ((ptr = alloc_root(mem_root, size + gap)))
+      memcpy(ptr, str, size);
     return ptr;
   }
 
@@ -899,14 +901,16 @@ class Statement_map
     {
       Statement *stmt;
       stmt = (Statement *)hash_search(&st_hash, (byte *)&id, sizeof(id));
-      if (stmt && stmt->name.str) return NULL;
+      if (stmt && stmt->name.str)
+        return NULL;
       last_found_statement = stmt;
     }
     return last_found_statement;
   }
   void erase(Statement *statement)
   {
-    if (statement == last_found_statement) last_found_statement = 0;
+    if (statement == last_found_statement)
+      last_found_statement = 0;
     if (statement->name.str)
     {
       hash_delete(&names_hash, (byte *)statement);
@@ -1580,7 +1584,8 @@ class THD : public Statement, public Open_tables_state
   void change_item_tree(Item **place, Item *new_value)
   {
     /* TODO: check for OOM condition here */
-    if (!stmt_arena->is_conventional()) nocheck_register_item_tree_change(place, *place, mem_root);
+    if (!stmt_arena->is_conventional())
+      nocheck_register_item_tree_change(place, *place, mem_root);
     *place = new_value;
   }
   void nocheck_register_item_tree_change(Item **place, Item *old_value, MEM_ROOT *runtime_memroot);
@@ -1595,7 +1600,8 @@ class THD : public Statement, public Open_tables_state
   inline void send_kill_message() const
   {
     int err = killed_errno();
-    if (err) my_message(err, ER(err), MYF(0));
+    if (err)
+      my_message(err, ER(err), MYF(0));
   }
   /* return TRUE if we will abort query if we make a warning now */
   inline bool really_abort_on_warning()
@@ -2011,7 +2017,8 @@ class Unique : public Sql_alloc
   {
     DBUG_ENTER("unique_add");
     DBUG_PRINT("info", ("tree %u - %u", tree.elements_in_tree, max_elements));
-    if (tree.elements_in_tree > max_elements && flush()) DBUG_RETURN(1);
+    if (tree.elements_in_tree > max_elements && flush())
+      DBUG_RETURN(1);
     DBUG_RETURN(!tree_insert(&tree, ptr, 0, tree.custom_arg));
   }
 

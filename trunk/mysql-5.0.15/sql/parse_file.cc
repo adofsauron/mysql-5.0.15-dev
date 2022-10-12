@@ -49,22 +49,28 @@ static my_bool write_escaped_string(IO_CACHE *file, LEX_STRING *val_s)
     switch (*ptr)
     {
       case '\\':  // escape character
-        if (my_b_append(file, (const byte *)"\\\\", 2)) return TRUE;
+        if (my_b_append(file, (const byte *)"\\\\", 2))
+          return TRUE;
         break;
       case '\n':  // parameter value delimiter
-        if (my_b_append(file, (const byte *)"\\n", 2)) return TRUE;
+        if (my_b_append(file, (const byte *)"\\n", 2))
+          return TRUE;
         break;
       case '\0':  // problem for some string processing utilities
-        if (my_b_append(file, (const byte *)"\\0", 2)) return TRUE;
+        if (my_b_append(file, (const byte *)"\\0", 2))
+          return TRUE;
         break;
       case 26:  // problem for windows utilities (Ctrl-Z)
-        if (my_b_append(file, (const byte *)"\\z", 2)) return TRUE;
+        if (my_b_append(file, (const byte *)"\\z", 2))
+          return TRUE;
         break;
       case '\'':  // list of string delimiter
-        if (my_b_append(file, (const byte *)"\\\'", 2)) return TRUE;
+        if (my_b_append(file, (const byte *)"\\\'", 2))
+          return TRUE;
         break;
       default:
-        if (my_b_append(file, (const byte *)ptr, 1)) return TRUE;
+        if (my_b_append(file, (const byte *)ptr, 1))
+          return TRUE;
     }
   }
   return FALSE;
@@ -97,18 +103,21 @@ static my_bool write_parameter(IO_CACHE *file, gptr base, File_option *parameter
     case FILE_OPTIONS_STRING:
     {
       LEX_STRING *val_s = (LEX_STRING *)(base + parameter->offset);
-      if (my_b_append(file, (const byte *)val_s->str, val_s->length)) DBUG_RETURN(TRUE);
+      if (my_b_append(file, (const byte *)val_s->str, val_s->length))
+        DBUG_RETURN(TRUE);
       break;
     }
     case FILE_OPTIONS_ESTRING:
     {
-      if (write_escaped_string(file, (LEX_STRING *)(base + parameter->offset))) DBUG_RETURN(TRUE);
+      if (write_escaped_string(file, (LEX_STRING *)(base + parameter->offset)))
+        DBUG_RETURN(TRUE);
       break;
     }
     case FILE_OPTIONS_ULONGLONG:
     {
       num.set(*((ulonglong *)(base + parameter->offset)), &my_charset_bin);
-      if (my_b_append(file, (const byte *)num.ptr(), num.length())) DBUG_RETURN(TRUE);
+      if (my_b_append(file, (const byte *)num.ptr(), num.length()))
+        DBUG_RETURN(TRUE);
       break;
     }
     case FILE_OPTIONS_REV:
@@ -116,7 +125,8 @@ static my_bool write_parameter(IO_CACHE *file, gptr base, File_option *parameter
       ulonglong *val_i = (ulonglong *)(base + parameter->offset);
       *old_version = (*val_i)++;
       num.set(*val_i, &my_charset_bin);
-      if (my_b_append(file, (const byte *)num.ptr(), num.length())) DBUG_RETURN(TRUE);
+      if (my_b_append(file, (const byte *)num.ptr(), num.length()))
+        DBUG_RETURN(TRUE);
       break;
     }
     case FILE_OPTIONS_TIMESTAMP:
@@ -127,7 +137,8 @@ static my_bool write_parameter(IO_CACHE *file, gptr base, File_option *parameter
 
       get_date(val_s->str, GETDATE_DATE_TIME | GETDATE_GMT | GETDATE_FIXEDLENGTH, tm);
       val_s->length = PARSE_FILE_TIMESTAMPLENGTH;
-      if (my_b_append(file, (const byte *)val_s->str, PARSE_FILE_TIMESTAMPLENGTH)) DBUG_RETURN(TRUE);
+      if (my_b_append(file, (const byte *)val_s->str, PARSE_FILE_TIMESTAMPLENGTH))
+        DBUG_RETURN(TRUE);
       break;
     }
     case FILE_OPTIONS_STRLIST:
@@ -212,7 +223,8 @@ my_bool sql_create_definition_file(const LEX_STRING *dir, const LEX_STRING *file
     DBUG_RETURN(TRUE);
   }
 
-  if (init_io_cache(&file, handler, 0, SEQ_READ_APPEND, 0L, 0, MYF(MY_WME))) goto err_w_file;
+  if (init_io_cache(&file, handler, 0, SEQ_READ_APPEND, 0L, 0, MYF(MY_WME)))
+    goto err_w_file;
 
   // write header (file signature)
   if (my_b_append(&file, (const byte *)"TYPE=", 5) || my_b_append(&file, (const byte *)type->str, type->length) ||
@@ -228,7 +240,8 @@ my_bool sql_create_definition_file(const LEX_STRING *dir, const LEX_STRING *file
       goto err_w_cache;
   }
 
-  if (end_io_cache(&file)) goto err_w_file;
+  if (end_io_cache(&file))
+    goto err_w_file;
 
   if (my_close(handler, MYF(MY_WME)))
   {
@@ -326,7 +339,8 @@ my_bool rename_in_schema_file(const char *schema, const char *old_name, const ch
   strxnmov(new_path, FN_REFLEN, mysql_data_home, "/", schema, "/", new_name, reg_ext, NullS);
   (void)unpack_filename(new_path, new_path);
 
-  if (my_rename(old_path, new_path, MYF(MY_WME))) return 1;
+  if (my_rename(old_path, new_path, MYF(MY_WME)))
+    return 1;
 
   /* check if arc_dir exists */
   strxnmov(arc_path, FN_REFLEN, mysql_data_home, "/", schema, "/arc", NullS);
@@ -421,7 +435,8 @@ File_parser *sql_parse_prepare(const LEX_STRING *file_name, MEM_ROOT *mem_root, 
   // skip signature;
   parser->file_type.str = sign = parser->buff + 5;
   while (*sign >= 'A' && *sign <= 'Z' && sign < end) sign++;
-  if (*sign != '\n') goto frm_error;
+  if (*sign != '\n')
+    goto frm_error;
   parser->file_type.length = sign - parser->file_type.str;
   // EOS for file signature just for safety
   *sign = '\0';
@@ -462,11 +477,13 @@ static char *parse_string(char *ptr, char *end, MEM_ROOT *mem_root, LEX_STRING *
   // get string length
   char *eol = strchr(ptr, '\n');
 
-  if (eol >= end) return 0;
+  if (eol >= end)
+    return 0;
 
   str->length = eol - ptr;
 
-  if (!(str->str = alloc_root(mem_root, str->length + 1))) return 0;
+  if (!(str->str = alloc_root(mem_root, str->length + 1)))
+    return 0;
 
   memcpy(str->str, ptr, str->length);
   str->str[str->length] = '\0';  // just for safety
@@ -497,7 +514,8 @@ my_bool read_escaped_string(char *ptr, char *eol, LEX_STRING *str)
     if (c == '\\')
     {
       ptr++;
-      if (ptr >= eol) return TRUE;
+      if (ptr >= eol)
+        return TRUE;
       /*
         Should be in sync with write_escaped_string() and
         parse_quoted_escaped_string()
@@ -580,16 +598,19 @@ static char *parse_quoted_escaped_string(char *ptr, char *end, MEM_ROOT *mem_roo
   bool escaped = 0;
 
   // starting '
-  if (*(ptr++) != '\'') return 0;
+  if (*(ptr++) != '\'')
+    return 0;
 
   // find ending '
   for (eol = ptr; (*eol != '\'' || escaped) && eol < end; eol++)
   {
-    if (!(escaped = (*eol == '\\' && !escaped))) result_len++;
+    if (!(escaped = (*eol == '\\' && !escaped)))
+      result_len++;
   }
 
   // process string
-  if (eol >= end || !(str->str = alloc_root(mem_root, result_len + 1)) || read_escaped_string(ptr, eol, str)) return 0;
+  if (eol >= end || !(str->str = alloc_root(mem_root, result_len + 1)) || read_escaped_string(ptr, eol, str))
+    return 0;
 
   return eol + 1;
 }
@@ -642,9 +663,11 @@ my_bool File_parser::parse(gptr base, MEM_ROOT *mem_root, struct File_option *pa
       {
         len = parameter->name.length;
         // check length
-        if (len < (end - ptr) && ptr[len] != '=') continue;
+        if (len < (end - ptr) && ptr[len] != '=')
+          continue;
         // check keyword
-        if (memcmp(parameter->name.str, ptr, len) == 0) break;
+        if (memcmp(parameter->name.str, ptr, len) == 0)
+          break;
       }
 
       if (parameter < parameters_end)
@@ -656,7 +679,8 @@ my_bool File_parser::parse(gptr base, MEM_ROOT *mem_root, struct File_option *pa
           (this small optimisation should work, because they should be
           written in same order)
         */
-        if (parameter == parameters + first_param) first_param++;
+        if (parameter == parameters + first_param)
+          first_param++;
 
         // get value
         ptr += (len + 1);
@@ -718,7 +742,8 @@ my_bool File_parser::parse(gptr base, MEM_ROOT *mem_root, struct File_option *pa
             {
               if (!(str = (LEX_STRING *)alloc_root(mem_root, sizeof(LEX_STRING))) || list->push_back(str, mem_root))
                 goto list_err;
-              if (!(ptr = parse_quoted_escaped_string(ptr, end, mem_root, str))) goto list_err_w_message;
+              if (!(ptr = parse_quoted_escaped_string(ptr, end, mem_root, str)))
+                goto list_err_w_message;
               switch (*ptr)
               {
                 case '\n':
@@ -733,7 +758,8 @@ my_bool File_parser::parse(gptr base, MEM_ROOT *mem_root, struct File_option *pa
             }
 
           end_of_list:
-            if (*(ptr++) != '\n') goto list_err;
+            if (*(ptr++) != '\n')
+              goto list_err;
             break;
 
           list_err_w_message:
@@ -768,7 +794,8 @@ my_bool File_parser::parse(gptr base, MEM_ROOT *mem_root, struct File_option *pa
             }
 
           end_of_nlist:
-            if (*(ptr++) != '\n') goto nlist_err;
+            if (*(ptr++) != '\n')
+              goto nlist_err;
             break;
 
           nlist_err_w_message:

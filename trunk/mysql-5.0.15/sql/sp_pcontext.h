@@ -118,14 +118,16 @@ class sp_pcontext : public Sql_alloc
   {
     sp_pvar_t *p = find_pvar(i);
 
-    if (p) p->type = type;
+    if (p)
+      p->type = type;
   }
 
   inline void set_default(uint i, Item *it)
   {
     sp_pvar_t *p = find_pvar(i);
 
-    if (p) p->dflt = it;
+    if (p)
+      p->dflt = it;
   }
 
   void push_pvar(LEX_STRING *name, enum enum_field_types type, sp_param_mode_t mode);
@@ -163,7 +165,8 @@ class sp_pcontext : public Sql_alloc
   {
     sp_label_t *lab = m_label.head();
 
-    if (!lab && m_parent) lab = m_parent->last_label();
+    if (!lab && m_parent)
+      lab = m_parent->last_label();
     return lab;
   }
 

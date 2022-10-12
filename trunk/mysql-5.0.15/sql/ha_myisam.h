@@ -74,7 +74,8 @@ class ha_myisam : public handler
   int index_next_same(byte *buf, const byte *key, uint keylen);
   int ft_init()
   {
-    if (!ft_handler) return 1;
+    if (!ft_handler)
+      return 1;
     ft_handler->please->reinit_search(ft_handler);
     return 0;
   }

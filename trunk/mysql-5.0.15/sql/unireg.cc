@@ -74,22 +74,27 @@ bool mysql_create_frm(THD *thd, my_string file_name, const char *db, const char 
   DBUG_ENTER("mysql_create_frm");
 
   formnames.type_names = 0;
-  if (!(screen_buff = pack_screens(create_fields, &info_length, &screens, 0))) DBUG_RETURN(1);
-  if (db_file == NULL) db_file = get_new_handler((TABLE *)0, create_info->db_type);
+  if (!(screen_buff = pack_screens(create_fields, &info_length, &screens, 0)))
+    DBUG_RETURN(1);
+  if (db_file == NULL)
+    db_file = get_new_handler((TABLE *)0, create_info->db_type);
 
   /* If fixed row records, we need one bit to check for deleted rows */
-  if (!(create_info->table_options & HA_OPTION_PACK_RECORD)) create_info->null_bits++;
+  if (!(create_info->table_options & HA_OPTION_PACK_RECORD))
+    create_info->null_bits++;
   data_offset = (create_info->null_bits + 7) / 8;
 
   if (pack_header(forminfo, create_info->db_type, create_fields, info_length, screens, create_info->table_options,
                   data_offset, db_file))
   {
     my_free((gptr)screen_buff, MYF(0));
-    if (thd->net.last_errno != ER_TOO_MANY_FIELDS) DBUG_RETURN(1);
+    if (thd->net.last_errno != ER_TOO_MANY_FIELDS)
+      DBUG_RETURN(1);
 
     // Try again without UNIREG screens (to get more columns)
     thd->net.last_error[0] = 0;
-    if (!(screen_buff = pack_screens(create_fields, &info_length, &screens, 1))) DBUG_RETURN(1);
+    if (!(screen_buff = pack_screens(create_fields, &info_length, &screens, 1)))
+      DBUG_RETURN(1);
     if (pack_header(forminfo, create_info->db_type, create_fields, info_length, screens, create_info->table_options,
                     data_offset, db_file))
     {
@@ -114,7 +119,8 @@ bool mysql_create_frm(THD *thd, my_string file_name, const char *db, const char 
   keybuff = (uchar *)my_malloc(key_buff_length, MYF(0));
   key_info_length = pack_keys(keybuff, keys, key_info, data_offset);
   VOID(get_form_pos(file, fileinfo, &formnames));
-  if (!(filepos = make_new_entry(file, fileinfo, &formnames, ""))) goto err;
+  if (!(filepos = make_new_entry(file, fileinfo, &formnames, "")))
+    goto err;
   maxlength = (uint)next_io_size((ulong)(uint2korr(forminfo) + 1000));
   int2store(forminfo + 2, maxlength);
   int4store(fileinfo + 10, (ulong)(filepos + maxlength));
@@ -155,7 +161,8 @@ bool mysql_create_frm(THD *thd, my_string file_name, const char *db, const char 
       goto err;
     uint read_length = uint2korr(forminfo) - 256;
     VOID(my_seek(file, filepos + 256, MY_SEEK_SET, MYF(0)));
-    if (read_string(file, (gptr *)&disk_buff, read_length)) goto err;
+    if (read_string(file, (gptr *)&disk_buff, read_length))
+      goto err;
     crypted->encode(disk_buff, read_length);
     delete crypted;
     if (my_pwrite(file, disk_buff, read_length, filepos + 256, MYF_RW))
@@ -170,8 +177,10 @@ bool mysql_create_frm(THD *thd, my_string file_name, const char *db, const char 
   my_free((gptr)screen_buff, MYF(0));
   my_free((gptr)keybuff, MYF(0));
 
-  if (opt_sync_frm && !(create_info->options & HA_LEX_CREATE_TMP_TABLE) && my_sync(file, MYF(MY_WME))) goto err2;
-  if (my_close(file, MYF(MY_WME))) goto err3;
+  if (opt_sync_frm && !(create_info->options & HA_LEX_CREATE_TMP_TABLE) && my_sync(file, MYF(MY_WME)))
+    goto err2;
+  if (my_close(file, MYF(MY_WME)))
+    goto err3;
 
   {
     /* Unescape all UCS2 intervals: were escaped in pack_headers */
@@ -179,7 +188,8 @@ bool mysql_create_frm(THD *thd, my_string file_name, const char *db, const char 
     create_field *field;
     while ((field = it++))
     {
-      if (field->interval && field->charset->mbminlen > 1) unhex_type2(field->interval);
+      if (field->interval && field->charset->mbminlen > 1)
+        unhex_type2(field->interval);
     }
   }
   DBUG_RETURN(0);
@@ -219,7 +229,8 @@ int rea_create_table(THD *thd, my_string file_name, const char *db, const char *
 {
   DBUG_ENTER("rea_create_table");
 
-  if (mysql_create_frm(thd, file_name, db, table, create_info, create_fields, keys, key_info, NULL)) DBUG_RETURN(1);
+  if (mysql_create_frm(thd, file_name, db, table, create_info, create_fields, keys, key_info, NULL))
+    DBUG_RETURN(1);
   if (!create_info->frm_only && ha_create_table(file_name, create_info, 0))
   {
     my_delete(file_name, MYF(0));
@@ -251,7 +262,8 @@ static uchar *pack_screens(List<create_field> &create_fields, uint *info_length,
   create_field *field;
   while ((field = it++)) length += (uint)strlen(field->field_name) + 1 + TE_INFO_LENGTH + cols / 2;
 
-  if (!(info = (uchar *)my_malloc(length, MYF(MY_WME)))) DBUG_RETURN(0);
+  if (!(info = (uchar *)my_malloc(length, MYF(MY_WME))))
+    DBUG_RETURN(0);
 
   start_screen = 0;
   row = end_row;
@@ -279,7 +291,8 @@ static uchar *pack_screens(List<create_field> &create_fields, uint *info_length,
       pos += (cols >> 1) + 4;
     }
     length = (uint)strlen(cfield->field_name);
-    if (length > cols - 3) length = cols - 3;
+    if (length > cols - 3)
+      length = cols - 3;
 
     if (!small_file)
     {
@@ -440,7 +453,8 @@ static bool pack_header(uchar *forminfo, enum db_type table_type, List<create_fi
         int_parts += field->interval->count + 1;
       }
     }
-    if (f_maybe_null(field->pack_flag)) null_fields++;
+    if (f_maybe_null(field->pack_flag))
+      null_fields++;
   }
   int_length += int_count * 2;  // 255 prefix + 0 suffix
 
@@ -550,20 +564,24 @@ static bool pack_fields(File file, List<create_field> &create_fields, ulong data
     int2store(buff + 15, field->comment.length);
     comment_length += field->comment.length;
     set_if_bigger(int_count, field->interval_id);
-    if (my_write(file, (byte *)buff, FCOMP, MYF_RW)) DBUG_RETURN(1);
+    if (my_write(file, (byte *)buff, FCOMP, MYF_RW))
+      DBUG_RETURN(1);
   }
 
   /* Write fieldnames */
   buff[0] = (uchar)NAMES_SEP_CHAR;
-  if (my_write(file, (byte *)buff, 1, MYF_RW)) DBUG_RETURN(1);
+  if (my_write(file, (byte *)buff, 1, MYF_RW))
+    DBUG_RETURN(1);
   i = 0;
   it.rewind();
   while ((field = it++))
   {
     char *pos = strmov((char *)buff, field->field_name);
     *pos++ = NAMES_SEP_CHAR;
-    if (i == create_fields.elements - 1) *pos++ = 0;
-    if (my_write(file, (byte *)buff, (uint)(pos - (char *)buff), MYF_RW)) DBUG_RETURN(1);
+    if (i == create_fields.elements - 1)
+      *pos++ = 0;
+    if (my_write(file, (byte *)buff, (uint)(pos - (char *)buff), MYF_RW))
+      DBUG_RETURN(1);
     i++;
   }
 
@@ -588,7 +606,8 @@ static bool pack_fields(File file, List<create_field> &create_fields, ulong data
         tmp.append('\0');  // End of intervall
       }
     }
-    if (my_write(file, (byte *)tmp.ptr(), tmp.length(), MYF_RW)) DBUG_RETURN(1);
+    if (my_write(file, (byte *)tmp.ptr(), tmp.length(), MYF_RW))
+      DBUG_RETURN(1);
   }
   if (comment_length)
   {
@@ -597,7 +616,8 @@ static bool pack_fields(File file, List<create_field> &create_fields, ulong data
     while ((field = it++))
     {
       if (field->comment.length)
-        if (my_write(file, (byte *)field->comment.str, field->comment.length, MYF_RW)) DBUG_RETURN(1);
+        if (my_write(file, (byte *)field->comment.str, field->comment.length, MYF_RW))
+          DBUG_RETURN(1);
     }
   }
   DBUG_RETURN(0);
@@ -651,7 +671,8 @@ static bool make_empty_rec(THD *thd, File file, enum db_type table_type, uint ta
     Field *regfield = make_field((char *)buff + field->offset + data_offset, field->length, null_pos + null_count / 8,
                                  null_count & 7, field->pack_flag, field->sql_type, field->charset, field->geom_type,
                                  field->unireg_check, field->interval, field->field_name, &table);
-    if (!regfield) goto err;  // End of memory
+    if (!regfield)
+      goto err;  // End of memory
 
     if (!(field->flags & NOT_NULL_FLAG))
     {
@@ -659,7 +680,8 @@ static bool make_empty_rec(THD *thd, File file, enum db_type table_type, uint ta
       null_count++;
     }
 
-    if (field->sql_type == FIELD_TYPE_BIT && !f_bit_as_char(field->pack_flag)) null_count += field->length & 7;
+    if (field->sql_type == FIELD_TYPE_BIT && !f_bit_as_char(field->pack_flag))
+      null_count += field->length & 7;
 
     type = (Field::utype)MTYP_TYPENR(field->unireg_check);
 
@@ -690,7 +712,8 @@ static bool make_empty_rec(THD *thd, File file, enum db_type table_type, uint ta
     We need to set the unused bits to 1. If the number of bits is a multiple
     of 8 there are no unused bits.
   */
-  if (null_count & 7) *(null_pos + null_count / 8) |= ~(((uchar)1 << (null_count & 7)) - 1);
+  if (null_count & 7)
+    *(null_pos + null_count / 8) |= ~(((uchar)1 << (null_count & 7)) - 1);
 
   error = (int)my_write(file, (byte *)buff, (uint)reclength, MYF_RW);
 

@@ -62,7 +62,8 @@ int sp_rcontext::set_item_eval(THD *thd, uint idx, Item **item_addr, enum_field_
 
 bool sp_rcontext::find_handler(uint sql_errno, MYSQL_ERROR::enum_warning_level level)
 {
-  if (m_hfound >= 0) return 1;  // Already got one
+  if (m_hfound >= 0)
+    return 1;  // Already got one
 
   const char *sqlstate = mysql_errno_to_sqlstate(sql_errno);
   int i = m_hcount, found = -1;
@@ -73,30 +74,37 @@ bool sp_rcontext::find_handler(uint sql_errno, MYSQL_ERROR::enum_warning_level l
     int j = m_ihsp;
 
     while (j--)
-      if (m_in_handler[j] == m_handler[i].handler) break;
-    if (j >= 0) continue;  // Already executing this handler
+      if (m_in_handler[j] == m_handler[i].handler)
+        break;
+    if (j >= 0)
+      continue;  // Already executing this handler
 
     switch (cond->type)
     {
       case sp_cond_type_t::number:
-        if (sql_errno == cond->mysqlerr) found = i;  // Always the most specific
+        if (sql_errno == cond->mysqlerr)
+          found = i;  // Always the most specific
         break;
       case sp_cond_type_t::state:
         if (strcmp(sqlstate, cond->sqlstate) == 0 && (found < 0 || m_handler[found].cond->type > sp_cond_type_t::state))
           found = i;
         break;
       case sp_cond_type_t::warning:
-        if ((sqlstate[0] == '0' && sqlstate[1] == '1' || level == MYSQL_ERROR::WARN_LEVEL_WARN) && found < 0) found = i;
+        if ((sqlstate[0] == '0' && sqlstate[1] == '1' || level == MYSQL_ERROR::WARN_LEVEL_WARN) && found < 0)
+          found = i;
         break;
       case sp_cond_type_t::notfound:
-        if (sqlstate[0] == '0' && sqlstate[1] == '2' && found < 0) found = i;
+        if (sqlstate[0] == '0' && sqlstate[1] == '2' && found < 0)
+          found = i;
         break;
       case sp_cond_type_t::exception:
-        if ((sqlstate[0] != '0' || sqlstate[1] > '2') && level == MYSQL_ERROR::WARN_LEVEL_ERROR && found < 0) found = i;
+        if ((sqlstate[0] != '0' || sqlstate[1] > '2') && level == MYSQL_ERROR::WARN_LEVEL_ERROR && found < 0)
+          found = i;
         break;
     }
   }
-  if (found < 0) return FALSE;
+  if (found < 0)
+    return FALSE;
   m_hfound = found;
   return TRUE;
 }
@@ -165,7 +173,8 @@ int sp_cursor::open(THD *thd)
     my_message(ER_SP_CURSOR_ALREADY_OPEN, ER(ER_SP_CURSOR_ALREADY_OPEN), MYF(0));
     return -1;
   }
-  if (mysql_open_cursor(thd, (uint)ALWAYS_MATERIALIZED_CURSOR, &result, &server_side_cursor)) return -1;
+  if (mysql_open_cursor(thd, (uint)ALWAYS_MATERIALIZED_CURSOR, &result, &server_side_cursor))
+    return -1;
   return 0;
 }
 
@@ -202,7 +211,8 @@ int sp_cursor::fetch(THD *thd, List<struct sp_pvar> *vars)
   result.set_spvar_list(vars);
 
   /* Attempt to fetch one row */
-  if (server_side_cursor->is_open()) server_side_cursor->fetch(1);
+  if (server_side_cursor->is_open())
+    server_side_cursor->fetch(1);
 
   /*
     If the cursor was pointing after the last row, the fetch will

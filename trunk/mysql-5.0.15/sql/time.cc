@@ -74,7 +74,8 @@ uint calc_week(TIME *l_time, uint week_behaviour, uint *year)
 
   if (l_time->month == 1 && l_time->day <= 7 - weekday)
   {
-    if (!week_year && (first_weekday && weekday != 0 || !first_weekday && weekday >= 4)) return 0;
+    if (!week_year && (first_weekday && weekday != 0 || !first_weekday && weekday >= 4))
+      return 0;
     week_year = 1;
     (*year)--;
     first_daynr -= (days = calc_days_in_year(*year));
@@ -127,7 +128,8 @@ void get_date_from_daynr(long daynr, uint *ret_year, uint *ret_month, uint *ret_
       if (day_of_year > 31 + 28)
       {
         day_of_year--;
-        if (day_of_year == 31 + 28) leap_day = 1; /* Handle leapyears leapday */
+        if (day_of_year == 31 + 28)
+          leap_day = 1; /* Handle leapyears leapday */
       }
     }
     *ret_month = 1;
@@ -144,7 +146,8 @@ void get_date_from_daynr(long daynr, uint *ret_year, uint *ret_month, uint *ret_
 ulong convert_period_to_month(ulong period)
 {
   ulong a, b;
-  if (period == 0) return 0L;
+  if (period == 0)
+    return 0L;
   if ((a = period / 100) < YY_PART_YEAR)
     a += 2000;
   else if (a < 100)
@@ -156,7 +159,8 @@ ulong convert_period_to_month(ulong period)
 ulong convert_month_to_period(ulong month)
 {
   ulong year;
-  if (month == 0L) return 0L;
+  if (month == 0L)
+    return 0L;
   if ((year = month / 12) < 100)
   {
     year += (year < YY_PART_YEAR) ? 2000 : 1900;
@@ -214,7 +218,8 @@ my_time_t TIME_to_timestamp(THD *thd, const TIME *t, my_bool *in_dst_time_gap)
   {
     thd->time_zone_used = 1;
     timestamp = thd->variables.time_zone->TIME_to_gmt_sec(t, in_dst_time_gap);
-    if (timestamp >= TIMESTAMP_MIN_VALUE && timestamp <= TIMESTAMP_MAX_VALUE) return timestamp;
+    if (timestamp >= TIMESTAMP_MIN_VALUE && timestamp <= TIMESTAMP_MAX_VALUE)
+      return timestamp;
   }
 
   /* If we are here we have range error. */
@@ -232,7 +237,8 @@ bool str_to_time_with_warn(const char *str, uint length, TIME *l_time)
 {
   int was_cut;
   bool ret_val = str_to_time(str, length, l_time, &was_cut);
-  if (was_cut) make_truncated_value_warning(current_thd, str, length, MYSQL_TIMESTAMP_TIME, NullS);
+  if (was_cut)
+    make_truncated_value_warning(current_thd, str, length, MYSQL_TIMESTAMP_TIME, NullS);
   return ret_val;
 }
 
@@ -347,7 +353,8 @@ bool parse_date_time_format(timestamp_type format_type, const char *format, uint
           break;
         case 'f':
           position = 6;
-          if (dt_pos[5] != offset - 1 || ptr[-2] != '.') return 1;  // Wrong usage of %f
+          if (dt_pos[5] != offset - 1 || ptr[-2] != '.')
+            return 1;  // Wrong usage of %f
           break;
         case 'p':           // AM/PM
           if (offset == 0)  // Can't be first
@@ -365,7 +372,8 @@ bool parse_date_time_format(timestamp_type format_type, const char *format, uint
         If switching from time to date, ensure that all time parts
         are used
       */
-      if (part_map && position <= 2 && !(part_map & (1 | 2 | 4))) offset = 5;
+      if (part_map && position <= 2 && !(part_map & (1 | 2 | 4)))
+        offset = 5;
       part_map |= (ulong)1 << position;
       dt_pos[position] = offset++;
       allow_separator = 1;
@@ -376,8 +384,9 @@ bool parse_date_time_format(timestamp_type format_type, const char *format, uint
         Don't allow any characters in format as this could easily confuse
         the date reader
       */
-      if (!allow_separator) return 1;  // No separator here
-      allow_separator = 0;             // Don't allow two separators
+      if (!allow_separator)
+        return 1;           // No separator here
+      allow_separator = 0;  // Don't allow two separators
       separators++;
       /* Store in separator_map which parts are punct characters */
       if (my_ispunct(&my_charset_latin1, *ptr))
@@ -429,7 +438,8 @@ bool parse_date_time_format(timestamp_type format_type, const char *format, uint
   */
   if (dt_pos[7] != 255)
   {
-    if (need_p && parts[7] != parts[6] + 2) separators--;
+    if (need_p && parts[7] != parts[6] + 2)
+      separators--;
   }
   /*
     Calculate if %p is in first or last part of the datetime field
@@ -448,7 +458,8 @@ bool parse_date_time_format(timestamp_type format_type, const char *format, uint
       format_str = known_date_time_formats[INTERNAL_FORMAT].date_format;
     /* fall through */
     case MYSQL_TIMESTAMP_TIME:
-      if (!format_str) format_str = known_date_time_formats[INTERNAL_FORMAT].time_format;
+      if (!format_str)
+        format_str = known_date_time_formats[INTERNAL_FORMAT].time_format;
 
       /*
         If there is no separators, allow the internal format as we can read
@@ -461,7 +472,8 @@ bool parse_date_time_format(timestamp_type format_type, const char *format, uint
       {
         if (format_type == MYSQL_TIMESTAMP_TIME)
         {
-          if (*(format + 2) != *(format + 5)) break;  // Error
+          if (*(format + 2) != *(format + 5))
+            break;  // Error
           /* Store the character used for time formats */
           date_time_format->time_separator = *(format + 2);
         }

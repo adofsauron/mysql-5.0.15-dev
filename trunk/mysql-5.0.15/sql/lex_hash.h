@@ -1131,7 +1131,8 @@ static inline SYMBOL *get_hash_symbol(const char *s, unsigned int len, bool func
   register const char *cur_str = s;
   if (function)
   {
-    if (len > sql_functions_max_len) return 0;
+    if (len > sql_functions_max_len)
+      return 0;
     hash_map = sql_functions_map;
     register uint32 cur_struct = uint4korr(hash_map + ((len - 1) * 4));
 
@@ -1142,7 +1143,8 @@ static inline SYMBOL *get_hash_symbol(const char *s, unsigned int len, bool func
       if (first_char == 0)
       {
         register int16 ires = (int16)(cur_struct >> 16);
-        if (ires == array_elements(symbols)) return 0;
+        if (ires == array_elements(symbols))
+          return 0;
         register SYMBOL *res;
         if (ires >= 0)
           res = symbols + ires;
@@ -1153,9 +1155,11 @@ static inline SYMBOL *get_hash_symbol(const char *s, unsigned int len, bool func
       }
 
       register uchar cur_char = (uchar)to_upper_lex[(uchar)*cur_str];
-      if (cur_char < first_char) return 0;
+      if (cur_char < first_char)
+        return 0;
       cur_struct >>= 8;
-      if (cur_char > (uchar)cur_struct) return 0;
+      if (cur_char > (uchar)cur_struct)
+        return 0;
 
       cur_struct >>= 8;
       cur_struct = uint4korr(hash_map + (((uint16)cur_struct + cur_char - first_char) * 4));
@@ -1164,7 +1168,8 @@ static inline SYMBOL *get_hash_symbol(const char *s, unsigned int len, bool func
   }
   else
   {
-    if (len > symbols_max_len) return 0;
+    if (len > symbols_max_len)
+      return 0;
     hash_map = symbols_map;
     register uint32 cur_struct = uint4korr(hash_map + ((len - 1) * 4));
 
@@ -1175,16 +1180,19 @@ static inline SYMBOL *get_hash_symbol(const char *s, unsigned int len, bool func
       if (first_char == 0)
       {
         register int16 ires = (int16)(cur_struct >> 16);
-        if (ires == array_elements(symbols)) return 0;
+        if (ires == array_elements(symbols))
+          return 0;
         register SYMBOL *res = symbols + ires;
         register uint count = cur_str - s;
         return lex_casecmp(cur_str, res->name + count, len - count) != 0 ? 0 : res;
       }
 
       register uchar cur_char = (uchar)to_upper_lex[(uchar)*cur_str];
-      if (cur_char < first_char) return 0;
+      if (cur_char < first_char)
+        return 0;
       cur_struct >>= 8;
-      if (cur_char > (uchar)cur_struct) return 0;
+      if (cur_char > (uchar)cur_struct)
+        return 0;
 
       cur_struct >>= 8;
       cur_struct = uint4korr(hash_map + (((uint16)cur_struct + cur_char - first_char) * 4));

@@ -64,10 +64,14 @@ struct MBR
   inline void add_xy(double x, double y)
   {
     /* Not using "else" for proper one point MBR calculation */
-    if (x < xmin) xmin = x;
-    if (x > xmax) xmax = x;
-    if (y < ymin) ymin = y;
-    if (y > ymax) ymax = y;
+    if (x < xmin)
+      xmin = x;
+    if (x > xmax)
+      xmax = x;
+    if (y < ymin)
+      ymin = y;
+    if (y > ymax)
+      ymax = y;
   }
   void add_xy(const char *px, const char *py)
   {
@@ -78,10 +82,14 @@ struct MBR
   }
   void add_mbr(const MBR *mbr)
   {
-    if (mbr->xmin < xmin) xmin = mbr->xmin;
-    if (mbr->xmax > xmax) xmax = mbr->xmax;
-    if (mbr->ymin < ymin) ymin = mbr->ymin;
-    if (mbr->ymax > ymax) ymax = mbr->ymax;
+    if (mbr->xmin < xmin)
+      xmin = mbr->xmin;
+    if (mbr->xmax > xmax)
+      xmax = mbr->xmax;
+    if (mbr->ymin < ymin)
+      ymin = mbr->ymin;
+    if (mbr->ymax > ymax)
+      ymax = mbr->ymax;
   }
 
   int equals(const MBR *mbr)
@@ -204,7 +212,8 @@ class Geometry
   static Geometry *create_by_typeid(Geometry_buffer *buffer, int type_id)
   {
     Class_info *ci;
-    if (!(ci = find_class((int)type_id))) return NULL;
+    if (!(ci = find_class((int)type_id)))
+      return NULL;
     (*ci->m_create_func)((void *)buffer);
     return my_reinterpret_cast(Geometry *)(buffer);
   }
@@ -214,10 +223,12 @@ class Geometry
   int as_wkt(String *wkt, const char **end)
   {
     uint32 len = get_class_info()->m_name.length;
-    if (wkt->reserve(len + 2, 512)) return 1;
+    if (wkt->reserve(len + 2, 512))
+      return 1;
     wkt->qs_append(get_class_info()->m_name.str, len);
     wkt->qs_append('(');
-    if (get_data_as_wkt(wkt, end)) return 1;
+    if (get_data_as_wkt(wkt, end))
+      return 1;
     wkt->qs_append(')');
     return 0;
   }
@@ -262,7 +273,8 @@ class Gis_point : public Geometry
   int get_xy(double *x, double *y) const
   {
     const char *data = m_data;
-    if (no_data(data, SIZEOF_STORED_DOUBLE * 2)) return 1;
+    if (no_data(data, SIZEOF_STORED_DOUBLE * 2))
+      return 1;
     float8get(*x, data);
     float8get(*y, data + SIZEOF_STORED_DOUBLE);
     return 0;
@@ -270,7 +282,8 @@ class Gis_point : public Geometry
 
   int get_x(double *x) const
   {
-    if (no_data(m_data, SIZEOF_STORED_DOUBLE)) return 1;
+    if (no_data(m_data, SIZEOF_STORED_DOUBLE))
+      return 1;
     float8get(*x, m_data);
     return 0;
   }
@@ -278,7 +291,8 @@ class Gis_point : public Geometry
   int get_y(double *y) const
   {
     const char *data = m_data;
-    if (no_data(data, SIZEOF_STORED_DOUBLE * 2)) return 1;
+    if (no_data(data, SIZEOF_STORED_DOUBLE * 2))
+      return 1;
     float8get(*y, data + SIZEOF_STORED_DOUBLE);
     return 0;
   }

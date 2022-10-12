@@ -67,7 +67,8 @@ void init_read_record(READ_RECORD *info, THD *thd, TABLE *table, SQL_SELECT *sel
     info->io_cache = tempfile;
     reinit_io_cache(info->io_cache, READ_CACHE, 0L, 0, 0);
     info->ref_pos = table->file->ref;
-    if (!table->file->inited) table->file->ha_rnd_init(0);
+    if (!table->file->inited)
+      table->file->ha_rnd_init(0);
 
     /*
       table->sort.addon_field is checked because if we use addon fields,
@@ -156,7 +157,8 @@ static int rr_quick(READ_RECORD *info)
         tmp = -1;
       else
       {
-        if (info->print_error) info->file->print_error(tmp, MYF(0));
+        if (info->print_error)
+          info->file->print_error(tmp, MYF(0));
         if (tmp < 0)  // Fix negative BDB errno
           tmp = 1;
       }
@@ -182,7 +184,8 @@ static int rr_sequential(READ_RECORD *info)
         tmp = -1;
       else
       {
-        if (info->print_error) info->table->file->print_error(tmp, MYF(0));
+        if (info->print_error)
+          info->table->file->print_error(tmp, MYF(0));
         if (tmp < 0)  // Fix negative BDB errno
           tmp = 1;
       }
@@ -196,7 +199,8 @@ static int rr_from_tempfile(READ_RECORD *info)
 {
   int tmp;
 tryNext:
-  if (my_b_read(info->io_cache, info->ref_pos, info->ref_length)) return -1; /* End of file */
+  if (my_b_read(info->io_cache, info->ref_pos, info->ref_length))
+    return -1; /* End of file */
   if ((tmp = info->file->rnd_pos(info->record, info->ref_pos)))
   {
     if (tmp == HA_ERR_END_OF_FILE)
@@ -205,7 +209,8 @@ tryNext:
       goto tryNext;
     else
     {
-      if (info->print_error) info->file->print_error(tmp, MYF(0));
+      if (info->print_error)
+        info->file->print_error(tmp, MYF(0));
       if (tmp < 0)  // Fix negative BDB errno
         tmp = 1;
     }
@@ -233,7 +238,8 @@ tryNext:
 
 static int rr_unpack_from_tempfile(READ_RECORD *info)
 {
-  if (my_b_read(info->io_cache, info->rec_buf, info->ref_length)) return -1;
+  if (my_b_read(info->io_cache, info->rec_buf, info->ref_length))
+    return -1;
   TABLE *table = info->table;
   (*table->sort.unpack)(table->sort.addon_field, info->rec_buf);
 
@@ -245,7 +251,8 @@ static int rr_from_pointers(READ_RECORD *info)
   int tmp;
   byte *cache_pos;
 tryNext:
-  if (info->cache_pos == info->cache_end) return -1; /* End of file */
+  if (info->cache_pos == info->cache_end)
+    return -1; /* End of file */
   cache_pos = info->cache_pos;
   info->cache_pos += info->ref_length;
 
@@ -257,7 +264,8 @@ tryNext:
       goto tryNext;
     else
     {
-      if (info->print_error) info->file->print_error(tmp, MYF(0));
+      if (info->print_error)
+        info->file->print_error(tmp, MYF(0));
       if (tmp < 0)  // Fix negative BDB errno
         tmp = 1;
     }
@@ -285,7 +293,8 @@ tryNext:
 
 static int rr_unpack_from_buffer(READ_RECORD *info)
 {
-  if (info->cache_pos == info->cache_end) return -1; /* End of buffer */
+  if (info->cache_pos == info->cache_end)
+    return -1; /* End of buffer */
   TABLE *table = info->table;
   (*table->sort.unpack)(table->sort.addon_field, info->cache_pos);
   info->cache_pos += info->ref_length;
@@ -301,7 +310,8 @@ static int init_rr_cache(THD *thd, READ_RECORD *info)
 
   info->struct_length = 3 + MAX_REFLENGTH;
   info->reclength = ALIGN_SIZE(info->table->s->reclength + 1);
-  if (info->reclength < info->struct_length) info->reclength = ALIGN_SIZE(info->struct_length);
+  if (info->reclength < info->struct_length)
+    info->reclength = ALIGN_SIZE(info->struct_length);
 
   info->error_offset = info->table->s->reclength;
   info->cache_records = (thd->variables.read_rnd_buff_size / (info->reclength + info->struct_length));
@@ -338,7 +348,8 @@ static int rr_from_cache(READ_RECORD *info)
       if (info->cache_pos[info->error_offset])
       {
         shortget(error, info->cache_pos);
-        if (info->print_error) info->table->file->print_error(error, MYF(0));
+        if (info->print_error)
+          info->table->file->print_error(error, MYF(0));
       }
       else
       {
@@ -350,7 +361,8 @@ static int rr_from_cache(READ_RECORD *info)
     }
     length = info->rec_cache_size;
     rest_of_file = info->io_cache->end_of_file - my_b_tell(info->io_cache);
-    if ((my_off_t)length > rest_of_file) length = (ulong)rest_of_file;
+    if ((my_off_t)length > rest_of_file)
+      length = (ulong)rest_of_file;
     if (!length || my_b_read(info->io_cache, info->cache, length))
     {
       DBUG_PRINT("info", ("Found end of file"));
@@ -392,16 +404,23 @@ static int rr_from_cache(READ_RECORD *info)
 
 static int rr_cmp(uchar *a, uchar *b)
 {
-  if (a[0] != b[0]) return (int)a[0] - (int)b[0];
-  if (a[1] != b[1]) return (int)a[1] - (int)b[1];
-  if (a[2] != b[2]) return (int)a[2] - (int)b[2];
+  if (a[0] != b[0])
+    return (int)a[0] - (int)b[0];
+  if (a[1] != b[1])
+    return (int)a[1] - (int)b[1];
+  if (a[2] != b[2])
+    return (int)a[2] - (int)b[2];
 #if MAX_REFLENGTH == 4
   return (int)a[3] - (int)b[3];
 #else
-  if (a[3] != b[3]) return (int)a[3] - (int)b[3];
-  if (a[4] != b[4]) return (int)a[4] - (int)b[4];
-  if (a[5] != b[5]) return (int)a[1] - (int)b[5];
-  if (a[6] != b[6]) return (int)a[6] - (int)b[6];
+  if (a[3] != b[3])
+    return (int)a[3] - (int)b[3];
+  if (a[4] != b[4])
+    return (int)a[4] - (int)b[4];
+  if (a[5] != b[5])
+    return (int)a[1] - (int)b[5];
+  if (a[6] != b[6])
+    return (int)a[6] - (int)b[6];
   return (int)a[7] - (int)b[7];
 #endif
 }

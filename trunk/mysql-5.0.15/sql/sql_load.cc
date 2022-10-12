@@ -139,7 +139,8 @@ bool mysql_load(THD *thd, sql_exchange *ex, TABLE_LIST *table_list, List<Item> &
     This needs to be done before external_lock
   */
   ha_enable_transaction(thd, FALSE);
-  if (open_and_lock_tables(thd, table_list)) DBUG_RETURN(TRUE);
+  if (open_and_lock_tables(thd, table_list))
+    DBUG_RETURN(TRUE);
   if (setup_tables(thd, &thd->lex->select_lex.context, &thd->lex->select_lex.top_join_list, table_list, &unused_conds,
                    &thd->lex->select_lex.leaf_tables, FALSE))
     DBUG_RETURN(-1);
@@ -180,7 +181,8 @@ bool mysql_load(THD *thd, sql_exchange *ex, TABLE_LIST *table_list, List<Item> &
       Let us also prepare SET clause, altough it is probably empty
       in this case.
     */
-    if (setup_fields(thd, 0, set_fields, 1, 0, 0) || setup_fields(thd, 0, set_values, 1, 0, 0)) DBUG_RETURN(TRUE);
+    if (setup_fields(thd, 0, set_fields, 1, 0, 0) || setup_fields(thd, 0, set_values, 1, 0, 0))
+      DBUG_RETURN(TRUE);
   }
   else
   {  // Part field list
@@ -199,7 +201,8 @@ bool mysql_load(THD *thd, sql_exchange *ex, TABLE_LIST *table_list, List<Item> &
       check_that_all_fields_are_given_values() and setting use_timestamp
       since it may update query_id for some fields.
     */
-    if (setup_fields(thd, 0, set_values, 1, 0, 0)) DBUG_RETURN(TRUE);
+    if (setup_fields(thd, 0, set_values, 1, 0, 0))
+      DBUG_RETURN(TRUE);
   }
 
   uint tot_length = 0;
@@ -235,7 +238,8 @@ bool mysql_load(THD *thd, sql_exchange *ex, TABLE_LIST *table_list, List<Item> &
   }
 
   /* We can't give an error in the middle when using LOCAL files */
-  if (read_file_from_client && handle_duplicates == DUP_ERROR) ignore = 1;
+  if (read_file_from_client && handle_duplicates == DUP_ERROR)
+    ignore = 1;
 
 #ifndef EMBEDDED_LIBRARY
   if (read_file_from_client)
@@ -259,7 +263,8 @@ bool mysql_load(THD *thd, sql_exchange *ex, TABLE_LIST *table_list, List<Item> &
       (void)fn_format(name, ex->file_name, mysql_real_data_home, "", MY_RELATIVE_PATH | MY_UNPACK_FILENAME);
 #if !defined(__WIN__) && !defined(OS2) && !defined(__NETWARE__)
       MY_STAT stat_info;
-      if (!my_stat(name, &stat_info, MYF(MY_WME))) DBUG_RETURN(TRUE);
+      if (!my_stat(name, &stat_info, MYF(MY_WME)))
+        DBUG_RETURN(TRUE);
 
       // if we are not in slave thread, the file must be:
       if (!thd->slave_thread &&
@@ -272,10 +277,12 @@ bool mysql_load(THD *thd, sql_exchange *ex, TABLE_LIST *table_list, List<Item> &
         my_error(ER_TEXTFILE_NOT_READABLE, MYF(0), name);
         DBUG_RETURN(TRUE);
       }
-      if ((stat_info.st_mode & S_IFIFO) == S_IFIFO) is_fifo = 1;
+      if ((stat_info.st_mode & S_IFIFO) == S_IFIFO)
+        is_fifo = 1;
 #endif
     }
-    if ((file = my_open(name, O_RDONLY, MYF(MY_WME))) < 0) DBUG_RETURN(TRUE);
+    if ((file = my_open(name, O_RDONLY, MYF(MY_WME))) < 0)
+      DBUG_RETURN(TRUE);
   }
 
   COPY_INFO info;
@@ -288,8 +295,9 @@ bool mysql_load(THD *thd, sql_exchange *ex, TABLE_LIST *table_list, List<Item> &
                       *enclosed, info.escape_char, read_file_from_client, is_fifo);
   if (read_info.error)
   {
-    if (file >= 0) my_close(file, MYF(0));  // no files in net reading
-    DBUG_RETURN(TRUE);                      // Can't allocate buffers
+    if (file >= 0)
+      my_close(file, MYF(0));  // no files in net reading
+    DBUG_RETURN(TRUE);         // Can't allocate buffers
   }
 
 #ifndef EMBEDDED_LIBRARY
@@ -312,14 +320,16 @@ bool mysql_load(THD *thd, sql_exchange *ex, TABLE_LIST *table_list, List<Item> &
     while (skip_lines > 0)
     {
       skip_lines--;
-      if (read_info.next_line()) break;
+      if (read_info.next_line())
+        break;
     }
   }
 
   if (!(error = test(read_info.error)))
   {
     table->next_number_field = table->found_next_number_field;
-    if (ignore || handle_duplicates == DUP_REPLACE) table->file->extra(HA_EXTRA_IGNORE_DUP_KEY);
+    if (ignore || handle_duplicates == DUP_REPLACE)
+      table->file->extra(HA_EXTRA_IGNORE_DUP_KEY);
     table->file->start_bulk_insert((ha_rows)0);
     table->copy_blobs = 1;
 
@@ -333,12 +343,14 @@ bool mysql_load(THD *thd, sql_exchange *ex, TABLE_LIST *table_list, List<Item> &
     else
       error = read_sep_field(thd, info, table_list, fields_vars, set_fields, set_values, read_info, *enclosed,
                              skip_lines, ignore);
-    if (table->file->end_bulk_insert()) error = 1; /* purecov: inspected */
+    if (table->file->end_bulk_insert())
+      error = 1; /* purecov: inspected */
     table->file->extra(HA_EXTRA_NO_IGNORE_DUP_KEY);
     table->next_number_field = 0;
   }
   ha_enable_transaction(thd, TRUE);
-  if (file >= 0) my_close(file, MYF(0));
+  if (file >= 0)
+    my_close(file, MYF(0));
   free_blobs(table); /* if pack_blob was used */
   table->copy_blobs = 0;
   thd->count_cuted_fields = CHECK_FIELD_IGNORE;
@@ -351,7 +363,8 @@ bool mysql_load(THD *thd, sql_exchange *ex, TABLE_LIST *table_list, List<Item> &
 
   if (error)
   {
-    if (transactional_table) ha_autocommit_or_rollback(thd, error);
+    if (transactional_table)
+      ha_autocommit_or_rollback(thd, error);
 
     if (read_file_from_client)
       while (!read_info.next_line())
@@ -402,7 +415,8 @@ bool mysql_load(THD *thd, sql_exchange *ex, TABLE_LIST *table_list, List<Item> &
           (ulong)thd->cuted_fields);
   send_ok(thd, info.copied + info.deleted, 0L, name);
 
-  if (!transactional_table) thd->options |= OPTION_STATUS_NO_TRANS_UPDATE;
+  if (!transactional_table)
+    thd->options |= OPTION_STATUS_NO_TRANS_UPDATE;
 #ifndef EMBEDDED_LIBRARY
   if (mysql_bin_log.is_open())
   {
@@ -416,7 +430,8 @@ bool mysql_load(THD *thd, sql_exchange *ex, TABLE_LIST *table_list, List<Item> &
       write_execute_load_query_log_event(thd, handle_duplicates, ignore, transactional_table);
   }
 #endif /*!EMBEDDED_LIBRARY*/
-  if (transactional_table) error = ha_autocommit_or_rollback(thd, error);
+  if (transactional_table)
+    error = ha_autocommit_or_rollback(thd, error);
 
 err:
   if (thd->lock)
@@ -489,7 +504,8 @@ static int read_fixed_length(THD *thd, COPY_INFO &info, TABLE_LIST *table_list, 
     while ((sql_field = (Item_field *)it++))
     {
       Field *field = sql_field->field;
-      if (field == table->next_number_field) table->auto_increment_field_not_null = TRUE;
+      if (field == table->next_number_field)
+        table->auto_increment_field_not_null = TRUE;
       /*
         No fields specified in fields_vars list can be null in this format.
         Mark field as not null, we should do this for each row because of
@@ -507,13 +523,16 @@ static int read_fixed_length(THD *thd, COPY_INFO &info, TABLE_LIST *table_list, 
       {
         uint length;
         byte save_chr;
-        if (field == table->next_number_field) table->auto_increment_field_not_null = TRUE;
-        if ((length = (uint)(read_info.row_end - pos)) > field->field_length) length = field->field_length;
+        if (field == table->next_number_field)
+          table->auto_increment_field_not_null = TRUE;
+        if ((length = (uint)(read_info.row_end - pos)) > field->field_length)
+          length = field->field_length;
         save_chr = pos[length];
         pos[length] = '\0';  // Safeguard aganst malloc
         field->store((char *)pos, length, read_info.read_charset);
         pos[length] = save_chr;
-        if ((pos += length) > read_info.row_end) pos = read_info.row_end; /* Fills rest with space */
+        if ((pos += length) > read_info.row_end)
+          pos = read_info.row_end; /* Fills rest with space */
       }
     }
     if (pos != read_info.row_end)
@@ -536,7 +555,8 @@ static int read_fixed_length(THD *thd, COPY_INFO &info, TABLE_LIST *table_list, 
         DBUG_RETURN(-1);
     }
 
-    if (write_record(thd, table, &info)) DBUG_RETURN(1);
+    if (write_record(thd, table, &info))
+      DBUG_RETURN(1);
     thd->no_trans_update = no_trans_update;
 
     /*
@@ -545,7 +565,8 @@ static int read_fixed_length(THD *thd, COPY_INFO &info, TABLE_LIST *table_list, 
        We can't use insert_id() as we don't want to touch the
        last_insert_id_used flag.
     */
-    if (!id && thd->insert_id_used) id = thd->last_insert_id;
+    if (!id && thd->insert_id_used)
+      id = thd->last_insert_id;
     /*
       We don't need to reset auto-increment field since we are restoring
       its default value at the beginning of each loop iteration.
@@ -561,7 +582,8 @@ static int read_fixed_length(THD *thd, COPY_INFO &info, TABLE_LIST *table_list, 
     thd->row_count++;
   continue_loop:;
   }
-  if (id && !read_info.error) thd->insert_id(id);  // For binary/update log
+  if (id && !read_info.error)
+    thd->insert_id(id);  // For binary/update log
   DBUG_RETURN(test(read_info.error));
 }
 
@@ -596,10 +618,12 @@ static int read_sep_field(THD *thd, COPY_INFO &info, TABLE_LIST *table_list, Lis
       uint length;
       byte *pos;
 
-      if (read_info.read_field()) break;
+      if (read_info.read_field())
+        break;
 
       /* If this line is to be skipped we don't want to fill field or var */
-      if (skip_lines) continue;
+      if (skip_lines)
+        continue;
 
       pos = read_info.row_start;
       length = (uint)(read_info.row_end - pos);
@@ -612,7 +636,8 @@ static int read_sep_field(THD *thd, COPY_INFO &info, TABLE_LIST *table_list, Lis
           Field *field = ((Item_field *)item)->field;
           field->reset();
           field->set_null();
-          if (field == table->next_number_field) table->auto_increment_field_not_null = TRUE;
+          if (field == table->next_number_field)
+            table->auto_increment_field_not_null = TRUE;
           if (!field->maybe_null())
           {
             if (field->type() == FIELD_TYPE_TIMESTAMP)
@@ -631,13 +656,15 @@ static int read_sep_field(THD *thd, COPY_INFO &info, TABLE_LIST *table_list, Lis
         Field *field = ((Item_field *)item)->field;
         field->set_notnull();
         read_info.row_end[0] = 0;  // Safe to change end marker
-        if (field == table->next_number_field) table->auto_increment_field_not_null = TRUE;
+        if (field == table->next_number_field)
+          table->auto_increment_field_not_null = TRUE;
         field->store((char *)pos, length, read_info.read_charset);
       }
       else
         ((Item_user_var_as_out_param *)item)->set_value((char *)pos, length, read_info.read_charset);
     }
-    if (read_info.error) break;
+    if (read_info.error)
+      break;
     if (skip_lines)
     {
       skip_lines--;
@@ -646,7 +673,8 @@ static int read_sep_field(THD *thd, COPY_INFO &info, TABLE_LIST *table_list, Lis
     if (item)
     {
       /* Have not read any field, thus input file is simply ended */
-      if (item == fields_vars.head()) break;
+      if (item == fields_vars.head())
+        break;
       for (; item; item = it++)
       {
         if (item->type() == Item::FIELD_ITEM)
@@ -679,14 +707,16 @@ static int read_sep_field(THD *thd, COPY_INFO &info, TABLE_LIST *table_list, Lis
         DBUG_RETURN(-1);
     }
 
-    if (write_record(thd, table, &info)) DBUG_RETURN(1);
+    if (write_record(thd, table, &info))
+      DBUG_RETURN(1);
     /*
       If auto_increment values are used, save the first one
        for LAST_INSERT_ID() and for the binary/update log.
        We can't use insert_id() as we don't want to touch the
        last_insert_id_used flag.
     */
-    if (!id && thd->insert_id_used) id = thd->last_insert_id;
+    if (!id && thd->insert_id_used)
+      id = thd->last_insert_id;
     /*
       We don't need to reset auto-increment field since we are restoring
       its default value at the beginning of each loop iteration.
@@ -699,12 +729,14 @@ static int read_sep_field(THD *thd, COPY_INFO &info, TABLE_LIST *table_list, Lis
       thd->cuted_fields++; /* To long row */
       push_warning_printf(thd, MYSQL_ERROR::WARN_LEVEL_WARN, ER_WARN_TOO_MANY_RECORDS, ER(ER_WARN_TOO_MANY_RECORDS),
                           thd->row_count);
-      if (thd->killed) DBUG_RETURN(1);
+      if (thd->killed)
+        DBUG_RETURN(1);
     }
     thd->row_count++;
   continue_loop:;
   }
-  if (id && !read_info.error) thd->insert_id(id);  // For binary/update log
+  if (id && !read_info.error)
+    thd->insert_id(id);  // For binary/update log
   DBUG_RETURN(test(read_info.error));
 }
 
@@ -798,9 +830,11 @@ READ_INFO::READ_INFO(File file_par, uint tot_length, CHARSET_INFO *cs, String &f
       need_end_io_cache = 1;
 
 #ifndef EMBEDDED_LIBRARY
-      if (get_it_from_net) cache.read_function = _my_b_net_read;
+      if (get_it_from_net)
+        cache.read_function = _my_b_net_read;
 
-      if (mysql_bin_log.is_open()) cache.pre_read = cache.pre_close = (IO_CACHE_CALLBACK)log_loaded_block;
+      if (mysql_bin_log.is_open())
+        cache.pre_read = cache.pre_close = (IO_CACHE_CALLBACK)log_loaded_block;
 #endif
     }
   }
@@ -810,7 +844,8 @@ READ_INFO::~READ_INFO()
 {
   if (!error)
   {
-    if (need_end_io_cache) ::end_io_cache(&cache);
+    if (need_end_io_cache)
+      ::end_io_cache(&cache);
     my_free((gptr)buffer, MYF(0));
     error = 1;
   }
@@ -830,7 +865,8 @@ inline int READ_INFO::terminator(char *ptr, uint length)
       break;
     }
   }
-  if (i == length) return 1;
+  if (i == length)
+    return 1;
   PUSH(chr);
   while (i-- > 1) PUSH((uchar) * --ptr);
   return 0;
@@ -842,14 +878,16 @@ int READ_INFO::read_field()
   byte *to, *new_buffer;
 
   found_null = 0;
-  if (found_end_of_line) return 1;  // One have to call next_line
+  if (found_end_of_line)
+    return 1;  // One have to call next_line
 
   /* Skip until we find 'line_start' */
 
   if (start_of_line)
   {  // Skip until line_start
     start_of_line = 0;
-    if (find_start_of_fields()) return 1;
+    if (find_start_of_fields())
+      return 1;
   }
   if ((chr = GET) == my_b_EOF)
   {
@@ -883,15 +921,18 @@ int READ_INFO::read_field()
         for (i = 1; i < ml; i++)
         {
           chr = GET;
-          if (chr == my_b_EOF) goto found_eof;
+          if (chr == my_b_EOF)
+            goto found_eof;
           *to++ = chr;
         }
-        if (my_ismbchar(read_charset, (const char *)p, (const char *)to)) continue;
+        if (my_ismbchar(read_charset, (const char *)p, (const char *)to))
+          continue;
         for (i = 0; i < ml; i++) PUSH((uchar) * --to);
         chr = GET;
       }
 #endif
-      if (chr == my_b_EOF) goto found_eof;
+      if (chr == my_b_EOF)
+        goto found_eof;
       if (chr == escape_char)
       {
         if ((chr = GET) == my_b_EOF)
@@ -963,7 +1004,8 @@ int READ_INFO::read_field()
     /*
     ** We come here if buffer is too small. Enlarge it and continue
     */
-    if (!(new_buffer = (byte *)my_realloc((char *)buffer, buff_length + 1 + IO_SIZE, MYF(MY_WME)))) return (error = 1);
+    if (!(new_buffer = (byte *)my_realloc((char *)buffer, buff_length + 1 + IO_SIZE, MYF(MY_WME))))
+      return (error = 1);
     to = new_buffer + (to - buffer);
     buffer = new_buffer;
     buff_length += IO_SIZE;
@@ -997,18 +1039,21 @@ int READ_INFO::read_fixed_length()
 {
   int chr;
   byte *to;
-  if (found_end_of_line) return 1;  // One have to call next_line
+  if (found_end_of_line)
+    return 1;  // One have to call next_line
 
   if (start_of_line)
   {  // Skip until line_start
     start_of_line = 0;
-    if (find_start_of_fields()) return 1;
+    if (find_start_of_fields())
+      return 1;
   }
 
   to = row_start = buffer;
   while (to < end_of_buff)
   {
-    if ((chr = GET) == my_b_EOF) goto found_eof;
+    if ((chr = GET) == my_b_EOF)
+      goto found_eof;
     if (chr == escape_char)
     {
       if ((chr = GET) == my_b_EOF)
@@ -1050,7 +1095,8 @@ int READ_INFO::next_line()
     return eof;
   }
   found_end_of_line = 0;
-  if (!line_term_length) return 0;  // No lines
+  if (!line_term_length)
+    return 0;  // No lines
   for (;;)
   {
     int chr = GET;
@@ -1058,7 +1104,8 @@ int READ_INFO::next_line()
     if (my_mbcharlen(read_charset, chr) > 1)
     {
       for (int i = 1; chr != my_b_EOF && i < my_mbcharlen(read_charset, chr); i++) chr = GET;
-      if (chr == escape_char) continue;
+      if (chr == escape_char)
+        continue;
     }
 #endif
     if (chr == my_b_EOF)
@@ -1069,10 +1116,12 @@ int READ_INFO::next_line()
     if (chr == escape_char)
     {
       line_cuted = 1;
-      if (GET == my_b_EOF) return 1;
+      if (GET == my_b_EOF)
+        return 1;
       continue;
     }
-    if (chr == line_term_char && terminator(line_term_ptr, line_term_length)) return 0;
+    if (chr == line_term_char && terminator(line_term_ptr, line_term_length))
+      return 0;
     line_cuted = 1;
   }
 }

@@ -27,8 +27,10 @@ bool mysql_union(THD *thd, LEX *lex, select_result *result, SELECT_LEX_UNIT *uni
 {
   DBUG_ENTER("mysql_union");
   bool res;
-  if (!(res = unit->prepare(thd, result, SELECT_NO_UNLOCK | setup_tables_done_option))) res = unit->exec();
-  if (res || !thd->cursor || !thd->cursor->is_open()) res |= unit->cleanup();
+  if (!(res = unit->prepare(thd, result, SELECT_NO_UNLOCK | setup_tables_done_option)))
+    res = unit->exec();
+  if (res || !thd->cursor || !thd->cursor->is_open())
+    res |= unit->cleanup();
   DBUG_RETURN(res);
 }
 
@@ -51,7 +53,8 @@ bool select_union::send_data(List<Item> &values)
     return 0;
   }
   fill_record(thd, table->field, values, 1);
-  if (thd->net.report_error) return 1;
+  if (thd->net.report_error)
+    return 1;
 
   if ((error = table->file->write_row(table->record[0])))
   {
@@ -181,8 +184,10 @@ bool st_select_lex_unit::prepare(THD *thd_arg, select_result *sel_result, ulong 
 
   if (is_union)
   {
-    if (!(tmp_result = union_result = new select_union)) goto err;
-    if (describe) tmp_result = sel_result;
+    if (!(tmp_result = union_result = new select_union))
+      goto err;
+    if (describe)
+      tmp_result = sel_result;
   }
   else
     tmp_result = sel_result;
@@ -201,7 +206,8 @@ bool st_select_lex_unit::prepare(THD *thd_arg, select_result *sel_result, ulong 
       SELECT (for union it can be only INSERT ... SELECT).
     */
     additional_options &= ~OPTION_SETUP_TABLES_DONE;
-    if (!join) goto err;
+    if (!join)
+      goto err;
 
     thd_arg->lex->current_select = sl;
 
@@ -215,7 +221,8 @@ bool st_select_lex_unit::prepare(THD *thd_arg, select_result *sel_result, ulong 
     sl->with_wild = 0;
     last_procedure = join->procedure;
 
-    if ((res = (res || thd_arg->is_fatal_error))) goto err;
+    if ((res = (res || thd_arg->is_fatal_error)))
+      goto err;
     /*
       Use items list of underlaid select for derived tables to preserve
       information about fields lengths and exact types
@@ -241,7 +248,8 @@ bool st_select_lex_unit::prepare(THD *thd_arg, select_result *sel_result, ulong 
         types.push_back(new Item_type_holder(thd_arg, item_tmp));
       }
 
-      if (thd_arg->is_fatal_error) goto err;  // out of memory
+      if (thd_arg->is_fatal_error)
+        goto err;  // out of memory
     }
     else
     {
@@ -255,7 +263,8 @@ bool st_select_lex_unit::prepare(THD *thd_arg, select_result *sel_result, ulong 
       Item *type, *item_tmp;
       while ((type = tp++, item_tmp = it++))
       {
-        if (((Item_type_holder *)type)->join_types(thd_arg, item_tmp)) DBUG_RETURN(TRUE);
+        if (((Item_type_holder *)type)->join_types(thd_arg, item_tmp))
+          DBUG_RETURN(TRUE);
       }
     }
   }
@@ -286,9 +295,11 @@ bool st_select_lex_unit::prepare(THD *thd_arg, select_result *sel_result, ulong 
       from it (this should be removed in 5.2 when fulltext search is moved
       out of MyISAM).
     */
-    if (global_parameters->ftfunc_list->elements) create_options = create_options | TMP_TABLE_FORCE_MYISAM;
+    if (global_parameters->ftfunc_list->elements)
+      create_options = create_options | TMP_TABLE_FORCE_MYISAM;
 
-    if (union_result->create_result_table(thd, &types, test(union_distinct), create_options, "")) goto err;
+    if (union_result->create_result_table(thd, &types, test(union_distinct), create_options, ""))
+      goto err;
     bzero((char *)&result_table_list, sizeof(result_table_list));
     result_table_list.db = (char *)"";
     result_table_list.table_name = result_table_list.alias = (char *)"union";
@@ -303,9 +314,11 @@ bool st_select_lex_unit::prepare(THD *thd_arg, select_result *sel_result, ulong 
 
       res = table->fill_item_list(&item_list);
 
-      if (arena) thd->restore_active_arena(arena, &backup_arena);
+      if (arena)
+        thd->restore_active_arena(arena, &backup_arena);
 
-      if (res) goto err;
+      if (res)
+        goto err;
 
       if (thd->stmt_arena->is_stmt_prepare())
       {
@@ -357,12 +370,14 @@ bool st_select_lex_unit::exec()
   ha_rows examined_rows = 0;
   DBUG_ENTER("st_select_lex_unit::exec");
 
-  if (executed && !uncacheable && !describe) DBUG_RETURN(FALSE);
+  if (executed && !uncacheable && !describe)
+    DBUG_RETURN(FALSE);
   executed = 1;
 
   if (uncacheable || !item || !item->assigned() || describe)
   {
-    if (item) item->reset_value_registration();
+    if (item)
+      item->reset_value_registration();
     if (optimized && item)
     {
       if (item->assigned())
@@ -372,7 +387,8 @@ bool st_select_lex_unit::exec()
         table->file->delete_all_rows();
       }
       /* re-enabling indexes for next subselect iteration */
-      if (union_distinct && table->file->enable_indexes(HA_KEY_SWITCH_ALL)) DBUG_ASSERT(0);
+      if (union_distinct && table->file->enable_indexes(HA_KEY_SWITCH_ALL))
+        DBUG_ASSERT(0);
     }
     for (SELECT_LEX *sl = select_cursor; sl; sl = sl->next_select())
     {
@@ -391,7 +407,8 @@ bool st_select_lex_unit::exec()
             We can't use LIMIT at this stage if we are using ORDER BY for the
             whole query
           */
-          if (sl->order_list.first || describe) select_limit_cnt = HA_POS_ERROR;
+          if (sl->order_list.first || describe)
+            select_limit_cnt = HA_POS_ERROR;
         }
 
         /*
@@ -410,7 +427,8 @@ bool st_select_lex_unit::exec()
         sl->join->exec();
         if (sl == union_distinct)
         {
-          if (table->file->disable_indexes(HA_KEY_SWITCH_ALL)) DBUG_RETURN(TRUE);
+          if (table->file->disable_indexes(HA_KEY_SWITCH_ALL))
+            DBUG_RETURN(TRUE);
           table->no_keyread = 1;
         }
         res = sl->join->error;
@@ -521,7 +539,8 @@ bool st_select_lex_unit::cleanup()
   {
     delete union_result;
     union_result = 0;  // Safety
-    if (table) free_tmp_table(thd, table);
+    if (table)
+      free_tmp_table(thd, table);
     table = 0;  // Safety
   }
 
@@ -581,9 +600,11 @@ bool st_select_lex_unit::change_result(select_subselect *result, select_subselec
   for (SELECT_LEX *sl = first_select(); sl; sl = sl->next_select())
   {
     if (sl->join && sl->join->result == old_result)
-      if (sl->join->change_result(result)) return TRUE;
+      if (sl->join->change_result(result))
+        return TRUE;
   }
-  if (fake_select_lex && fake_select_lex->join) res = fake_select_lex->join->change_result(result);
+  if (fake_select_lex && fake_select_lex->join)
+    res = fake_select_lex->join->change_result(result);
   return (res);
 }
 
@@ -642,7 +663,8 @@ void st_select_lex::cleanup_all_joins(bool full)
   SELECT_LEX_UNIT *unit;
   SELECT_LEX *sl;
 
-  if (join) join->cleanup(full);
+  if (join)
+    join->cleanup(full);
 
   for (unit = first_inner_unit(); unit; unit = unit->next_unit())
     for (sl = unit->first_select(); sl; sl = sl->next_select()) sl->cleanup_all_joins(full);

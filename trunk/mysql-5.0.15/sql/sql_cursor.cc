@@ -147,7 +147,8 @@ int mysql_open_cursor(THD *thd, uint flags, select_result *result, Server_side_c
     The lifetime of the sensitive cursor is the same or less as the
     lifetime of the runtime memory of the statement it's opened for.
   */
-  if (!(result_materialize = new (thd->mem_root) Select_materialize(result))) return 1;
+  if (!(result_materialize = new (thd->mem_root) Select_materialize(result)))
+    return 1;
 
   if (!(sensitive_cursor = new (thd->mem_root) Sensitive_cursor(thd, result)))
   {
@@ -185,7 +186,8 @@ int mysql_open_cursor(THD *thd, uint flags, select_result *result, Server_side_c
       network, bypassing select_result mechanism. An example of
       such command is SHOW VARIABLES or SHOW STATUS.
   */
-  if (rc) goto err_open;
+  if (rc)
+    goto err_open;
 
   if (sensitive_cursor->is_open())
   {
@@ -226,7 +228,8 @@ int mysql_open_cursor(THD *thd, uint flags, select_result *result, Server_side_c
 err_open:
   DBUG_ASSERT(!(sensitive_cursor && sensitive_cursor->is_open()));
   delete sensitive_cursor;
-  if (result_materialize->table) free_tmp_table(thd, result_materialize->table);
+  if (result_materialize->table)
+    free_tmp_table(thd, result_materialize->table);
 end:
   delete result_materialize;
   return rc;
@@ -358,7 +361,8 @@ int Sensitive_cursor::open(JOIN *join_arg)
   /* Disable JOIN CACHE as it is not working with cursors yet */
   for (JOIN_TAB *tab = join_tab; tab != join->join_tab + join->tables - 1; tab++)
   {
-    if (tab->next_select == sub_select_cache) tab->next_select = sub_select;
+    if (tab->next_select == sub_select_cache)
+      tab->next_select = sub_select;
   }
 
   DBUG_ASSERT(join_tab->table->reginfo.not_exists_optimize == 0);
@@ -412,9 +416,12 @@ void Sensitive_cursor::fetch(ulong num_rows)
   join->fetch_limit += num_rows;
 
   error = sub_select(join, join_tab, 0);
-  if (error == NESTED_LOOP_OK || error == NESTED_LOOP_NO_MORE_ROWS) error = sub_select(join, join_tab, 1);
-  if (error == NESTED_LOOP_QUERY_LIMIT) error = NESTED_LOOP_OK; /* select_limit used */
-  if (error == NESTED_LOOP_CURSOR_LIMIT) join->resume_nested_loop = TRUE;
+  if (error == NESTED_LOOP_OK || error == NESTED_LOOP_NO_MORE_ROWS)
+    error = sub_select(join, join_tab, 1);
+  if (error == NESTED_LOOP_QUERY_LIMIT)
+    error = NESTED_LOOP_OK; /* select_limit used */
+  if (error == NESTED_LOOP_CURSOR_LIMIT)
+    join->resume_nested_loop = TRUE;
 
 #ifdef USING_TRANSACTIONS
   ha_release_temporary_latches(thd);
@@ -493,7 +500,8 @@ void Sensitive_cursor::close()
 
 Sensitive_cursor::~Sensitive_cursor()
 {
-  if (is_open()) close();
+  if (is_open())
+    close();
 }
 
 /***************************************************************************
@@ -544,7 +552,8 @@ void Materialized_cursor::fetch(ulong num_rows)
   int res = 0;
   for (fetch_limit += num_rows; fetch_count < fetch_limit; fetch_count++)
   {
-    if ((res = table->file->rnd_next(table->record[0]))) break;
+    if ((res = table->file->rnd_next(table->record[0])))
+      break;
     /* Send data only if the read was successful. */
     result->send_data(item_list);
   }
@@ -587,7 +596,8 @@ void Materialized_cursor::close()
 
 Materialized_cursor::~Materialized_cursor()
 {
-  if (is_open()) close();
+  if (is_open())
+    close();
 }
 
 /***************************************************************************

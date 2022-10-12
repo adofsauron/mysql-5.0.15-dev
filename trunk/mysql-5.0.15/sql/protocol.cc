@@ -41,7 +41,8 @@ bool Protocol_prep::net_store_data(const char *from, uint length)
      The +9 comes from that strings of length longer than 16M require
      9 bytes to be stored (see net_store_length).
   */
-  if (packet_length + 9 + length > packet->alloced_length() && packet->realloc(packet_length + 9 + length)) return 1;
+  if (packet_length + 9 + length > packet->alloced_length() && packet->realloc(packet_length + 9 + length))
+    return 1;
   char *to = (char *)net_store_length((char *)packet->ptr() + packet_length, (ulonglong)length);
   memcpy(to, from, length);
   packet->length((uint)(to + length - packet->ptr()));
@@ -306,7 +307,8 @@ void send_ok(THD *thd, ha_rows affected_rows, ulonglong id, const char *message)
     int2store(pos, thd->server_status);
     pos += 2;
   }
-  if (message) pos = net_store_data((char *)pos, message, strlen(message));
+  if (message)
+    pos = net_store_data((char *)pos, message, strlen(message));
   VOID(my_net_write(net, buff, (uint)(pos - buff)));
   VOID(net_flush(net));
   /* We can't anymore send an error to the client */
@@ -377,7 +379,8 @@ static void write_eof_packet(THD *thd, NET *net)
       because if 'is_fatal_error' is set the server is not going to execute
       other queries (see the if test in dispatch_command / COM_QUERY)
     */
-    if (thd->is_fatal_error) thd->server_status &= ~SERVER_MORE_RESULTS_EXISTS;
+    if (thd->is_fatal_error)
+      thd->server_status &= ~SERVER_MORE_RESULTS_EXISTS;
     int2store(buff + 3, thd->server_status);
     VOID(my_net_write(net, (char *)buff, 5));
   }
@@ -533,7 +536,8 @@ bool Protocol::send_fields(List<Item> *list, uint flags)
     item->make_field(&field);
 
     /* Keep things compatible for old clients */
-    if (field.type == MYSQL_TYPE_VARCHAR) field.type = MYSQL_TYPE_VAR_STRING;
+    if (field.type == MYSQL_TYPE_VARCHAR)
+      field.type = MYSQL_TYPE_VAR_STRING;
 
     prot.prepare_for_resend();
 
@@ -604,14 +608,17 @@ bool Protocol::send_fields(List<Item> *list, uint flags)
       }
     }
     local_packet->length((uint)(pos - local_packet->ptr()));
-    if (flags & SEND_DEFAULTS) item->send(&prot, &tmp);  // Send default value
-    if (prot.write()) break;                             /* purecov: inspected */
+    if (flags & SEND_DEFAULTS)
+      item->send(&prot, &tmp);  // Send default value
+    if (prot.write())
+      break; /* purecov: inspected */
 #ifndef DEBUG_OFF
     field_types[count++] = field.type;
 #endif
   }
 
-  if (flags & SEND_EOF) write_eof_packet(thd, &thd->net);
+  if (flags & SEND_EOF)
+    write_eof_packet(thd, &thd->net);
   DBUG_RETURN(prepare_for_send(list));
 
 err:
@@ -643,7 +650,8 @@ bool Protocol::write()
 
 bool Protocol::store(const char *from, CHARSET_INFO *cs)
 {
-  if (!from) return store_null();
+  if (!from)
+    return store_null();
   uint length = strlen(from);
   return store(from, length, cs);
 }
@@ -666,7 +674,8 @@ bool Protocol::store(I_List<i_string> *str_list)
     tmp.append(s->ptr);
     tmp.append(',');
   }
-  if ((len = tmp.length())) len--;  // Remove last ','
+  if ((len = tmp.length()))
+    len--;  // Remove last ','
   return store((char *)tmp.ptr(), len, tmp.charset());
 }
 
@@ -814,7 +823,8 @@ bool Protocol_simple::store(double from, uint32 decimals, String *buffer)
 
 bool Protocol_simple::store(Field *field)
 {
-  if (field->is_null()) return store_null();
+  if (field->is_null())
+    return store_null();
 #ifndef DEBUG_OFF
   field_pos++;
 #endif
@@ -843,7 +853,8 @@ bool Protocol_simple::store(TIME *tm)
   uint length;
   length = my_sprintf(buff, (buff, "%04d-%02d-%02d %02d:%02d:%02d", (int)tm->year, (int)tm->month, (int)tm->day,
                              (int)tm->hour, (int)tm->minute, (int)tm->second));
-  if (tm->second_part) length += my_sprintf(buff + length, (buff + length, ".%06d", (int)tm->second_part));
+  if (tm->second_part)
+    length += my_sprintf(buff + length, (buff + length, ".%06d", (int)tm->second_part));
   return net_store_data((char *)buff, length);
 }
 
@@ -875,7 +886,8 @@ bool Protocol_simple::store_time(TIME *tm)
   uint day = (tm->year || tm->month) ? 0 : tm->day;
   length = my_sprintf(buff, (buff, "%s%02ld:%02d:%02d", tm->neg ? "-" : "", (long)day * 24L + (long)tm->hour,
                              (int)tm->minute, (int)tm->second));
-  if (tm->second_part) length += my_sprintf(buff + length, (buff + length, ".%06d", (int)tm->second_part));
+  if (tm->second_part)
+    length += my_sprintf(buff + length, (buff + length, ".%06d", (int)tm->second_part));
   return net_store_data((char *)buff, length);
 }
 
@@ -902,7 +914,8 @@ bool Protocol_prep::prepare_for_send(List<Item> *item_list)
 {
   Protocol::prepare_for_send(item_list);
   bit_fields = (field_count + 9) / 8;
-  if (packet->alloc(bit_fields + 1)) return 1;
+  if (packet->alloc(bit_fields + 1))
+    return 1;
   /* prepare_for_resend will be called after this one */
   return 0;
 }
@@ -949,7 +962,8 @@ bool Protocol_prep::store_short(longlong from)
 {
   field_pos++;
   char *to = packet->prep_append(2, PACKET_BUFFER_EXTRA_ALLOC);
-  if (!to) return 1;
+  if (!to)
+    return 1;
   int2store(to, (int)from);
   return 0;
 }
@@ -958,7 +972,8 @@ bool Protocol_prep::store_long(longlong from)
 {
   field_pos++;
   char *to = packet->prep_append(4, PACKET_BUFFER_EXTRA_ALLOC);
-  if (!to) return 1;
+  if (!to)
+    return 1;
   int4store(to, from);
   return 0;
 }
@@ -967,7 +982,8 @@ bool Protocol_prep::store_longlong(longlong from, bool unsigned_flag)
 {
   field_pos++;
   char *to = packet->prep_append(8, PACKET_BUFFER_EXTRA_ALLOC);
-  if (!to) return 1;
+  if (!to)
+    return 1;
   int8store(to, from);
   return 0;
 }
@@ -988,7 +1004,8 @@ bool Protocol_prep::store(float from, uint32 decimals, String *buffer)
 {
   field_pos++;
   char *to = packet->prep_append(4, PACKET_BUFFER_EXTRA_ALLOC);
-  if (!to) return 1;
+  if (!to)
+    return 1;
   float4store(to, from);
   return 0;
 }
@@ -997,7 +1014,8 @@ bool Protocol_prep::store(double from, uint32 decimals, String *buffer)
 {
   field_pos++;
   char *to = packet->prep_append(8, PACKET_BUFFER_EXTRA_ALLOC);
-  if (!to) return 1;
+  if (!to)
+    return 1;
   float8store(to, from);
   return 0;
 }
@@ -1008,7 +1026,8 @@ bool Protocol_prep::store(Field *field)
     We should not increment field_pos here as send_binary() will call another
     protocol function to do this for us
   */
-  if (field->is_null()) return store_null();
+  if (field->is_null())
+    return store_null();
   return field->send_binary(this);
 }
 

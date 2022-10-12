@@ -77,7 +77,8 @@ class Bitmap
     char *s = buf;
     const uchar *e = buffer, *b = e + sizeof(buffer) - 1;
     while (!*b && b > e) b--;
-    if ((*s = _dig_vec_upper[*b >> 4]) != '0') s++;
+    if ((*s = _dig_vec_upper[*b >> 4]) != '0')
+      s++;
     *s++ = _dig_vec_upper[*b & 15];
     while (--b >= e)
     {
@@ -89,7 +90,8 @@ class Bitmap
   }
   ulonglong to_ulonglong() const
   {
-    if (sizeof(buffer) >= 8) return uint8korr(buffer);
+    if (sizeof(buffer) >= 8)
+      return uint8korr(buffer);
     DBUG_ASSERT(sizeof(buffer) >= 4);
     return (ulonglong)uint4korr(buffer);
   }

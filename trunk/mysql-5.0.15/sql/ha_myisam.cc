@@ -100,7 +100,8 @@ static void mi_check_print_msg(MI_CHECK *param, const char *msg_type, const char
   protocol->store(param->op_name, system_charset_info);
   protocol->store(msg_type, system_charset_info);
   protocol->store(msgbuf, msg_length, system_charset_info);
-  if (protocol->write()) sql_print_error("Failed on my_net_write, writing to stderr instead: %s\n", msgbuf);
+  if (protocol->write())
+    sql_print_error("Failed on my_net_write, writing to stderr instead: %s\n", msgbuf);
   return;
 }
 
@@ -173,7 +174,8 @@ int ha_myisam::net_read_dump(NET *net)
   for (;;)
   {
     ulong packet_len = my_net_read(net);
-    if (!packet_len) break;  // end of file
+    if (!packet_len)
+      break;  // end of file
     if (packet_len == packet_error)
     {
       sql_print_error("ha_myisam::net_read_dump - read error ");
@@ -198,7 +200,8 @@ int ha_myisam::dump(THD *thd, int fd)
   my_off_t bytes_to_read = share->state.state.data_file_length;
   int data_fd = file->dfile;
   byte *buf = (byte *)my_malloc(blocksize, MYF(MY_WME));
-  if (!buf) return ENOMEM;
+  if (!buf)
+    return ENOMEM;
 
   int error = 0;
   my_seek(data_fd, 0L, MY_SEEK_SET, MYF(MY_WME));
@@ -246,13 +249,18 @@ err:
 
 int ha_myisam::open(const char *name, int mode, uint test_if_locked)
 {
-  if (!(file = mi_open(name, mode, test_if_locked))) return (my_errno ? my_errno : -1);
+  if (!(file = mi_open(name, mode, test_if_locked)))
+    return (my_errno ? my_errno : -1);
 
-  if (test_if_locked & (HA_OPEN_IGNORE_IF_LOCKED | HA_OPEN_TMP_TABLE)) VOID(mi_extra(file, HA_EXTRA_NO_WAIT_LOCK, 0));
+  if (test_if_locked & (HA_OPEN_IGNORE_IF_LOCKED | HA_OPEN_TMP_TABLE))
+    VOID(mi_extra(file, HA_EXTRA_NO_WAIT_LOCK, 0));
   info(HA_STATUS_NO_LOCK | HA_STATUS_VARIABLE | HA_STATUS_CONST);
-  if (!(test_if_locked & HA_OPEN_WAIT_IF_LOCKED)) VOID(mi_extra(file, HA_EXTRA_WAIT_LOCK, 0));
-  if (!table->s->db_record_offset) int_table_flags |= HA_REC_NOT_IN_SEQ;
-  if (file->s->options & (HA_OPTION_CHECKSUM | HA_OPTION_COMPRESS_RECORD)) int_table_flags |= HA_HAS_CHECKSUM;
+  if (!(test_if_locked & HA_OPEN_WAIT_IF_LOCKED))
+    VOID(mi_extra(file, HA_EXTRA_WAIT_LOCK, 0));
+  if (!table->s->db_record_offset)
+    int_table_flags |= HA_REC_NOT_IN_SEQ;
+  if (file->s->options & (HA_OPTION_CHECKSUM | HA_OPTION_COMPRESS_RECORD))
+    int_table_flags |= HA_HAS_CHECKSUM;
   return (0);
 }
 
@@ -268,19 +276,22 @@ int ha_myisam::write_row(byte *buf)
   statistic_increment(table->in_use->status_var.ha_write_count, &LOCK_status);
 
   /* If we have a timestamp column, update it to the current time */
-  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_INSERT) table->timestamp_field->set_time();
+  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_INSERT)
+    table->timestamp_field->set_time();
 
   /*
     If we have an auto_increment column and we are writing a changed row
     or a new row, then update the auto_increment value in the record.
   */
-  if (table->next_number_field && buf == table->record[0]) update_auto_increment();
+  if (table->next_number_field && buf == table->record[0])
+    update_auto_increment();
   return mi_write(file, buf);
 }
 
 int ha_myisam::check(THD *thd, HA_CHECK_OPT *check_opt)
 {
-  if (!file) return HA_ADMIN_INTERNAL_ERROR;
+  if (!file)
+    return HA_ADMIN_INTERNAL_ERROR;
   int error;
   MI_CHECK param;
   MYISAM_SHARE *share = file->s;
@@ -295,7 +306,8 @@ int ha_myisam::check(THD *thd, HA_CHECK_OPT *check_opt)
   param.testflag = check_opt->flags | T_CHECK | T_SILENT;
   param.stats_method = (enum_mi_stats_method)thd->variables.myisam_stats_method;
 
-  if (!(table->db_stat & HA_READ_ONLY)) param.testflag |= T_STATISTICS;
+  if (!(table->db_stat & HA_READ_ONLY))
+    param.testflag |= T_STATISTICS;
   param.using_global_keycache = 1;
 
   if (!mi_is_crashed(file) &&
@@ -307,8 +319,10 @@ int ha_myisam::check(THD *thd, HA_CHECK_OPT *check_opt)
 
   error = chk_status(&param, file);  // Not fatal
   error = chk_size(&param, file);
-  if (!error) error |= chk_del(&param, file, param.testflag);
-  if (!error) error = chk_key(&param, file);
+  if (!error)
+    error |= chk_del(&param, file, param.testflag);
+  if (!error)
+    error = chk_key(&param, file);
   if (!error)
   {
     if ((!(param.testflag & T_QUICK) && ((share->options & (HA_OPTION_PACK_RECORD | HA_OPTION_COMPRESS_RECORD)) ||
@@ -369,7 +383,8 @@ int ha_myisam::analyze(THD *thd, HA_CHECK_OPT *check_opt)
   param.using_global_keycache = 1;
   param.stats_method = (enum_mi_stats_method)thd->variables.myisam_stats_method;
 
-  if (!(share->state.changed & STATE_NOT_ANALYZED)) return HA_ADMIN_ALREADY_DONE;
+  if (!(share->state.changed & STATE_NOT_ANALYZED))
+    return HA_ADMIN_ALREADY_DONE;
 
   error = chk_key(&param, file);
   if (!error)
@@ -393,7 +408,8 @@ int ha_myisam::restore(THD *thd, HA_CHECK_OPT *check_opt)
   const char *errmsg;
   DBUG_ENTER("restore");
 
-  if (fn_format_relative_to_data_home(src_path, table_name, backup_dir, MI_NAME_DEXT)) DBUG_RETURN(HA_ADMIN_INVALID);
+  if (fn_format_relative_to_data_home(src_path, table_name, backup_dir, MI_NAME_DEXT))
+    DBUG_RETURN(HA_ADMIN_INVALID);
 
   if (my_copy(src_path, fn_format(dst_path, table->s->path, "", MI_NAME_DEXT, 4), MYF(MY_WME)))
   {
@@ -481,7 +497,8 @@ int ha_myisam::repair(THD *thd, HA_CHECK_OPT *check_opt)
   MI_CHECK param;
   ha_rows start_records;
 
-  if (!file) return HA_ADMIN_INTERNAL_ERROR;
+  if (!file)
+    return HA_ADMIN_INTERNAL_ERROR;
 
   myisamchk_init(&param);
   param.thd = thd;
@@ -520,7 +537,8 @@ int ha_myisam::repair(THD *thd, HA_CHECK_OPT *check_opt)
 int ha_myisam::optimize(THD *thd, HA_CHECK_OPT *check_opt)
 {
   int error;
-  if (!file) return HA_ADMIN_INTERNAL_ERROR;
+  if (!file)
+    return HA_ADMIN_INTERNAL_ERROR;
   MI_CHECK param;
 
   myisamchk_init(&param);
@@ -632,8 +650,10 @@ int ha_myisam::repair(THD *thd, MI_CHECK &param, bool optimize)
       the following 'if', thought conceptually wrong,
       is a useful optimization nevertheless.
     */
-    if (file->state != &file->s->state.state) file->s->state.state = *file->state;
-    if (file->s->base.auto_key) update_auto_increment_key(&param, file, 1);
+    if (file->state != &file->s->state.state)
+      file->s->state.state = *file->state;
+    if (file->s->base.auto_key)
+      update_auto_increment_key(&param, file, 1);
     if (optimize_done)
       error = update_state_info(&param, file,
                                 UPDATE_TIME | UPDATE_OPEN_COUNT | (local_testflag & T_STATISTICS ? UPDATE_STAT : 0));
@@ -652,7 +672,8 @@ int ha_myisam::repair(THD *thd, MI_CHECK &param, bool optimize)
     update_state_info(&param, file, 0);
   }
   thd->proc_info = old_proc_info;
-  if (!thd->locked_tables) mi_lock_database(file, F_UNLCK);
+  if (!thd->locked_tables)
+    mi_lock_database(file, F_UNLCK);
   DBUG_RETURN(error ? HA_ADMIN_FAILED : !optimize_done ? HA_ADMIN_ALREADY_DONE : HA_ADMIN_OK);
 }
 
@@ -732,7 +753,8 @@ int ha_myisam::preload_keys(THD *thd, HA_CHECK_OPT *check_opt)
       error = HA_ADMIN_FAILED;
       goto err;
     }
-    if (!kmap.is_clear_all()) map = kmap.to_ulonglong();
+    if (!kmap.is_clear_all())
+      map = kmap.to_ulonglong();
   }
 
   mi_extra(file, HA_EXTRA_PRELOAD_BUFFER_SIZE, (void *)&thd->variables.preload_buff_size);
@@ -881,7 +903,8 @@ int ha_myisam::enable_indexes(uint mode)
       thd->clear_error();
       param.testflag &= ~(T_REP_BY_SORT | T_QUICK);
       error = (repair(thd, param, 0) != HA_ADMIN_OK);
-      if (!error && thd->net.report_error) error = HA_ERR_CRASHED;
+      if (!error && thd->net.report_error)
+        error = HA_ERR_CRASHED;
     }
     info(HA_STATUS_CONST);
     thd->proc_info = save_proc_info;
@@ -933,7 +956,8 @@ void ha_myisam::start_bulk_insert(ha_rows rows)
   DBUG_PRINT("info", ("start_bulk_insert: rows %lu size %lu", (ulong)rows, size));
 
   /* don't enable row cache if too few rows */
-  if (!rows || (rows > MI_MIN_ROWS_TO_USE_WRITE_CACHE)) mi_extra(file, HA_EXTRA_WRITE_CACHE, (void *)&size);
+  if (!rows || (rows > MI_MIN_ROWS_TO_USE_WRITE_CACHE))
+    mi_extra(file, HA_EXTRA_WRITE_CACHE, (void *)&size);
 
   can_enable_indexes = mi_is_all_keys_active(file->s->state.key_map, file->s->base.keys);
 
@@ -987,7 +1011,8 @@ bool ha_myisam::check_and_repair(THD *thd)
   check_opt.init();
   check_opt.flags = T_MEDIUM | T_AUTO_REPAIR;
   // Don't use quick if deleted rows
-  if (!file->state->del && (myisam_recover_options & HA_RECOVER_QUICK)) check_opt.flags |= T_QUICK;
+  if (!file->state->del && (myisam_recover_options & HA_RECOVER_QUICK))
+    check_opt.flags |= T_QUICK;
   sql_print_warning("Checking table:   '%s'", table->s->path);
 
   old_query = thd->query;
@@ -1003,7 +1028,8 @@ bool ha_myisam::check_and_repair(THD *thd)
     check_opt.flags =
         ((myisam_recover_options & HA_RECOVER_BACKUP ? T_BACKUP_DATA : 0) | (marked_crashed ? 0 : T_QUICK) |
          (myisam_recover_options & HA_RECOVER_FORCE ? 0 : T_SAFE_REPAIR) | T_AUTO_REPAIR);
-    if (repair(thd, &check_opt)) error = 1;
+    if (repair(thd, &check_opt))
+      error = 1;
   }
   pthread_mutex_lock(&LOCK_thread_count);
   thd->query = old_query;
@@ -1020,7 +1046,8 @@ bool ha_myisam::is_crashed() const
 int ha_myisam::update_row(const byte *old_data, byte *new_data)
 {
   statistic_increment(table->in_use->status_var.ha_update_count, &LOCK_status);
-  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_UPDATE) table->timestamp_field->set_time();
+  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_UPDATE)
+    table->timestamp_field->set_time();
   return mi_update(file, old_data, new_data);
 }
 
@@ -1103,7 +1130,8 @@ int ha_myisam::index_next_same(byte *buf, const byte *key __attribute__((unused)
 
 int ha_myisam::rnd_init(bool scan)
 {
-  if (scan) return mi_scan_init(file);
+  if (scan)
+    return mi_scan_init(file);
   return mi_extra(file, HA_EXTRA_RESET, 0);
 }
 
@@ -1174,22 +1202,27 @@ void ha_myisam::info(uint flag)
     */
     data_file_name = index_file_name = 0;
     fn_format(name_buff, file->filename, "", MI_NAME_DEXT, 2);
-    if (strcmp(name_buff, info.data_file_name)) data_file_name = info.data_file_name;
+    if (strcmp(name_buff, info.data_file_name))
+      data_file_name = info.data_file_name;
     strmov(fn_ext(name_buff), MI_NAME_IEXT);
-    if (strcmp(name_buff, info.index_file_name)) index_file_name = info.index_file_name;
+    if (strcmp(name_buff, info.index_file_name))
+      index_file_name = info.index_file_name;
   }
   if (flag & HA_STATUS_ERRKEY)
   {
     errkey = info.errkey;
     my_store_ptr(dupp_ref, ref_length, info.dupp_key_pos);
   }
-  if (flag & HA_STATUS_TIME) update_time = info.update_time;
-  if (flag & HA_STATUS_AUTO) auto_increment_value = info.auto_increment;
+  if (flag & HA_STATUS_TIME)
+    update_time = info.update_time;
+  if (flag & HA_STATUS_AUTO)
+    auto_increment_value = info.auto_increment;
 }
 
 int ha_myisam::extra(enum ha_extra_function operation)
 {
-  if ((specialflag & SPECIAL_SAFE_MODE) && operation == HA_EXTRA_KEYREAD) return 0;
+  if ((specialflag & SPECIAL_SAFE_MODE) && operation == HA_EXTRA_KEYREAD)
+    return 0;
   return mi_extra(file, operation, 0);
 }
 
@@ -1197,7 +1230,8 @@ int ha_myisam::extra(enum ha_extra_function operation)
 
 int ha_myisam::extra_opt(enum ha_extra_function operation, ulong cache_size)
 {
-  if ((specialflag & SPECIAL_SAFE_MODE) && operation == HA_EXTRA_WRITE_CACHE) return 0;
+  if ((specialflag & SPECIAL_SAFE_MODE) && operation == HA_EXTRA_WRITE_CACHE)
+    return 0;
   return mi_extra(file, operation, (void *)&cache_size);
 }
 
@@ -1212,7 +1246,8 @@ int ha_myisam::external_lock(THD *thd, int lock_type)
 
 THR_LOCK_DATA **ha_myisam::store_lock(THD *thd, THR_LOCK_DATA **to, enum thr_lock_type lock_type)
 {
-  if (lock_type != TL_IGNORE && file->lock.type == TL_UNLOCK) file->lock.type = lock_type;
+  if (lock_type != TL_IGNORE && file->lock.type == TL_UNLOCK)
+    file->lock.type = lock_type;
   *to++ = &file->lock;
   return to;
 }
@@ -1276,7 +1311,8 @@ int ha_myisam::create(const char *name, register TABLE *table_arg, HA_CREATE_INF
             (type == HA_KEYTYPE_TEXT || type == HA_KEYTYPE_NUM || (type == HA_KEYTYPE_BINARY && !field->zero_pack())))
         {
           /* No blobs here */
-          if (j == 0) keydef[i].flag |= HA_PACK_KEY;
+          if (j == 0)
+            keydef[i].flag |= HA_PACK_KEY;
           if (!(field->flags & ZEROFILL_FLAG) &&
               (field->type() == MYSQL_TYPE_STRING || field->type() == MYSQL_TYPE_VAR_STRING ||
                ((int)(pos->key_part[j].length - field->decimals())) >= 4))
@@ -1337,7 +1373,8 @@ int ha_myisam::create(const char *name, register TABLE *table_arg, HA_CREATE_INF
       if ((fieldpos = (*field)->offset()) >= recpos && fieldpos <= minpos)
       {
         /* skip null fields */
-        if (!(temp_length = (*field)->pack_length_in_rec())) continue; /* Skip null-fields */
+        if (!(temp_length = (*field)->pack_length_in_rec()))
+          continue; /* Skip null-fields */
         if (!found || fieldpos < minpos || (fieldpos == minpos && temp_length < length))
         {
           minpos = fieldpos;
@@ -1353,7 +1390,8 @@ int ha_myisam::create(const char *name, register TABLE *table_arg, HA_CREATE_INF
       recinfo_pos->type = (int)FIELD_NORMAL;
       recinfo_pos++->length = (uint16)(minpos - recpos);
     }
-    if (!found) break;
+    if (!found)
+      break;
 
     if (found->flags & BLOB_FLAG)
       recinfo_pos->type = (int)FIELD_BLOB;
@@ -1395,10 +1433,14 @@ int ha_myisam::create(const char *name, register TABLE *table_arg, HA_CREATE_INF
   create_info.data_file_name = info->data_file_name;
   create_info.index_file_name = info->index_file_name;
 
-  if (info->options & HA_LEX_CREATE_TMP_TABLE) create_flags |= HA_CREATE_TMP_TABLE;
-  if (options & HA_OPTION_PACK_RECORD) create_flags |= HA_PACK_RECORD;
-  if (options & HA_OPTION_CHECKSUM) create_flags |= HA_CREATE_CHECKSUM;
-  if (options & HA_OPTION_DELAY_KEY_WRITE) create_flags |= HA_CREATE_DELAY_KEY_WRITE;
+  if (info->options & HA_LEX_CREATE_TMP_TABLE)
+    create_flags |= HA_CREATE_TMP_TABLE;
+  if (options & HA_OPTION_PACK_RECORD)
+    create_flags |= HA_PACK_RECORD;
+  if (options & HA_OPTION_CHECKSUM)
+    create_flags |= HA_CREATE_CHECKSUM;
+  if (options & HA_OPTION_DELAY_KEY_WRITE)
+    create_flags |= HA_CREATE_DELAY_KEY_WRITE;
 
   /* TODO: Check that the following fn_format is really needed */
   error = mi_create(fn_format(buff, name, "", "", 2 + 4), share->keys, keydef, (uint)(recinfo_pos - recinfo), recinfo,
@@ -1474,7 +1516,8 @@ int ha_myisam::ft_read(byte *buf)
 {
   int error;
 
-  if (!ft_handler) return -1;
+  if (!ft_handler)
+    return -1;
 
   thread_safe_increment(table->in_use->status_var.ha_read_next_count,
                         &LOCK_status);  // why ?

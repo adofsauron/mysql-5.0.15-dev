@@ -91,19 +91,22 @@ bool mysql_create_or_drop_trigger(THD *thd, TABLE_LIST *tables, bool create)
     But do we want this ?
   */
 
-  if (!create && !(tables = add_table_for_trigger(thd, thd->lex->spname))) DBUG_RETURN(TRUE);
+  if (!create && !(tables = add_table_for_trigger(thd, thd->lex->spname)))
+    DBUG_RETURN(TRUE);
 
   /* We should have only one table in table list. */
   DBUG_ASSERT(tables->next_global == 0);
 
-  if (!(table = open_ltable(thd, tables, tables->lock_type))) DBUG_RETURN(TRUE);
+  if (!(table = open_ltable(thd, tables, tables->lock_type)))
+    DBUG_RETURN(TRUE);
 
   /*
     TODO: We should check if user has TRIGGER privilege for table here.
     Now we just require SUPER privilege for creating/dropping because
     we don't have proper privilege checking for triggers in place yet.
   */
-  if (check_global_access(thd, SUPER_ACL)) DBUG_RETURN(TRUE);
+  if (check_global_access(thd, SUPER_ACL))
+    DBUG_RETURN(TRUE);
 
   /*
     We do not allow creation of triggers on temporary tables. We also don't
@@ -126,7 +129,8 @@ bool mysql_create_or_drop_trigger(THD *thd, TABLE_LIST *tables, bool create)
       DBUG_RETURN(TRUE);
     }
 
-    if (!(table->triggers = new (&table->mem_root) Table_triggers_list(table))) DBUG_RETURN(TRUE);
+    if (!(table->triggers = new (&table->mem_root) Table_triggers_list(table)))
+      DBUG_RETURN(TRUE);
   }
 
   /*
@@ -135,7 +139,8 @@ bool mysql_create_or_drop_trigger(THD *thd, TABLE_LIST *tables, bool create)
     again until we are done. (Acquiring LOCK_open is not enough because
     global read lock is held without helding LOCK_open).
   */
-  if (wait_if_global_read_lock(thd, 0, 0)) DBUG_RETURN(TRUE);
+  if (wait_if_global_read_lock(thd, 0, 0))
+    DBUG_RETURN(TRUE);
 
   /*
     There is no DETERMINISTIC clause for triggers, so can't check it.
@@ -231,7 +236,8 @@ bool Table_triggers_list::create_trigger(THD *thd, TABLE_LIST *tables)
        trg_field = trg_field->next_trg_field)
   {
     trg_field->setup_field(thd, table);
-    if (!trg_field->fixed && trg_field->fix_fields(thd, (Item **)0)) return 1;
+    if (!trg_field->fixed && trg_field->fix_fields(thd, (Item **)0))
+      return 1;
   }
 
   /*
@@ -281,7 +287,8 @@ bool Table_triggers_list::create_trigger(THD *thd, TABLE_LIST *tables)
   trg_def->length = thd->query_length;
   *trg_sql_mode = thd->variables.sql_mode;
 
-  if (!sql_create_definition_file(&dir, &file, &triggers_file_type, (gptr)this, triggers_file_parameters, 3)) return 0;
+  if (!sql_create_definition_file(&dir, &file, &triggers_file_type, (gptr)this, triggers_file_parameters, 3))
+    return 0;
 
 err_with_cleanup:
   my_delete(trigname_path, MYF(MY_WME));
@@ -376,7 +383,8 @@ bool Table_triggers_list::drop_trigger(THD *thd, TABLE_LIST *tables)
           parse_file.cc functionality (because we will need it
           elsewhere).
         */
-        if (rm_trigger_file(path, tables->db, tables->table_name)) return 1;
+        if (rm_trigger_file(path, tables->db, tables->table_name))
+          return 1;
       }
       else
       {
@@ -393,7 +401,8 @@ bool Table_triggers_list::drop_trigger(THD *thd, TABLE_LIST *tables)
           return 1;
       }
 
-      if (rm_trigname_file(path, tables->db, lex->spname->m_name.str)) return 1;
+      if (rm_trigname_file(path, tables->db, lex->spname->m_name.str))
+        return 1;
       return 0;
     }
   }
@@ -428,7 +437,8 @@ bool Table_triggers_list::prepare_record1_accessors(TABLE *table)
 {
   Field **fld, **old_fld;
 
-  if (!(record1_field = (Field **)alloc_root(&table->mem_root, (table->s->fields + 1) * sizeof(Field *)))) return 1;
+  if (!(record1_field = (Field **)alloc_root(&table->mem_root, (table->s->fields + 1) * sizeof(Field *))))
+    return 1;
 
   for (fld = table->field, old_fld = record1_field; *fld; fld++, old_fld++)
   {
@@ -436,7 +446,8 @@ bool Table_triggers_list::prepare_record1_accessors(TABLE *table)
       QQ: it is supposed that it is ok to use this function for field
       cloning...
     */
-    if (!(*old_fld = (*fld)->new_field(&table->mem_root, table))) return 1;
+    if (!(*old_fld = (*fld)->new_field(&table->mem_root, table)))
+      return 1;
     (*old_fld)->move_field((my_ptrdiff_t)(table->record[1] - table->record[0]));
   }
   *old_fld = 0;
@@ -492,7 +503,8 @@ bool Table_triggers_list::check_n_load(THD *thd, const char *db, const char *tab
   path.str = path_buff;
 
   // QQ: should we analyze errno somehow ?
-  if (access(path_buff, F_OK)) DBUG_RETURN(0);
+  if (access(path_buff, F_OK))
+    DBUG_RETURN(0);
 
   /*
     File exists so we got to load triggers
@@ -506,7 +518,8 @@ bool Table_triggers_list::check_n_load(THD *thd, const char *db, const char *tab
     {
       Table_triggers_list *triggers = new (&table->mem_root) Table_triggers_list(table);
 
-      if (!triggers) DBUG_RETURN(1);
+      if (!triggers)
+        DBUG_RETURN(1);
 
       /*
         We don't have sql_modes in old versions of .TRG file, so we should
@@ -514,7 +527,8 @@ bool Table_triggers_list::check_n_load(THD *thd, const char *db, const char *tab
       */
       triggers->definition_modes_list.empty();
 
-      if (parser->parse((gptr)triggers, &table->mem_root, triggers_file_parameters, 2)) DBUG_RETURN(1);
+      if (parser->parse((gptr)triggers, &table->mem_root, triggers_file_parameters, 2))
+        DBUG_RETURN(1);
 
       List_iterator_fast<LEX_STRING> it(triggers->definitions_list);
       LEX_STRING *trg_create_str, *trg_name_str;
@@ -551,7 +565,8 @@ bool Table_triggers_list::check_n_load(THD *thd, const char *db, const char *tab
         of routines used by statement.
       */
       triggers->sroutines_key.length = 1 + strlen(db) + 1 + strlen(table_name) + 1;
-      if (!(triggers->sroutines_key.str = alloc_root(&table->mem_root, triggers->sroutines_key.length))) DBUG_RETURN(1);
+      if (!(triggers->sroutines_key.str = alloc_root(&table->mem_root, triggers->sroutines_key.length)))
+        DBUG_RETURN(1);
       triggers->sroutines_key.str[0] = TYPE_ENUM_TRIGGER;
       strxmov(triggers->sroutines_key.str + 1, db, ".", table_name, NullS);
 
@@ -559,7 +574,8 @@ bool Table_triggers_list::check_n_load(THD *thd, const char *db, const char *tab
         TODO: This could be avoided if there is no triggers
               for UPDATE and DELETE.
       */
-      if (!names_only && triggers->prepare_record1_accessors(table)) DBUG_RETURN(1);
+      if (!names_only && triggers->prepare_record1_accessors(table))
+        DBUG_RETURN(1);
 
       char *trg_name_buff;
       List_iterator_fast<ulonglong> itm(triggers->definition_modes_list);
@@ -590,7 +606,8 @@ bool Table_triggers_list::check_n_load(THD *thd, const char *db, const char *tab
 
         lex.sphead->m_sql_mode = *trg_sql_mode;
         triggers->bodies[lex.trg_chistics.event][lex.trg_chistics.action_time] = lex.sphead;
-        if (triggers->names_list.push_back(&lex.sphead->m_name, &table->mem_root)) goto err_with_lex_cleanup;
+        if (triggers->names_list.push_back(&lex.sphead->m_name, &table->mem_root))
+          goto err_with_lex_cleanup;
 
         if (names_only)
         {
@@ -708,7 +725,8 @@ static TABLE_LIST *add_table_for_trigger(THD *thd, sp_name *trig)
     DBUG_RETURN(0);
   }
 
-  if (!(parser = sql_parse_prepare(&path, thd->mem_root, 1))) DBUG_RETURN(0);
+  if (!(parser = sql_parse_prepare(&path, thd->mem_root, 1)))
+    DBUG_RETURN(0);
 
   if (!is_equal(&trigname_file_type, parser->type()))
   {
@@ -716,7 +734,8 @@ static TABLE_LIST *add_table_for_trigger(THD *thd, sp_name *trig)
     DBUG_RETURN(0);
   }
 
-  if (parser->parse((gptr)&trigname, thd->mem_root, trigname_file_parameters, 1)) DBUG_RETURN(0);
+  if (parser->parse((gptr)&trigname, thd->mem_root, trigname_file_parameters, 1))
+    DBUG_RETURN(0);
 
   /* We need to reset statement table list to be PS/SP friendly. */
   lex->query_tables = 0;
@@ -783,7 +802,8 @@ bool Table_triggers_list::drop_all_triggers(THD *thd, char *db, char *name)
     }
   }
 end:
-  if (table.triggers) delete table.triggers;
+  if (table.triggers)
+    delete table.triggers;
   free_root(&table.mem_root, MYF(0));
   DBUG_RETURN(result);
 }

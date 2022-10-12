@@ -163,7 +163,8 @@ class Field
   {
     my_ptrdiff_t offset = (my_ptrdiff_t)(table->s->default_values - table->record[0]);
     memcpy(ptr, ptr + offset, pack_length());
-    if (null_ptr) *null_ptr = ((*null_ptr & (uchar)~null_bit) | null_ptr[offset] & null_bit);
+    if (null_ptr)
+      *null_ptr = ((*null_ptr & (uchar)~null_bit) | null_ptr[offset] & null_bit);
   }
   virtual bool binary() const { return 1; }
   virtual bool zero_pack() const { return 1; }
@@ -193,16 +194,19 @@ class Field
   inline bool is_real_null(uint row_offset = 0) { return null_ptr ? (null_ptr[row_offset] & null_bit ? 1 : 0) : 0; }
   inline bool is_null_in_record(const uchar *record)
   {
-    if (!null_ptr) return 0;
+    if (!null_ptr)
+      return 0;
     return test(record[(uint)(null_ptr - (uchar *)table->record[0])] & null_bit);
   }
   inline void set_null(int row_offset = 0)
   {
-    if (null_ptr) null_ptr[row_offset] |= null_bit;
+    if (null_ptr)
+      null_ptr[row_offset] |= null_bit;
   }
   inline void set_notnull(int row_offset = 0)
   {
-    if (null_ptr) null_ptr[row_offset] &= (uchar)~null_bit;
+    if (null_ptr)
+      null_ptr[row_offset] &= (uchar)~null_bit;
   }
   inline bool maybe_null(void) { return null_ptr != 0 || table->maybe_null; }
   inline bool real_maybe_null(void) { return null_ptr != 0; }
@@ -231,7 +235,8 @@ class Field
   inline void move_field(my_ptrdiff_t ptr_diff)
   {
     ptr = ADD_TO_PTR(ptr, ptr_diff, char *);
-    if (null_ptr) null_ptr = ADD_TO_PTR(null_ptr, ptr_diff, uchar *);
+    if (null_ptr)
+      null_ptr = ADD_TO_PTR(null_ptr, ptr_diff, uchar *);
   }
   inline void get_image(char *buff, uint length, CHARSET_INFO *cs) { memcpy(buff, ptr, length); }
   inline void set_image(char *buff, uint length, CHARSET_INFO *cs) { memcpy(ptr, buff, length); }
@@ -761,9 +766,11 @@ class Field_timestamp : public Field_str
   /* Get TIMESTAMP field value as seconds since begging of Unix Epoch */
   inline long get_timestamp(my_bool *null_value)
   {
-    if ((*null_value = is_null())) return 0;
+    if ((*null_value = is_null()))
+      return 0;
 #ifdef WORDS_BIGENDIAN
-    if (table->s->db_low_byte_first) return sint4korr(ptr);
+    if (table->s->db_low_byte_first)
+      return sint4korr(ptr);
 #endif
     long tmp;
     longget(tmp, ptr);
@@ -979,14 +986,16 @@ class Field_varstring : public Field_longstr
       : Field_longstr(ptr_arg, len_arg, null_ptr_arg, null_bit_arg, unireg_check_arg, field_name_arg, table_arg, cs),
         length_bytes(length_bytes_arg)
   {
-    if (table) table->s->varchar_fields++;
+    if (table)
+      table->s->varchar_fields++;
   }
   Field_varstring(uint32 len_arg, bool maybe_null_arg, const char *field_name_arg, struct st_table *table_arg,
                   CHARSET_INFO *cs)
       : Field_longstr((char *)0, len_arg, maybe_null_arg ? (uchar *)"" : 0, 0, NONE, field_name_arg, table_arg, cs),
         length_bytes(len_arg < 256 ? 1 : 2)
   {
-    if (table) table->s->varchar_fields++;
+    if (table)
+      table->s->varchar_fields++;
   }
 
   enum_field_types type() const { return MYSQL_TYPE_VARCHAR; }

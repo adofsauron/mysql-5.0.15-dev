@@ -610,12 +610,14 @@ used for implicit LOCK TABLES only and won't be used in real statement.
   inline bool prepare_check_option(THD *thd)
   {
     bool res = FALSE;
-    if (effective_with_check) res = prep_check_option(thd, effective_with_check);
+    if (effective_with_check)
+      res = prep_check_option(thd, effective_with_check);
     return res;
   }
   inline bool prepare_where(THD *thd, Item **conds, bool no_where_clause)
   {
-    if (effective_algorithm == VIEW_ALGORITHM_MERGE) return prep_where(thd, conds, no_where_clause);
+    if (effective_algorithm == VIEW_ALGORITHM_MERGE)
+      return prep_where(thd, conds, no_where_clause);
     return FALSE;
   }
 

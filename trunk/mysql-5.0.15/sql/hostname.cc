@@ -105,7 +105,8 @@ void inc_host_errors(struct in_addr *in)
 {
   VOID(pthread_mutex_lock(&hostname_cache->lock));
   host_entry *entry;
-  if ((entry = (host_entry *)hostname_cache->search((gptr)&in->s_addr, 0))) entry->errors++;
+  if ((entry = (host_entry *)hostname_cache->search((gptr)&in->s_addr, 0)))
+    entry->errors++;
   VOID(pthread_mutex_unlock(&hostname_cache->lock));
 }
 
@@ -113,7 +114,8 @@ void reset_host_errors(struct in_addr *in)
 {
   VOID(pthread_mutex_lock(&hostname_cache->lock));
   host_entry *entry;
-  if ((entry = (host_entry *)hostname_cache->search((gptr)&in->s_addr, 0))) entry->errors = 0;
+  if ((entry = (host_entry *)hostname_cache->search((gptr)&in->s_addr, 0)))
+    entry->errors = 0;
   VOID(pthread_mutex_unlock(&hostname_cache->lock));
 }
 
@@ -175,7 +177,8 @@ my_string ip_to_hostname(struct in_addr *in, uint *errors)
       that attempted to connect during the outage) unable to connect
       indefinitely.
     */
-    if (tmp_errno == HOST_NOT_FOUND || tmp_errno == NO_DATA) add_wrong_ip(in);
+    if (tmp_errno == HOST_NOT_FOUND || tmp_errno == NO_DATA)
+      add_wrong_ip(in);
     my_gethostbyname_r_free();
     DBUG_RETURN(0);
   }
@@ -199,7 +202,8 @@ my_string ip_to_hostname(struct in_addr *in, uint *errors)
     VOID(pthread_mutex_unlock(&LOCK_hostname));
     DBUG_PRINT("error", ("gethostbyaddr returned %d", errno));
 
-    if (errno == HOST_NOT_FOUND || errno == NO_DATA) goto add_wrong_ip_and_return;
+    if (errno == HOST_NOT_FOUND || errno == NO_DATA)
+      goto add_wrong_ip_and_return;
     /* Failure, don't cache responce */
     DBUG_RETURN(0);
   }

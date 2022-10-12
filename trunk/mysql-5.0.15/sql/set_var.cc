@@ -811,9 +811,11 @@ bool sys_var::check(THD *thd, set_var *var)
 bool sys_var_str::check(THD *thd, set_var *var)
 {
   int res;
-  if (!check_func) return 0;
+  if (!check_func)
+    return 0;
 
-  if ((res = (*check_func)(thd, var)) < 0) my_error(ER_WRONG_VALUE_FOR_VAR, MYF(0), name, var->value->str_value.ptr());
+  if ((res = (*check_func)(thd, var)) < 0)
+    my_error(ER_WRONG_VALUE_FOR_VAR, MYF(0), name, var->value->str_value.ptr());
   return res;
 }
 
@@ -833,8 +835,10 @@ bool update_sys_var_str(sys_var_str *var_str, rw_lock_t *var_mutex, set_var *var
 {
   char *res = 0, *old_value = (char *)(var ? var->value->str_value.ptr() : 0);
   uint new_length = (var ? var->value->str_value.length() : 0);
-  if (!old_value) old_value = (char *)"";
-  if (!(res = my_strdup_with_length((byte *)old_value, new_length, MYF(0)))) return 1;
+  if (!old_value)
+    old_value = (char *)"";
+  if (!(res = my_strdup_with_length((byte *)old_value, new_length, MYF(0))))
+    return 1;
   /*
     Replace the old value in such a way that the any thread using
     the value will work.
@@ -928,7 +932,8 @@ static void fix_max_join_size(THD *thd, enum_var_type type)
 
 static void fix_tx_isolation(THD *thd, enum_var_type type)
 {
-  if (type == OPT_SESSION) thd->session_tx_isolation = ((enum_tx_isolation)thd->variables.tx_isolation);
+  if (type == OPT_SESSION)
+    thd->session_tx_isolation = ((enum_tx_isolation)thd->variables.tx_isolation);
 }
 
 static void fix_completion_type(THD *thd __attribute__(unused), enum_var_type type __attribute__(unused)) {}
@@ -952,17 +957,20 @@ static int check_completion_type(THD *thd, set_var *var)
 #ifdef HAVE_REPLICATION
 static void fix_net_read_timeout(THD *thd, enum_var_type type)
 {
-  if (type != OPT_GLOBAL) thd->net.read_timeout = thd->variables.net_read_timeout;
+  if (type != OPT_GLOBAL)
+    thd->net.read_timeout = thd->variables.net_read_timeout;
 }
 
 static void fix_net_write_timeout(THD *thd, enum_var_type type)
 {
-  if (type != OPT_GLOBAL) thd->net.write_timeout = thd->variables.net_write_timeout;
+  if (type != OPT_GLOBAL)
+    thd->net.write_timeout = thd->variables.net_write_timeout;
 }
 
 static void fix_net_retry_count(THD *thd, enum_var_type type)
 {
-  if (type != OPT_GLOBAL) thd->net.retry_count = thd->variables.net_retry_count;
+  if (type != OPT_GLOBAL)
+    thd->net.retry_count = thd->variables.net_retry_count;
 }
 #else  /* HAVE_REPLICATION */
 static void fix_net_read_timeout(THD *thd __attribute__(unused), enum_var_type type __attribute__(unused)) {}
@@ -1011,7 +1019,8 @@ static void fix_max_binlog_size(THD *thd, enum_var_type type)
   DBUG_PRINT("info", ("max_binlog_size=%lu max_relay_log_size=%lu", max_binlog_size, max_relay_log_size));
   mysql_bin_log.set_max_size(max_binlog_size);
 #ifdef HAVE_REPLICATION
-  if (!max_relay_log_size) active_mi->rli.relay_log.set_max_size(max_binlog_size);
+  if (!max_relay_log_size)
+    active_mi->rli.relay_log.set_max_size(max_binlog_size);
 #endif
   DBUG_VOID_RETURN;
 }
@@ -1131,14 +1140,17 @@ bool sys_var_thd_ulong::update(THD *thd, set_var *var)
   ulonglong tmp = var->save_result.ulonglong_value;
 
   /* Don't use bigger value than given with --maximum-variable-name=.. */
-  if ((ulong)tmp > max_system_variables.*offset) tmp = max_system_variables.*offset;
+  if ((ulong)tmp > max_system_variables.*offset)
+    tmp = max_system_variables.*offset;
 
 #if SIZEOF_LONG == 4
   /* Avoid overflows on 32 bit systems */
-  if (tmp > (ulonglong) ~(ulong)0) tmp = ((ulonglong) ~(ulong)0);
+  if (tmp > (ulonglong) ~(ulong)0)
+    tmp = ((ulonglong) ~(ulong)0);
 #endif
 
-  if (option_limits) tmp = (ulong)getopt_ull_limit_value(tmp, option_limits);
+  if (option_limits)
+    tmp = (ulong)getopt_ull_limit_value(tmp, option_limits);
   if (var->type == OPT_GLOBAL)
     global_system_variables.*offset = (ulong)tmp;
   else
@@ -1159,7 +1171,8 @@ void sys_var_thd_ulong::set_default(THD *thd, enum_var_type type)
 
 byte *sys_var_thd_ulong::value_ptr(THD *thd, enum_var_type type, LEX_STRING *base)
 {
-  if (type == OPT_GLOBAL) return (byte *)&(global_system_variables.*offset);
+  if (type == OPT_GLOBAL)
+    return (byte *)&(global_system_variables.*offset);
   return (byte *)&(thd->variables.*offset);
 }
 
@@ -1168,9 +1181,11 @@ bool sys_var_thd_ha_rows::update(THD *thd, set_var *var)
   ulonglong tmp = var->save_result.ulonglong_value;
 
   /* Don't use bigger value than given with --maximum-variable-name=.. */
-  if ((ha_rows)tmp > max_system_variables.*offset) tmp = max_system_variables.*offset;
+  if ((ha_rows)tmp > max_system_variables.*offset)
+    tmp = max_system_variables.*offset;
 
-  if (option_limits) tmp = (ha_rows)getopt_ull_limit_value(tmp, option_limits);
+  if (option_limits)
+    tmp = (ha_rows)getopt_ull_limit_value(tmp, option_limits);
   if (var->type == OPT_GLOBAL)
   {
     /* Lock is needed to make things safe on 32 bit systems */
@@ -1198,7 +1213,8 @@ void sys_var_thd_ha_rows::set_default(THD *thd, enum_var_type type)
 
 byte *sys_var_thd_ha_rows::value_ptr(THD *thd, enum_var_type type, LEX_STRING *base)
 {
-  if (type == OPT_GLOBAL) return (byte *)&(global_system_variables.*offset);
+  if (type == OPT_GLOBAL)
+    return (byte *)&(global_system_variables.*offset);
   return (byte *)&(thd->variables.*offset);
 }
 
@@ -1206,9 +1222,11 @@ bool sys_var_thd_ulonglong::update(THD *thd, set_var *var)
 {
   ulonglong tmp = var->save_result.ulonglong_value;
 
-  if (tmp > max_system_variables.*offset) tmp = max_system_variables.*offset;
+  if (tmp > max_system_variables.*offset)
+    tmp = max_system_variables.*offset;
 
-  if (option_limits) tmp = getopt_ull_limit_value(tmp, option_limits);
+  if (option_limits)
+    tmp = getopt_ull_limit_value(tmp, option_limits);
   if (var->type == OPT_GLOBAL)
   {
     /* Lock is needed to make things safe on 32 bit systems */
@@ -1235,7 +1253,8 @@ void sys_var_thd_ulonglong::set_default(THD *thd, enum_var_type type)
 
 byte *sys_var_thd_ulonglong::value_ptr(THD *thd, enum_var_type type, LEX_STRING *base)
 {
-  if (type == OPT_GLOBAL) return (byte *)&(global_system_variables.*offset);
+  if (type == OPT_GLOBAL)
+    return (byte *)&(global_system_variables.*offset);
   return (byte *)&(thd->variables.*offset);
 }
 
@@ -1258,7 +1277,8 @@ void sys_var_thd_bool::set_default(THD *thd, enum_var_type type)
 
 byte *sys_var_thd_bool::value_ptr(THD *thd, enum_var_type type, LEX_STRING *base)
 {
-  if (type == OPT_GLOBAL) return (byte *)&(global_system_variables.*offset);
+  if (type == OPT_GLOBAL)
+    return (byte *)&(global_system_variables.*offset);
   return (byte *)&(thd->variables.*offset);
 }
 
@@ -1481,7 +1501,8 @@ bool sys_var_thd_date_time_format::update(THD *thd, set_var *var)
   DATE_TIME_FORMAT *new_value;
   /* We must make a copy of the last value to get it into normal memory */
   new_value = date_time_format_copy((THD *)0, var->save_result.date_time_format);
-  if (!new_value) return 1;            // Out of memory
+  if (!new_value)
+    return 1;                          // Out of memory
   update2(thd, var->type, new_value);  // Can't fail
   return 0;
 }
@@ -1492,7 +1513,8 @@ bool sys_var_thd_date_time_format::check(THD *thd, set_var *var)
   String str(buff, sizeof(buff), system_charset_info), *res;
   DATE_TIME_FORMAT *format;
 
-  if (!(res = var->value->val_str(&str))) res = &my_empty_string;
+  if (!(res = var->value->val_str(&str)))
+    res = &my_empty_string;
 
   if (!(format = date_time_format_make(date_time_type, res->ptr(), res->length())))
   {
@@ -1851,14 +1873,16 @@ static KEY_CACHE zero_key_cache;
 KEY_CACHE *get_key_cache(LEX_STRING *cache_name)
 {
   safe_mutex_assert_owner(&LOCK_global_system_variables);
-  if (!cache_name || !cache_name->length) cache_name = &default_key_cache_base;
+  if (!cache_name || !cache_name->length)
+    cache_name = &default_key_cache_base;
   return ((KEY_CACHE *)find_named(&key_caches, cache_name->str, cache_name->length, 0));
 }
 
 byte *sys_var_key_cache_param::value_ptr(THD *thd, enum_var_type type, LEX_STRING *base)
 {
   KEY_CACHE *key_cache = get_key_cache(base);
-  if (!key_cache) key_cache = &zero_key_cache;
+  if (!key_cache)
+    key_cache = &zero_key_cache;
   return (byte *)key_cache + offset;
 }
 
@@ -1870,7 +1894,8 @@ bool sys_var_key_buffer_size::update(THD *thd, set_var *var)
   bool error = 0;
 
   /* If no basename, assume it's for the key cache named 'default' */
-  if (!base_name->length) base_name = &default_key_cache_base;
+  if (!base_name->length)
+    base_name = &default_key_cache_base;
 
   pthread_mutex_lock(&LOCK_global_system_variables);
   key_cache = get_key_cache(base_name);
@@ -1892,7 +1917,8 @@ bool sys_var_key_buffer_size::update(THD *thd, set_var *var)
     TODO: This should be changed so that we wait until the previous
     assignment is done and then do the new assign
   */
-  if (key_cache->in_init) goto end;
+  if (key_cache->in_init)
+    goto end;
 
   if (!tmp)  // Zero size means delete
   {
@@ -1949,7 +1975,8 @@ bool sys_var_key_cache_long::update(THD *thd, set_var *var)
   LEX_STRING *base_name = &var->base;
   bool error = 0;
 
-  if (!base_name->length) base_name = &default_key_cache_base;
+  if (!base_name->length)
+    base_name = &default_key_cache_base;
 
   pthread_mutex_lock(&LOCK_global_system_variables);
   KEY_CACHE *key_cache = get_key_cache(base_name);
@@ -1965,7 +1992,8 @@ bool sys_var_key_cache_long::update(THD *thd, set_var *var)
     TODO: This should be changed so that we wait until the previous
     assignment is done and then do the new assign
   */
-  if (key_cache->in_init) goto end;
+  if (key_cache->in_init)
+    goto end;
 
   *((ulong *)(((char *)key_cache) + offset)) = (ulong)getopt_ull_limit_value(tmp, option_limits);
 
@@ -2244,7 +2272,8 @@ static bool set_option_autocommit(THD *thd, set_var *var)
       /* We changed to auto_commit mode */
       thd->options &= ~(ulong)(OPTION_BEGIN | OPTION_STATUS_NO_TRANS_UPDATE);
       thd->server_status |= SERVER_STATUS_AUTOCOMMIT;
-      if (ha_commit(thd)) return 1;
+      if (ha_commit(thd))
+        return 1;
     }
     else
     {
@@ -2290,7 +2319,8 @@ static bool set_log_update(THD *thd, set_var *var)
 
 static bool set_log_bin(THD *thd, set_var *var)
 {
-  if (opt_sql_bin_update) ((sys_var_thd_bit *)var->var)->bit_flag |= (OPTION_BIN_LOG | OPTION_UPDATE_LOG);
+  if (opt_sql_bin_update)
+    ((sys_var_thd_bit *)var->var)->bit_flag |= (OPTION_BIN_LOG | OPTION_UPDATE_LOG);
   set_option_bit(thd, var);
   return 0;
 }
@@ -2416,7 +2446,8 @@ void set_var_free() { hash_free(&system_variable_hash); }
 sys_var *find_sys_var(const char *str, uint length)
 {
   sys_var *var = (sys_var *)hash_search(&system_variable_hash, (byte *)str, length ? length : strlen(str));
-  if (!var) my_error(ER_UNKNOWN_SYSTEM_VARIABLE, MYF(0), (char *)str);
+  if (!var)
+    my_error(ER_UNKNOWN_SYSTEM_VARIABLE, MYF(0), (char *)str);
   return var;
 }
 
@@ -2451,7 +2482,8 @@ int sql_set_variables(THD *thd, List<set_var_base> *var_list)
   set_var_base *var;
   while ((var = it++))
   {
-    if ((error = var->check(thd))) goto err;
+    if ((error = var->check(thd)))
+      goto err;
   }
   if (!(error = test(thd->net.report_error)))
   {
@@ -2487,7 +2519,8 @@ bool not_all_support_one_shot(List<set_var_base> *var_list)
   set_var_base *var;
   while ((var = it++))
   {
-    if (var->no_support_one_shot()) return 1;
+    if (var->no_support_one_shot())
+      return 1;
   }
   return 0;
 }
@@ -2509,7 +2542,8 @@ int set_var::check(THD *thd)
     my_error(err, MYF(0), var->name);
     return -1;
   }
-  if ((type == OPT_GLOBAL && check_global_access(thd, SUPER_ACL))) return 1;
+  if ((type == OPT_GLOBAL && check_global_access(thd, SUPER_ACL)))
+    return 1;
   /* value is a NULL pointer if we are using SET ... = DEFAULT */
   if (!value)
   {
@@ -2521,7 +2555,8 @@ int set_var::check(THD *thd)
     return 0;
   }
 
-  if ((!value->fixed && value->fix_fields(thd, &value)) || value->check_cols(1)) return -1;
+  if ((!value->fixed && value->fix_fields(thd, &value)) || value->check_cols(1))
+    return -1;
   if (var->check_update_type(value->result_type()))
   {
     my_error(ER_WRONG_TYPE_FOR_VAR, MYF(0), var->name);
@@ -2550,9 +2585,11 @@ int set_var::light_check(THD *thd)
     my_error(err, MYF(0), var->name);
     return -1;
   }
-  if (type == OPT_GLOBAL && check_global_access(thd, SUPER_ACL)) return 1;
+  if (type == OPT_GLOBAL && check_global_access(thd, SUPER_ACL))
+    return 1;
 
-  if (value && ((!value->fixed && value->fix_fields(thd, &value)) || value->check_cols(1))) return -1;
+  if (value && ((!value->fixed && value->fix_fields(thd, &value)) || value->check_cols(1)))
+    return -1;
   return 0;
 }
 
@@ -2562,7 +2599,8 @@ int set_var::update(THD *thd)
     var->set_default(thd, type);
   else if (var->update(thd, this))
     return -1;  // should never happen
-  if (var->after_update) (*var->after_update)(thd, type);
+  if (var->after_update)
+    (*var->after_update)(thd, type);
   return 0;
 }
 
@@ -2754,7 +2792,8 @@ byte *sys_var_thd_sql_mode::symbolic_mode_representation(THD *thd, ulong val, ul
     }
   }
 
-  if ((length = tmp.length())) length--;
+  if ((length = tmp.length()))
+    length--;
   *len = length;
   return (byte *)thd->strmake(tmp.ptr(), length);
 }
@@ -2824,8 +2863,10 @@ ulong fix_sql_mode(ulong sql_mode)
   if (sql_mode & MODE_MAXDB)
     sql_mode |= (MODE_PIPES_AS_CONCAT | MODE_ANSI_QUOTES | MODE_IGNORE_SPACE | MODE_NO_KEY_OPTIONS |
                  MODE_NO_TABLE_OPTIONS | MODE_NO_FIELD_OPTIONS | MODE_NO_AUTO_CREATE_USER);
-  if (sql_mode & MODE_MYSQL40) sql_mode |= MODE_NO_FIELD_OPTIONS | MODE_HIGH_NOT_PRECEDENCE;
-  if (sql_mode & MODE_MYSQL323) sql_mode |= MODE_NO_FIELD_OPTIONS | MODE_HIGH_NOT_PRECEDENCE;
+  if (sql_mode & MODE_MYSQL40)
+    sql_mode |= MODE_NO_FIELD_OPTIONS | MODE_HIGH_NOT_PRECEDENCE;
+  if (sql_mode & MODE_MYSQL323)
+    sql_mode |= MODE_NO_FIELD_OPTIONS | MODE_HIGH_NOT_PRECEDENCE;
   if (sql_mode & MODE_TRADITIONAL)
     sql_mode |= (MODE_STRICT_TRANS_TABLES | MODE_STRICT_ALL_TABLES | MODE_NO_ZERO_IN_DATE | MODE_NO_ZERO_DATE |
                  MODE_ERROR_FOR_DIVISION_BY_ZERO | MODE_NO_AUTO_CREATE_USER);
@@ -2844,7 +2885,8 @@ gptr find_named(I_List<NAMED_LIST> *list, const char *name, uint length, NAMED_L
   {
     if (element->cmp(name, length))
     {
-      if (found) *found = element;
+      if (found)
+        *found = element;
       return element->data;
     }
   }
@@ -2902,7 +2944,8 @@ KEY_CACHE *get_or_create_key_cache(const char *name, uint length)
   key_cache_name.str = (char *)name;
   key_cache_name.length = length;
   pthread_mutex_lock(&LOCK_global_system_variables);
-  if (!(key_cache = get_key_cache(&key_cache_name))) key_cache = create_key_cache(name, length);
+  if (!(key_cache = get_key_cache(&key_cache_name)))
+    key_cache = create_key_cache(name, length);
   pthread_mutex_unlock(&LOCK_global_system_variables);
   return key_cache;
 }

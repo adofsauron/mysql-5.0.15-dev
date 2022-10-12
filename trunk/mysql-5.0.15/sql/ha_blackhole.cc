@@ -130,7 +130,8 @@ void ha_blackhole::info(uint flag)
   index_file_length = 0;
   max_data_file_length = 0;
   delete_length = 0;
-  if (flag & HA_STATUS_AUTO) auto_increment_value = 1;
+  if (flag & HA_STATUS_AUTO)
+    auto_increment_value = 1;
   DBUG_VOID_RETURN;
 }
 

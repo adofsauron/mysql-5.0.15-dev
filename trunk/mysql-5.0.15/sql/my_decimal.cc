@@ -78,7 +78,8 @@ int my_decimal2string(uint mask, const my_decimal *d, uint fixed_prec, uint fixe
 {
   int length = (fixed_prec ? (fixed_prec + 1) : my_decimal_string_length(d));
   int result;
-  if (str->alloc(length)) return check_result(mask, E_DEC_OOM);
+  if (str->alloc(length))
+    return check_result(mask, E_DEC_OOM);
   result = decimal2string((decimal_t *)d, (char *)str->ptr(), &length, (int)fixed_prec, fixed_dec, filler);
   str->length(length);
   return check_result(mask, result);
@@ -118,7 +119,8 @@ int my_decimal2binary(uint mask, const my_decimal *d, char *bin, int prec, int s
     decimal_round(&rounded, &rounded, scale, HALF_UP);
   }
   err2 = decimal2bin(&rounded, bin, prec, scale);
-  if (!err2) err2 = err1;
+  if (!err2)
+    err2 = err1;
   return check_result(mask, err2);
 }
 
@@ -201,7 +203,8 @@ void print_decimal_buff(const my_decimal *dec, const byte *ptr, int length)
 const char *dbug_decimal_as_string(char *buff, const my_decimal *val)
 {
   int length = DECIMAL_MAX_STR_LENGTH;
-  if (!val) return "NULL";
+  if (!val)
+    return "NULL";
   (void)decimal2string((decimal_t *)val, buff, &length, 0, 0, 0);
   return buff;
 }

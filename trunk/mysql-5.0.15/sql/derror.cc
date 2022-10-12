@@ -48,7 +48,8 @@ bool init_errmessage(void)
   errmsgs = my_error_unregister(ER_ERROR_FIRST, ER_ERROR_LAST);
 
   /* Read messages from file. */
-  if (read_texts(ERRMSG_FILE, &errmsgs, ER_ERROR_LAST - ER_ERROR_FIRST + 1)) DBUG_RETURN(TRUE);
+  if (read_texts(ERRMSG_FILE, &errmsgs, ER_ERROR_LAST - ER_ERROR_FIRST + 1))
+    DBUG_RETURN(TRUE);
 
   /* Register messages for use with my_error(). */
   if (my_error_register(errmsgs, ER_ERROR_FIRST, ER_ERROR_LAST))
@@ -82,8 +83,10 @@ static bool read_texts(const char *file_name, const char ***point, uint error_me
     goto err; /* purecov: inspected */
 
   funktpos = 1;
-  if (my_read(file, (byte *)head, 32, MYF(MY_NABP))) goto err;
-  if (head[0] != (uchar)254 || head[1] != (uchar)254 || head[2] != 2 || head[3] != 1) goto err; /* purecov: inspected */
+  if (my_read(file, (byte *)head, 32, MYF(MY_NABP)))
+    goto err;
+  if (head[0] != (uchar)254 || head[1] != (uchar)254 || head[2] != 2 || head[3] != 1)
+    goto err; /* purecov: inspected */
   textcount = head[4];
 
   if (!head[30])
@@ -125,13 +128,15 @@ Check that the above file is the right version for this program!",
   }
   buff = (char *)(*point + count);
 
-  if (my_read(file, (byte *)buff, (uint)count * 2, MYF(MY_NABP))) goto err;
+  if (my_read(file, (byte *)buff, (uint)count * 2, MYF(MY_NABP)))
+    goto err;
   for (i = 0, pos = (uchar *)buff; i < count; i++)
   {
     (*point)[i] = buff + uint2korr(pos);
     pos += 2;
   }
-  if (my_read(file, (byte *)buff, (uint)length, MYF(MY_NABP))) goto err;
+  if (my_read(file, (byte *)buff, (uint)length, MYF(MY_NABP)))
+    goto err;
 
   for (i = 1; i < textcount; i++)
   {
@@ -155,7 +160,8 @@ err:
   }
   sql_print_error(buff, name);
 err1:
-  if (file != FERR) VOID(my_close(file, MYF(MY_WME)));
+  if (file != FERR)
+    VOID(my_close(file, MYF(MY_WME)));
   unireg_abort(1);
   DBUG_RETURN(1);  // keep compiler happy
 } /* read_texts */

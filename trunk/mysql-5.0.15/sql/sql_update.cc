@@ -30,14 +30,16 @@ static bool safe_update_on_fly(JOIN_TAB *join_tab, List<Item> *fields);
 
 static bool compare_record(TABLE *table, query_id_t query_id)
 {
-  if (table->s->blob_fields + table->s->varchar_fields == 0) return cmp_record(table, record[1]);
+  if (table->s->blob_fields + table->s->varchar_fields == 0)
+    return cmp_record(table, record[1]);
   /* Compare null bits */
   if (memcmp(table->null_flags, table->null_flags + table->s->rec_buff_length, table->s->null_bytes))
     return TRUE;  // Diff in NULL value
   /* Compare updated fields */
   for (Field **ptr = table->field; *ptr; ptr++)
   {
-    if ((*ptr)->query_id == query_id && (*ptr)->cmp_binary_offset(table->s->rec_buff_length)) return TRUE;
+    if ((*ptr)->query_id == query_id && (*ptr)->cmp_binary_offset(table->s->rec_buff_length))
+      return TRUE;
   }
   return FALSE;
 }
@@ -127,7 +129,8 @@ int mysql_update(THD *thd, TABLE_LIST *table_list, List<Item> &fields, List<Item
 
   for (;;)
   {
-    if (open_tables(thd, &table_list, &table_count, 0)) DBUG_RETURN(1);
+    if (open_tables(thd, &table_list, &table_count, 0))
+      DBUG_RETURN(1);
 
     if (table_list->multitable_view)
     {
@@ -138,8 +141,10 @@ int mysql_update(THD *thd, TABLE_LIST *table_list, List<Item> &fields, List<Item
       /* convert to multiupdate */
       DBUG_RETURN(2);
     }
-    if (!lock_tables(thd, table_list, table_count, &need_reopen)) break;
-    if (!need_reopen) DBUG_RETURN(1);
+    if (!lock_tables(thd, table_list, table_count, &need_reopen))
+      break;
+    if (!need_reopen)
+      DBUG_RETURN(1);
     close_tables_for_reopen(thd, table_list);
   }
 
@@ -159,7 +164,8 @@ int mysql_update(THD *thd, TABLE_LIST *table_list, List<Item> &fields, List<Item
   /* TABLE_LIST contain right privilages request */
   want_privilege = table_list->grant.want_privilege;
 #endif
-  if (mysql_prepare_update(thd, table_list, &conds, order_num, order)) DBUG_RETURN(1);
+  if (mysql_prepare_update(thd, table_list, &conds, order_num, order))
+    DBUG_RETURN(1);
 
   old_used_keys = table->used_keys;  // Keys used in WHERE
                                      /*
@@ -176,7 +182,8 @@ int mysql_update(THD *thd, TABLE_LIST *table_list, List<Item> &fields, List<Item
 #ifndef NO_EMBEDDED_ACCESS_CHECKS
   table_list->grant.want_privilege = table->grant.want_privilege = want_privilege;
 #endif
-  if (setup_fields_with_no_wrap(thd, 0, fields, 1, 0, 0)) DBUG_RETURN(1); /* purecov: inspected */
+  if (setup_fields_with_no_wrap(thd, 0, fields, 1, 0, 0))
+    DBUG_RETURN(1); /* purecov: inspected */
   if (table_list->view && check_fields(thd, fields))
   {
     DBUG_RETURN(1);
@@ -289,10 +296,12 @@ int mysql_update(THD *thd, TABLE_LIST *table_list, List<Item> &fields, List<Item
       */
 
       IO_CACHE tempfile;
-      if (open_cached_file(&tempfile, mysql_tmpdir, TEMP_PREFIX, DISK_BUFFER_SIZE, MYF(MY_WME))) goto err;
+      if (open_cached_file(&tempfile, mysql_tmpdir, TEMP_PREFIX, DISK_BUFFER_SIZE, MYF(MY_WME)))
+        goto err;
 
       /* If quick select is used, initialize it before retrieving rows. */
-      if (select && select->quick && select->quick->reset()) goto err;
+      if (select && select->quick && select->quick->reset())
+        goto err;
       init_read_record(&info, thd, table, select, 0, 1);
 
       thd->proc_info = "Searching rows for update";
@@ -317,14 +326,16 @@ int mysql_update(THD *thd, TABLE_LIST *table_list, List<Item> &fields, List<Item
         else
           table->file->unlock_row();
       }
-      if (thd->killed && !error) error = 1;  // Aborted
+      if (thd->killed && !error)
+        error = 1;  // Aborted
       limit = tmp_limit;
       end_read_record(&info);
       /* Change select to use tempfile */
       if (select)
       {
         delete select->quick;
-        if (select->free_cond) delete select->cond;
+        if (select->free_cond)
+          delete select->cond;
         select->quick = 0;
         select->cond = 0;
       }
@@ -333,9 +344,11 @@ int mysql_update(THD *thd, TABLE_LIST *table_list, List<Item> &fields, List<Item
         select = new SQL_SELECT;
         select->head = table;
       }
-      if (reinit_io_cache(&tempfile, READ_CACHE, 0L, 0, 0)) error = 1; /* purecov: inspected */
-      select->file = tempfile;                                         // Read row ptrs from this file
-      if (error >= 0) goto err;
+      if (reinit_io_cache(&tempfile, READ_CACHE, 0L, 0, 0))
+        error = 1;              /* purecov: inspected */
+      select->file = tempfile;  // Read row ptrs from this file
+      if (error >= 0)
+        goto err;
     }
     if (table->key_read)
     {
@@ -344,9 +357,11 @@ int mysql_update(THD *thd, TABLE_LIST *table_list, List<Item> &fields, List<Item
     }
   }
 
-  if (ignore) table->file->extra(HA_EXTRA_IGNORE_DUP_KEY);
+  if (ignore)
+    table->file->extra(HA_EXTRA_IGNORE_DUP_KEY);
 
-  if (select && select->quick && select->quick->reset()) goto err;
+  if (select && select->quick && select->quick->reset())
+    goto err;
   init_read_record(&info, thd, table, select, 0, 1);
 
   updated = found = 0;
@@ -413,7 +428,8 @@ int mysql_update(THD *thd, TABLE_LIST *table_list, List<Item> &fields, List<Item
       table->file->unlock_row();
     thd->row_count++;
   }
-  if (thd->killed && !error) error = 1;  // Aborted
+  if (thd->killed && !error)
+    error = 1;  // Aborted
   end_read_record(&info);
   free_io_cache(table);  // If ORDER BY
   delete select;
@@ -442,15 +458,19 @@ int mysql_update(THD *thd, TABLE_LIST *table_list, List<Item> &fields, List<Item
   {
     if (mysql_bin_log.is_open())
     {
-      if (error < 0) thd->clear_error();
+      if (error < 0)
+        thd->clear_error();
       Query_log_event qinfo(thd, thd->query, thd->query_length, transactional_table, FALSE);
-      if (mysql_bin_log.write(&qinfo) && transactional_table) error = 1;  // Rollback update
+      if (mysql_bin_log.write(&qinfo) && transactional_table)
+        error = 1;  // Rollback update
     }
-    if (!transactional_table) thd->options |= OPTION_STATUS_NO_TRANS_UPDATE;
+    if (!transactional_table)
+      thd->options |= OPTION_STATUS_NO_TRANS_UPDATE;
   }
   if (transactional_table)
   {
-    if (ha_autocommit_or_rollback(thd, error >= 0)) error = 1;
+    if (ha_autocommit_or_rollback(thd, error >= 0))
+      error = 1;
   }
 
   if (thd->lock)
@@ -607,7 +627,8 @@ reopen_tables:
                    &lex->select_lex.leaf_tables, FALSE))
     DBUG_RETURN(TRUE);
 
-  if (setup_fields_with_no_wrap(thd, 0, *fields, 1, 0, 0)) DBUG_RETURN(TRUE);
+  if (setup_fields_with_no_wrap(thd, 0, *fields, 1, 0, 0))
+    DBUG_RETURN(TRUE);
 
   for (tl = table_list; tl; tl = tl->next_local)
   {
@@ -662,7 +683,8 @@ reopen_tables:
       tl->lock_type = using_update_log ? TL_READ_NO_INSERT : TL_READ;
       tl->updating = 0;
       /* Update TABLE::lock_type accordingly. */
-      if (!tl->placeholder() && !tl->schema_table && !using_lock_tables) tl->table->reginfo.lock_type = tl->lock_type;
+      if (!tl->placeholder() && !tl->schema_table && !using_lock_tables)
+        tl->table->reginfo.lock_type = tl->lock_type;
     }
   }
   for (tl = table_list; tl; tl = tl->next_local)
@@ -694,7 +716,8 @@ reopen_tables:
   /* now lock and fill tables */
   if (lock_tables(thd, table_list, table_count, &need_reopen))
   {
-    if (!need_reopen) DBUG_RETURN(TRUE);
+    if (!need_reopen)
+      DBUG_RETURN(TRUE);
 
     /*
       We have to reopen tables since some of them were altered or dropped
@@ -740,7 +763,8 @@ reopen_tables:
     }
   }
 
-  if (thd->fill_derived_tables() && mysql_handle_derived(lex, &mysql_derived_filling)) DBUG_RETURN(TRUE);
+  if (thd->fill_derived_tables() && mysql_handle_derived(lex, &mysql_derived_filling))
+    DBUG_RETURN(TRUE);
 
   DBUG_RETURN(FALSE);
 }
@@ -825,7 +849,8 @@ int multi_update::prepare(List<Item> &not_used_values, SELECT_LEX_UNIT *lex_unit
     reference tables
   */
 
-  if (setup_fields(thd, 0, *values, 1, 0, 0)) DBUG_RETURN(1);
+  if (setup_fields(thd, 0, *values, 1, 0, 0))
+    DBUG_RETURN(1);
 
   /*
     Save tables beeing updated in update_tables
@@ -841,7 +866,8 @@ int multi_update::prepare(List<Item> &not_used_values, SELECT_LEX_UNIT *lex_unit
     if (tables_to_update & table->map)
     {
       TABLE_LIST *tl = (TABLE_LIST *)thd->memdup((char *)table_ref, sizeof(*tl));
-      if (!tl) DBUG_RETURN(1);
+      if (!tl)
+        DBUG_RETURN(1);
       update.link_in_list((byte *)tl, (byte **)&tl->next_local);
       tl->shared = table_count++;
       table->no_keyread = 1;
@@ -857,13 +883,15 @@ int multi_update::prepare(List<Item> &not_used_values, SELECT_LEX_UNIT *lex_unit
   tmp_table_param = (TMP_TABLE_PARAM *)thd->calloc(sizeof(TMP_TABLE_PARAM) * table_count);
   fields_for_table = (List_item **)thd->alloc(sizeof(List_item *) * table_count);
   values_for_table = (List_item **)thd->alloc(sizeof(List_item *) * table_count);
-  if (thd->is_fatal_error) DBUG_RETURN(1);
+  if (thd->is_fatal_error)
+    DBUG_RETURN(1);
   for (i = 0; i < table_count; i++)
   {
     fields_for_table[i] = new List_item;
     values_for_table[i] = new List_item;
   }
-  if (thd->is_fatal_error) DBUG_RETURN(1);
+  if (thd->is_fatal_error)
+    DBUG_RETURN(1);
 
   /* Split fields into fields_for_table[] and values_by_table[] */
 
@@ -874,7 +902,8 @@ int multi_update::prepare(List<Item> &not_used_values, SELECT_LEX_UNIT *lex_unit
     fields_for_table[offset]->push_back(item);
     values_for_table[offset]->push_back(value);
   }
-  if (thd->is_fatal_error) DBUG_RETURN(1);
+  if (thd->is_fatal_error)
+    DBUG_RETURN(1);
 
   /* Allocate copy fields */
   max_fields = 0;
@@ -917,7 +946,8 @@ bool multi_update::initialize_tables(JOIN *join)
   TABLE_LIST *table_ref;
   DBUG_ENTER("initialize_tables");
 
-  if ((thd->options & OPTION_SAFE_UPDATES) && error_if_full_join(join)) DBUG_RETURN(1);
+  if ((thd->options & OPTION_SAFE_UPDATES) && error_if_full_join(join))
+    DBUG_RETURN(1);
   main_table = join->join_tab->table;
   trans_safe = transactional_tables = main_table->file->has_transactions();
   table_to_update = 0;
@@ -950,9 +980,11 @@ bool multi_update::initialize_tables(JOIN *join)
 
     /* ok to be on stack as this is not referenced outside of this func */
     Field_string offset(table->file->ref_length, 0, "offset", table, &my_charset_bin);
-    if (!(ifield = new Item_field(((Field *)&offset)))) DBUG_RETURN(1);
+    if (!(ifield = new Item_field(((Field *)&offset))))
+      DBUG_RETURN(1);
     ifield->maybe_null = 0;
-    if (temp_fields.push_front(ifield)) DBUG_RETURN(1);
+    if (temp_fields.push_front(ifield))
+      DBUG_RETURN(1);
 
     /* Make an unique key over the first field to avoid duplicated updates */
     bzero((char *)&group, sizeof(group));
@@ -1047,9 +1079,11 @@ multi_update::~multi_update()
       }
     }
   }
-  if (copy_field) delete[] copy_field;
+  if (copy_field)
+    delete[] copy_field;
   thd->count_cuted_fields = CHECK_FIELD_IGNORE;  // Restore this setting
-  if (!trans_safe) thd->options |= OPTION_STATUS_NO_TRANS_UPDATE;
+  if (!trans_safe)
+    thd->options |= OPTION_STATUS_NO_TRANS_UPDATE;
 }
 
 bool multi_update::send_data(List<Item> &not_used_values)
@@ -1072,7 +1106,8 @@ bool multi_update::send_data(List<Item> &not_used_values)
       The join algorithm guarantees that we will not find the a row in
       t1 several times.
     */
-    if (table->status & (STATUS_NULL_ROW | STATUS_UPDATED)) continue;
+    if (table->status & (STATUS_NULL_ROW | STATUS_UPDATED))
+      continue;
 
     uint offset = cur_table->shared;
     table->file->position(table->record[0]);
@@ -1117,7 +1152,8 @@ bool multi_update::send_data(List<Item> &not_used_values)
         }
         else
         {
-          if (!table->file->has_transactions()) thd->no_trans_update = 1;
+          if (!table->file->has_transactions())
+            thd->no_trans_update = 1;
           if (table->triggers && table->triggers->process_triggers(thd, TRG_EVENT_UPDATE, TRG_ACTION_AFTER, TRUE))
             DBUG_RETURN(1);
         }
@@ -1152,7 +1188,8 @@ void multi_update::send_error(uint errcode, const char *err)
   my_error(errcode, MYF(0), err);
 
   /* If nothing updated return */
-  if (!updated) return;
+  if (!updated)
+    return;
 
   /* Something already updated so we have to invalidate cache */
   query_cache_invalidate3(thd, update_tables, 1);
@@ -1180,13 +1217,15 @@ int multi_update::do_updates(bool from_send_error)
   DBUG_ENTER("do_updates");
 
   do_update = 0;  // Don't retry this function
-  if (!found) DBUG_RETURN(0);
+  if (!found)
+    DBUG_RETURN(0);
   for (cur_table = update_tables; cur_table; cur_table = cur_table->next_local)
   {
     byte *ref_pos;
 
     table = cur_table->table;
-    if (table == table_to_update) continue;  // Already updated
+    if (table == table_to_update)
+      continue;  // Already updated
     org_updated = updated;
     tmp_table = tmp_tables[cur_table->shared];
     tmp_table->file->extra(HA_EXTRA_CACHE);  // Change to read cache
@@ -1206,19 +1245,24 @@ int multi_update::do_updates(bool from_send_error)
     }
     copy_field_end = copy_field_ptr;
 
-    if ((local_error = tmp_table->file->ha_rnd_init(1))) goto err;
+    if ((local_error = tmp_table->file->ha_rnd_init(1)))
+      goto err;
 
     ref_pos = (byte *)tmp_table->field[0]->ptr;
     for (;;)
     {
-      if (thd->killed && trans_safe) goto err;
+      if (thd->killed && trans_safe)
+        goto err;
       if ((local_error = tmp_table->file->rnd_next(tmp_table->record[0])))
       {
-        if (local_error == HA_ERR_END_OF_FILE) break;
-        if (local_error == HA_ERR_RECORD_DELETED) continue;  // May happen on dup key
+        if (local_error == HA_ERR_END_OF_FILE)
+          break;
+        if (local_error == HA_ERR_RECORD_DELETED)
+          continue;  // May happen on dup key
         goto err;
       }
-      if ((local_error = table->file->rnd_pos(table->record[0], ref_pos))) goto err;
+      if ((local_error = table->file->rnd_pos(table->record[0], ref_pos)))
+        goto err;
       table->status |= STATUS_UPDATED;
       store_record(table, record[1]);
 
@@ -1233,7 +1277,8 @@ int multi_update::do_updates(bool from_send_error)
       {
         if ((local_error = table->file->update_row(table->record[1], table->record[0])))
         {
-          if (!ignore || local_error != HA_ERR_FOUND_DUPP_KEY) goto err;
+          if (!ignore || local_error != HA_ERR_FOUND_DUPP_KEY)
+            goto err;
         }
         updated++;
 
@@ -1304,16 +1349,20 @@ bool multi_update::send_eof()
   {
     if (mysql_bin_log.is_open())
     {
-      if (local_error == 0) thd->clear_error();
+      if (local_error == 0)
+        thd->clear_error();
       Query_log_event qinfo(thd, thd->query, thd->query_length, transactional_tables, FALSE);
-      if (mysql_bin_log.write(&qinfo) && trans_safe) local_error = 1;  // Rollback update
+      if (mysql_bin_log.write(&qinfo) && trans_safe)
+        local_error = 1;  // Rollback update
     }
-    if (!transactional_tables) thd->options |= OPTION_STATUS_NO_TRANS_UPDATE;
+    if (!transactional_tables)
+      thd->options |= OPTION_STATUS_NO_TRANS_UPDATE;
   }
 
   if (transactional_tables)
   {
-    if (ha_autocommit_or_rollback(thd, local_error != 0)) local_error = 1;
+    if (ha_autocommit_or_rollback(thd, local_error != 0))
+      local_error = 1;
   }
 
   if (local_error > 0)  // if the above log write did not fail ...

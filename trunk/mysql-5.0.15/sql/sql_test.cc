@@ -75,7 +75,8 @@ void print_cached_tables(void)
     printf("%-14.14s %-32s%6ld%8ld%10ld%6d  %s\n", entry->s->db, entry->s->table_name, entry->s->version,
            entry->in_use ? entry->in_use->thread_id : 0L, entry->in_use ? entry->in_use->dbug_thread_id : 0L,
            entry->db_stat ? 1 : 0, entry->in_use ? lock_descriptions[(int)entry->reginfo.lock_type] : "Not in use");
-    if (!entry->in_use) unused++;
+    if (!entry->in_use)
+      unused++;
   }
   count = 0;
   if ((start_link = lnk = unused_tables))
@@ -93,9 +94,11 @@ void print_cached_tables(void)
       printf("Unused_links aren't connected\n");
     }
   }
-  if (count != unused) printf("Unused_links (%d) doesn't match open_cache: %d\n", count, unused);
+  if (count != unused)
+    printf("Unused_links (%d) doesn't match open_cache: %d\n", count, unused);
   printf("\nCurrent refresh version: %ld\n", refresh_version);
-  if (hash_check(&open_cache)) printf("Error: File hash table is corrupted\n");
+  if (hash_check(&open_cache))
+    printf("Error: File hash table is corrupted\n");
   fflush(stdout);
   VOID(pthread_mutex_unlock(&LOCK_open));
   return;
@@ -113,7 +116,8 @@ void TEST_filesort(SORT_FIELD *sortorder, uint s_length)
   for (sep = ""; s_length--; sortorder++, sep = " ")
   {
     out.append(sep);
-    if (sortorder->reverse) out.append('-');
+    if (sortorder->reverse)
+      out.append('-');
     if (sortorder->field)
     {
       if (sortorder->field->table_name)
@@ -217,7 +221,8 @@ void print_plan(JOIN *join, double read_time, double record_count, uint idx, con
   JOIN_TAB **plan_nodes;
   TABLE *table;
 
-  if (info == 0) info = "";
+  if (info == 0)
+    info = "";
 
   DBUG_LOCK_FILE;
   if (join->best_read == DBL_MAX)
@@ -235,7 +240,8 @@ void print_plan(JOIN *join, double read_time, double record_count, uint idx, con
   {
     pos = join->positions[i];
     table = pos.table->table;
-    if (table) fputs(table->s->table_name, DBUG_FILE);
+    if (table)
+      fputs(table->s->table_name, DBUG_FILE);
     fputc(' ', DBUG_FILE);
   }
   fputc('\n', DBUG_FILE);
@@ -251,7 +257,8 @@ void print_plan(JOIN *join, double read_time, double record_count, uint idx, con
     {
       pos = join->best_positions[i];
       table = pos.table->table;
-      if (table) fputs(table->s->table_name, DBUG_FILE);
+      if (table)
+        fputs(table->s->table_name, DBUG_FILE);
       fputc(' ', DBUG_FILE);
     }
   }
@@ -285,8 +292,10 @@ typedef struct st_debug_lock
 
 static int dl_compare(TABLE_LOCK_INFO *a, TABLE_LOCK_INFO *b)
 {
-  if (a->thread_id > b->thread_id) return 1;
-  if (a->thread_id < b->thread_id) return -1;
+  if (a->thread_id > b->thread_id)
+    return 1;
+  if (a->thread_id < b->thread_id)
+    return -1;
   if (a->waiting == b->waiting)
     return 0;
   else if (a->waiting)
@@ -347,7 +356,8 @@ static void display_table_locks(void)
     VOID(pthread_mutex_unlock(&lock->mutex));
   }
   VOID(pthread_mutex_unlock(&THR_LOCK_lock));
-  if (!saved_table_locks.elements) goto end;
+  if (!saved_table_locks.elements)
+    goto end;
 
   qsort((gptr)dynamic_element(&saved_table_locks, 0, TABLE_LOCK_INFO *), saved_table_locks.elements,
         sizeof(TABLE_LOCK_INFO), (qsort_cmp)dl_compare);

@@ -744,7 +744,8 @@ class Query_log_event : public Log_event
                   Log_event_type event_type);
   ~Query_log_event()
   {
-    if (data_buf) my_free((gptr)data_buf, MYF(0));
+    if (data_buf)
+      my_free((gptr)data_buf, MYF(0));
   }
   Log_event_type get_type_code() { return QUERY_EVENT; }
 #ifndef MYSQL_CLIENT
@@ -1240,7 +1241,8 @@ class Rotate_log_event : public Log_event
   Rotate_log_event(const char *buf, uint event_len, const Format_description_log_event *description_event);
   ~Rotate_log_event()
   {
-    if (flags & DUP_NAME) my_free((gptr)new_log_ident, MYF(MY_ALLOW_ZERO_PTR));
+    if (flags & DUP_NAME)
+      my_free((gptr)new_log_ident, MYF(MY_ALLOW_ZERO_PTR));
   }
   Log_event_type get_type_code() { return ROTATE_EVENT; }
   int get_data_size() { return ident_len + ROTATE_HEADER_LEN; }

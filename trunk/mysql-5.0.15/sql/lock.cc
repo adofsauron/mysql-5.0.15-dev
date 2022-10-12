@@ -117,7 +117,8 @@ MYSQL_LOCK *mysql_lock_tables(THD *thd, TABLE **tables, uint count, uint flags, 
 
   for (;;)
   {
-    if (!(sql_lock = get_lock_data(thd, tables, count, 0, &write_lock_used))) break;
+    if (!(sql_lock = get_lock_data(thd, tables, count, 0, &write_lock_used)))
+      break;
 
     if (global_read_lock && write_lock_used && !(flags & MYSQL_LOCK_IGNORE_GLOBAL_READ_LOCK))
     {
@@ -184,7 +185,8 @@ MYSQL_LOCK *mysql_lock_tables(THD *thd, TABLE **tables, uint count, uint flags, 
       *need_reopen = TRUE;
       break;
     }
-    if (wait_for_tables(thd)) break;  // Couldn't open tables
+    if (wait_for_tables(thd))
+      break;  // Couldn't open tables
   }
   thd->proc_info = 0;
   if (thd->killed)
@@ -237,8 +239,10 @@ static int lock_external(THD *thd, TABLE **tables, uint count)
 void mysql_unlock_tables(THD *thd, MYSQL_LOCK *sql_lock)
 {
   DBUG_ENTER("mysql_unlock_tables");
-  if (sql_lock->lock_count) thr_multi_unlock(sql_lock->locks, sql_lock->lock_count);
-  if (sql_lock->table_count) VOID(unlock_external(thd, sql_lock->table, sql_lock->table_count));
+  if (sql_lock->lock_count)
+    thr_multi_unlock(sql_lock->locks, sql_lock->lock_count);
+  if (sql_lock->table_count)
+    VOID(unlock_external(thd, sql_lock->table, sql_lock->table_count));
   my_free((gptr)sql_lock, MYF(0));
   DBUG_VOID_RETURN;
 }
@@ -252,7 +256,8 @@ void mysql_unlock_some_tables(THD *thd, TABLE **table, uint count)
 {
   MYSQL_LOCK *sql_lock;
   TABLE *write_lock_used;
-  if ((sql_lock = get_lock_data(thd, table, count, 1, &write_lock_used))) mysql_unlock_tables(thd, sql_lock);
+  if ((sql_lock = get_lock_data(thd, table, count, 1, &write_lock_used)))
+    mysql_unlock_tables(thd, sql_lock);
 }
 
 /*
@@ -322,7 +327,8 @@ void mysql_lock_remove(THD *thd, MYSQL_LOCK *locked, TABLE *table)
     THR_LOCK_DATA **prev = locked->locks;
     for (i = 0; i < locked->lock_count; i++)
     {
-      if (locked->locks[i]->type != TL_UNLOCK) *prev++ = locked->locks[i];
+      if (locked->locks[i]->type != TL_UNLOCK)
+        *prev++ = locked->locks[i];
     }
     locked->lock_count = (uint)(prev - locked->locks);
   }
@@ -365,7 +371,8 @@ bool mysql_lock_abort_for_thread(THD *thd, TABLE *table)
   {
     for (uint i = 0; i < locked->lock_count; i++)
     {
-      if (thr_abort_locks_for_thread(locked->locks[i]->lock, table->in_use->real_id)) result = TRUE;
+      if (thr_abort_locks_for_thread(locked->locks[i]->lock, table->in_use->real_id))
+        result = TRUE;
     }
     my_free((gptr)locked, MYF(0));
   }
@@ -460,7 +467,8 @@ static MYSQL_LOCK *get_lock_data(THD *thd, TABLE **table_ptr, uint count, bool g
   for (i = 0; i < count; i++)
   {
     TABLE *table;
-    if ((table = table_ptr[i])->s->tmp_table == TMP_TABLE) continue;
+    if ((table = table_ptr[i])->s->tmp_table == TMP_TABLE)
+      continue;
     *to++ = table;
     enum thr_lock_type lock_type = table->reginfo.lock_type;
     if (lock_type >= TL_WRITE_ALLOW_WRITE)
@@ -509,9 +517,11 @@ int lock_and_wait_for_table_name(THD *thd, TABLE_LIST *table_list)
   int error = -1;
   DBUG_ENTER("lock_and_wait_for_table_name");
 
-  if (wait_if_global_read_lock(thd, 0, 1)) DBUG_RETURN(1);
+  if (wait_if_global_read_lock(thd, 0, 1))
+    DBUG_RETURN(1);
   VOID(pthread_mutex_lock(&LOCK_open));
-  if ((lock_retcode = lock_table_name(thd, table_list)) < 0) goto end;
+  if ((lock_retcode = lock_table_name(thd, table_list)) < 0)
+    goto end;
   if (lock_retcode && wait_for_locked_table_names(thd, table_list))
   {
     unlock_table_name(thd, table_list);
@@ -567,14 +577,16 @@ int lock_table_name(THD *thd, TABLE_LIST *table_list)
   /* Only insert the table if we haven't insert it already */
   for (table = (TABLE *)hash_search(&open_cache, (byte *)key, key_length); table;
        table = (TABLE *)hash_next(&open_cache, (byte *)key, key_length))
-    if (table->in_use == thd) DBUG_RETURN(0);
+    if (table->in_use == thd)
+      DBUG_RETURN(0);
 
   /*
     Create a table entry with the right key and with an old refresh version
     Note that we must use my_malloc() here as this is freed by the table
     cache
   */
-  if (!(table = (TABLE *)my_malloc(sizeof(*table) + key_length, MYF(MY_WME | MY_ZEROFILL)))) DBUG_RETURN(-1);
+  if (!(table = (TABLE *)my_malloc(sizeof(*table) + key_length, MYF(MY_WME | MY_ZEROFILL))))
+    DBUG_RETURN(-1);
   table->s = &table->share_not_to_be_used;
   memcpy((table->s->table_cache_key = (char *)(table + 1)), key, key_length);
   table->s->db = table->s->table_cache_key;
@@ -606,7 +618,8 @@ static bool locked_named_table(THD *thd, TABLE_LIST *table_list)
 {
   for (; table_list; table_list = table_list->next_local)
   {
-    if (table_list->table && table_is_used(table_list->table, 0)) return 1;
+    if (table_list->table && table_is_used(table_list->table, 0))
+      return 1;
   }
   return 0;  // All tables are locked
 }
@@ -658,12 +671,15 @@ bool lock_table_names(THD *thd, TABLE_LIST *table_list)
   for (lock_table = table_list; lock_table; lock_table = lock_table->next_local)
   {
     int got_lock;
-    if ((got_lock = lock_table_name(thd, lock_table)) < 0) goto end;  // Fatal error
-    if (got_lock) got_all_locks = 0;                                  // Someone is using table
+    if ((got_lock = lock_table_name(thd, lock_table)) < 0)
+      goto end;  // Fatal error
+    if (got_lock)
+      got_all_locks = 0;  // Someone is using table
   }
 
   /* If some table was in use, wait until we got the lock */
-  if (!got_all_locks && wait_for_locked_table_names(thd, table_list)) goto end;
+  if (!got_all_locks && wait_for_locked_table_names(thd, table_list))
+    goto end;
   return 0;
 
 end:
@@ -848,10 +864,12 @@ void unlock_global_read_lock(THD *thd)
   uint tmp;
   pthread_mutex_lock(&LOCK_global_read_lock);
   tmp = --global_read_lock;
-  if (thd->global_read_lock == MADE_GLOBAL_READ_LOCK_BLOCK_COMMIT) --global_read_lock_blocks_commit;
+  if (thd->global_read_lock == MADE_GLOBAL_READ_LOCK_BLOCK_COMMIT)
+    --global_read_lock_blocks_commit;
   pthread_mutex_unlock(&LOCK_global_read_lock);
   /* Send the signal outside the mutex to avoid a context switch */
-  if (!tmp) pthread_cond_broadcast(&COND_refresh);
+  if (!tmp)
+    pthread_cond_broadcast(&COND_refresh);
   thd->global_read_lock = 0;
 }
 
@@ -869,7 +887,8 @@ bool wait_if_global_read_lock(THD *thd, bool abort_on_refresh, bool is_not_commi
   {
     if (thd->global_read_lock)  // This thread had the read locks
     {
-      if (is_not_commit) my_message(ER_CANT_UPDATE_WITH_READLOCK, ER(ER_CANT_UPDATE_WITH_READLOCK), MYF(0));
+      if (is_not_commit)
+        my_message(ER_CANT_UPDATE_WITH_READLOCK, ER(ER_CANT_UPDATE_WITH_READLOCK), MYF(0));
       (void)pthread_mutex_unlock(&LOCK_global_read_lock);
       /*
         We allow FLUSHer to COMMIT; we assume FLUSHer knows what it does.
@@ -881,9 +900,11 @@ bool wait_if_global_read_lock(THD *thd, bool abort_on_refresh, bool is_not_commi
     old_message = thd->enter_cond(&COND_refresh, &LOCK_global_read_lock, "Waiting for release of readlock");
     while (must_wait && !thd->killed && (!abort_on_refresh || thd->version == refresh_version))
       (void)pthread_cond_wait(&COND_refresh, &LOCK_global_read_lock);
-    if (thd->killed) result = 1;
+    if (thd->killed)
+      result = 1;
   }
-  if (!abort_on_refresh && !result) protect_against_global_read_lock++;
+  if (!abort_on_refresh && !result)
+    protect_against_global_read_lock++;
   /*
     The following is only true in case of a global read locks (which is rare)
     and if old_message is set
@@ -899,11 +920,13 @@ void start_waiting_global_read_lock(THD *thd)
 {
   bool tmp;
   DBUG_ENTER("start_waiting_global_read_lock");
-  if (unlikely(thd->global_read_lock)) DBUG_VOID_RETURN;
+  if (unlikely(thd->global_read_lock))
+    DBUG_VOID_RETURN;
   (void)pthread_mutex_lock(&LOCK_global_read_lock);
   tmp = (!--protect_against_global_read_lock && (waiting_for_read_lock || global_read_lock_blocks_commit));
   (void)pthread_mutex_unlock(&LOCK_global_read_lock);
-  if (tmp) pthread_cond_broadcast(&COND_refresh);
+  if (tmp)
+    pthread_cond_broadcast(&COND_refresh);
   DBUG_VOID_RETURN;
 }
 
@@ -916,7 +939,8 @@ bool make_global_read_lock_block_commit(THD *thd)
     If we didn't succeed lock_global_read_lock(), or if we already suceeded
     make_global_read_lock_block_commit(), do nothing.
   */
-  if (thd->global_read_lock != GOT_GLOBAL_READ_LOCK) DBUG_RETURN(0);
+  if (thd->global_read_lock != GOT_GLOBAL_READ_LOCK)
+    DBUG_RETURN(0);
   pthread_mutex_lock(&LOCK_global_read_lock);
   /* increment this BEFORE waiting on cond (otherwise race cond) */
   global_read_lock_blocks_commit++;

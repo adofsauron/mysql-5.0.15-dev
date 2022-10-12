@@ -70,7 +70,8 @@ pthread_handler_t handle_manager(void *arg __attribute__((unused)))
     manager_status = 0;
     pthread_mutex_unlock(&LOCK_manager);
 
-    if (abort_loop) break;
+    if (abort_loop)
+      break;
 
     if (error == ETIMEDOUT || error == ETIME)
     {
@@ -87,7 +88,8 @@ pthread_handler_t handle_manager(void *arg __attribute__((unused)))
     }
 #endif
 
-    if (status) DBUG_PRINT("error", ("manager did not handle something: %lx", status));
+    if (status)
+      DBUG_PRINT("error", ("manager did not handle something: %lx", status));
   }
   manager_thread_in_use = 0;
   my_thread_end();

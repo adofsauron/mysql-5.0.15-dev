@@ -120,7 +120,8 @@ void ha_heap::set_keys_for_scanning(void)
   btree_keys.clear_all();
   for (uint i = 0; i < table->s->keys; i++)
   {
-    if (table->key_info[i].algorithm == HA_KEY_ALG_BTREE) btree_keys.set_bit(i);
+    if (table->key_info[i].algorithm == HA_KEY_ALG_BTREE)
+      btree_keys.set_bit(i);
   }
 }
 
@@ -129,7 +130,8 @@ void ha_heap::update_key_stats()
   for (uint i = 0; i < table->s->keys; i++)
   {
     KEY *key = table->key_info + i;
-    if (!key->rec_per_key) continue;
+    if (!key->rec_per_key)
+      continue;
     if (key->algorithm != HA_KEY_ALG_BTREE)
     {
       ha_rows hash_buckets = file->s->keydef[i].hash_buckets;
@@ -145,10 +147,13 @@ int ha_heap::write_row(byte *buf)
 {
   int res;
   statistic_increment(table->in_use->status_var.ha_write_count, &LOCK_status);
-  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_INSERT) table->timestamp_field->set_time();
-  if (table->next_number_field && buf == table->record[0]) update_auto_increment();
+  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_INSERT)
+    table->timestamp_field->set_time();
+  if (table->next_number_field && buf == table->record[0])
+    update_auto_increment();
   res = heap_write(file, buf);
-  if (!res && (++records_changed * HEAP_STATS_UPDATE_THRESHOLD > file->s->records)) key_stats_ok = FALSE;
+  if (!res && (++records_changed * HEAP_STATS_UPDATE_THRESHOLD > file->s->records))
+    key_stats_ok = FALSE;
   return res;
 }
 
@@ -156,9 +161,11 @@ int ha_heap::update_row(const byte *old_data, byte *new_data)
 {
   int res;
   statistic_increment(table->in_use->status_var.ha_update_count, &LOCK_status);
-  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_UPDATE) table->timestamp_field->set_time();
+  if (table->timestamp_field_type & TIMESTAMP_AUTO_SET_ON_UPDATE)
+    table->timestamp_field->set_time();
   res = heap_update(file, old_data, new_data);
-  if (!res && ++records_changed * HEAP_STATS_UPDATE_THRESHOLD > file->s->records) key_stats_ok = FALSE;
+  if (!res && ++records_changed * HEAP_STATS_UPDATE_THRESHOLD > file->s->records)
+    key_stats_ok = FALSE;
   return res;
 }
 
@@ -273,13 +280,15 @@ void ha_heap::info(uint flag)
   index_file_length = info.index_length;
   max_data_file_length = info.max_records * info.reclength;
   delete_length = info.deleted * info.reclength;
-  if (flag & HA_STATUS_AUTO) auto_increment_value = info.auto_increment;
+  if (flag & HA_STATUS_AUTO)
+    auto_increment_value = info.auto_increment;
   /*
     If info() is called for the first time after open(), we will still
     have to update the key statistics. Hoping that a table lock is now
     in place.
   */
-  if (!key_stats_ok) update_key_stats();
+  if (!key_stats_ok)
+    update_key_stats();
 }
 
 int ha_heap::extra(enum ha_extra_function operation) { return heap_extra(file, operation); }
@@ -287,7 +296,8 @@ int ha_heap::extra(enum ha_extra_function operation) { return heap_extra(file, o
 int ha_heap::delete_all_rows()
 {
   heap_clear(file);
-  if (table->s->tmp_table == NO_TMP_TABLE) key_stats_ok = FALSE;
+  if (table->s->tmp_table == NO_TMP_TABLE)
+    key_stats_ok = FALSE;
   return 0;
 }
 
@@ -326,7 +336,8 @@ int ha_heap::disable_indexes(uint mode)
 
   if (mode == HA_KEY_SWITCH_ALL)
   {
-    if (!(error = heap_disable_indexes(file))) set_keys_for_scanning();
+    if (!(error = heap_disable_indexes(file)))
+      set_keys_for_scanning();
   }
   else
   {
@@ -371,7 +382,8 @@ int ha_heap::enable_indexes(uint mode)
 
   if (mode == HA_KEY_SWITCH_ALL)
   {
-    if (!(error = heap_enable_indexes(file))) set_keys_for_scanning();
+    if (!(error = heap_enable_indexes(file)))
+      set_keys_for_scanning();
   }
   else
   {
@@ -398,7 +410,8 @@ int ha_heap::indexes_are_disabled(void) { return heap_indexes_are_disabled(file)
 
 THR_LOCK_DATA **ha_heap::store_lock(THD *thd, THR_LOCK_DATA **to, enum thr_lock_type lock_type)
 {
-  if (lock_type != TL_IGNORE && file->lock.type == TL_UNLOCK) file->lock.type = lock_type;
+  if (lock_type != TL_IGNORE && file->lock.type == TL_UNLOCK)
+    file->lock.type = lock_type;
   *to++ = &file->lock;
   return to;
 }
@@ -420,7 +433,8 @@ int ha_heap::rename_table(const char *from, const char *to) { return heap_rename
 ha_rows ha_heap::records_in_range(uint inx, key_range *min_key, key_range *max_key)
 {
   KEY *key = table->key_info + inx;
-  if (key->algorithm == HA_KEY_ALG_BTREE) return hp_rb_records_in_range(file, inx, min_key, max_key);
+  if (key->algorithm == HA_KEY_ALG_BTREE)
+    return hp_rb_records_in_range(file, inx, min_key, max_key);
 
   if (!min_key || !max_key || min_key->length != max_key->length || min_key->length != key->key_length ||
       min_key->flag != HA_READ_KEY_EXACT || max_key->flag != HA_READ_AFTER_KEY)
@@ -531,14 +545,16 @@ int ha_heap::create(const char *name, TABLE *table_arg, HA_CREATE_INFO *create_i
                   (ulong)((share->max_rows < max_rows && share->max_rows) ? share->max_rows : max_rows),
                   (ulong)share->min_rows, &hp_create_info);
   my_free((gptr)keydef, MYF(0));
-  if (file) info(HA_STATUS_NO_LOCK | HA_STATUS_CONST | HA_STATUS_VARIABLE);
+  if (file)
+    info(HA_STATUS_NO_LOCK | HA_STATUS_CONST | HA_STATUS_VARIABLE);
   return (error);
 }
 
 void ha_heap::update_create_info(HA_CREATE_INFO *create_info)
 {
   table->file->info(HA_STATUS_AUTO);
-  if (!(create_info->used_fields & HA_CREATE_USED_AUTO)) create_info->auto_increment_value = auto_increment_value;
+  if (!(create_info->used_fields & HA_CREATE_USED_AUTO))
+    create_info->auto_increment_value = auto_increment_value;
 }
 
 ulonglong ha_heap::get_auto_increment()

@@ -59,7 +59,8 @@ bool Item_row::fix_fields(THD *thd, Item **ref)
   Item **arg, **arg_end;
   for (arg = items, arg_end = items + arg_count; arg != arg_end; arg++)
   {
-    if ((*arg)->fix_fields(thd, arg)) return TRUE;
+    if ((*arg)->fix_fields(thd, arg))
+      return TRUE;
     // we can't assign 'item' before, because fix_fields() can change arg
     Item *item = *arg;
     used_tables_cache |= item->used_tables();
@@ -70,7 +71,8 @@ bool Item_row::fix_fields(THD *thd, Item **ref)
         with_null |= item->null_inside();
       else
       {
-        if (item->is_null()) with_null |= 1;
+        if (item->is_null())
+          with_null |= 1;
       }
     }
     maybe_null |= item->maybe_null;
@@ -114,7 +116,8 @@ void Item_row::print(String *str)
   str->append('(');
   for (uint i = 0; i < arg_count; i++)
   {
-    if (i) str->append(',');
+    if (i)
+      str->append(',');
     items[i]->print(str);
   }
   str->append(')');
@@ -124,7 +127,8 @@ bool Item_row::walk(Item_processor processor, byte *arg)
 {
   for (uint i = 0; i < arg_count; i++)
   {
-    if (items[i]->walk(processor, arg)) return 1;
+    if (items[i]->walk(processor, arg))
+      return 1;
   }
   return (this->*processor)(arg);
 }
@@ -134,7 +138,8 @@ Item *Item_row::transform(Item_transformer transformer, byte *arg)
   for (uint i = 0; i < arg_count; i++)
   {
     Item *new_item = items[i]->transform(transformer, arg);
-    if (!new_item) return 0;
+    if (!new_item)
+      return 0;
     items[i] = new_item;
   }
   return (this->*transformer)(arg);

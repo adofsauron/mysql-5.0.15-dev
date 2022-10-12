@@ -46,7 +46,8 @@ static int make_new_olap_select(LEX *lex, SELECT_LEX *select_lex, List<Item> new
   Item_null *constant = new Item_null("ALL");
 
   SELECT_LEX *new_select = (SELECT_LEX *)thd->memdup((char *)select_lex, sizeof(*select_lex));
-  if (!new_select) return 1;
+  if (!new_select)
+    return 1;
   lex->last_selects->next = new_select;
   new_select->linkage = OLAP_TYPE;
   new_select->olap = NON_EXISTING_ONE;
@@ -74,7 +75,8 @@ static int make_new_olap_select(LEX *lex, SELECT_LEX *select_lex, List<Item> new
           ((Item_field *)new_item)->db_name = iif->db_name;
           Item_field *new_one = new Item_field(&select_lex->context, iif->db_name, iif->table_name, iif->field_name);
           privlist.push_back(new_one);
-          if (add_to_list(new_select->group_list, new_one, 1)) return 1;
+          if (add_to_list(new_select->group_list, new_one, 1))
+            return 1;
           break;
         }
       }
@@ -104,12 +106,14 @@ static int olap_combos(List<Item> old_fields, List<Item> new_fields, Item *item,
   int sl_return = 0;
   if (position == num_new_fields)
   {
-    if (item) new_fields.push_front(item);
+    if (item)
+      new_fields.push_front(item);
     sl_return = make_new_olap_select(lex, select_lex, new_fields);
   }
   else
   {
-    if (item) new_fields.push_front(item);
+    if (item)
+      new_fields.push_front(item);
     while ((num_fields - num_new_fields >= selection - position) && !sl_return)
     {
       item = old_fields.pop();

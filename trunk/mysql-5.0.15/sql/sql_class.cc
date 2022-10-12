@@ -72,7 +72,8 @@ extern "C" byte *get_var_key(user_var_entry *entry, uint *length, my_bool not_us
 extern "C" void free_user_var(user_var_entry *entry)
 {
   char *pos = (char *)entry + ALIGN_SIZE(sizeof(*entry));
-  if (entry->value && entry->value != pos) my_free(entry->value, MYF(0));
+  if (entry->value && entry->value != pos)
+    my_free(entry->value, MYF(0));
   my_free((char *)entry, MYF(0));
 }
 
@@ -106,12 +107,14 @@ bool foreign_key_prefix(Key *a, Key *b)
   }
   else
   {
-    if (!b->generated) return TRUE;  // No foreign key
-    swap_variables(Key *, a, b);     // Put generated key in 'a'
+    if (!b->generated)
+      return TRUE;                // No foreign key
+    swap_variables(Key *, a, b);  // Put generated key in 'a'
   }
 
   /* Test if 'a' is a prefix of 'b' */
-  if (a->columns.elements > b->columns.elements) return TRUE;  // Can't be prefix
+  if (a->columns.elements > b->columns.elements)
+    return TRUE;  // Can't be prefix
 
   List_iterator<key_part_spec> col_it1(a->columns);
   List_iterator<key_part_spec> col_it2(b->columns);
@@ -130,14 +133,16 @@ bool foreign_key_prefix(Key *a, Key *b)
         break;
       }
     }
-    if (!found) return TRUE;  // Error
+    if (!found)
+      return TRUE;  // Error
   }
   return FALSE;  // Is prefix
 #else
   while ((col1 = col_it1++))
   {
     col2 = col_it2++;
-    if (!(*col1 == *col2)) return TRUE;
+    if (!(*col1 == *col2))
+      return TRUE;
   }
   return FALSE;  // Is prefix
 #endif
@@ -276,7 +281,8 @@ void THD::init(void)
 #endif
   pthread_mutex_unlock(&LOCK_global_system_variables);
   server_status = SERVER_STATUS_AUTOCOMMIT;
-  if (variables.sql_mode & MODE_NO_BACKSLASH_ESCAPES) server_status |= SERVER_STATUS_NO_BACKSLASH_ESCAPES;
+  if (variables.sql_mode & MODE_NO_BACKSLASH_ESCAPES)
+    server_status |= SERVER_STATUS_NO_BACKSLASH_ESCAPES;
   options = thd_startup_options;
   open_options = ha_open_options;
   update_lock_default = (variables.low_priority_updates ? TL_WRITE_LOW_PRIORITY : TL_WRITE);
@@ -361,7 +367,8 @@ void THD::cleanup(void)
   sp_cache_clear(&sp_proc_cache);
   sp_cache_clear(&sp_func_cache);
 
-  if (global_read_lock) unlock_global_read_lock(this);
+  if (global_read_lock)
+    unlock_global_read_lock(this);
   if (ull)
   {
     pthread_mutex_lock(&LOCK_user_locks);
@@ -393,7 +400,8 @@ THD::~THD()
 #endif
   stmt_map.destroy(); /* close all prepared statements */
   DBUG_ASSERT(lock_info.n_cursors == 0);
-  if (!cleanup_done) cleanup();
+  if (!cleanup_done)
+    cleanup();
 
   ha_close_connection(this);
 
@@ -436,7 +444,8 @@ void THD::awake(THD::killed_state state_to_set)
   safe_mutex_assert_owner(&LOCK_delete);
 
   killed = state_to_set;
-  if (state_to_set != THD::KILL_QUERY) thr_alarm_kill(real_id);
+  if (state_to_set != THD::KILL_QUERY)
+    thr_alarm_kill(real_id);
 #ifdef SIGNAL_WITH_VIO_CLOSE
   close_active_vio();
 #endif
@@ -481,7 +490,8 @@ void THD::awake(THD::killed_state state_to_set)
 
 bool THD::store_globals()
 {
-  if (my_pthread_setspecific_ptr(THR_THD, this) || my_pthread_setspecific_ptr(THR_MALLOC, &mem_root)) return 1;
+  if (my_pthread_setspecific_ptr(THR_THD, this) || my_pthread_setspecific_ptr(THR_MALLOC, &mem_root))
+    return 1;
   mysys_var = my_thread_var;
   dbug_thread_id = my_thread_id();
   /*
@@ -563,7 +573,8 @@ bool THD::convert_string(LEX_STRING *to, CHARSET_INFO *to_cs, const char *from, 
 bool THD::convert_string(String *s, CHARSET_INFO *from_cs, CHARSET_INFO *to_cs)
 {
   uint dummy_errors;
-  if (convert_buffer.copy(s->ptr(), s->length(), from_cs, to_cs, &dummy_errors)) return TRUE;
+  if (convert_buffer.copy(s->ptr(), s->length(), from_cs, to_cs, &dummy_errors))
+    return TRUE;
   /* If convert_buffer >> s copying is more efficient long term */
   if (convert_buffer.alloced_length() >= convert_buffer.length() * 2 || !s->is_alloced())
   {
@@ -781,7 +792,8 @@ sql_exchange::sql_exchange(char *name, bool flag) : file_name(name), opt_enclose
 bool select_send::send_fields(List<Item> &list, uint flags)
 {
   bool res;
-  if (!(res = thd->protocol->send_fields(&list, flags))) status = 1;
+  if (!(res = thd->protocol->send_fields(&list, flags)))
+    status = 1;
   return res;
 }
 
@@ -841,8 +853,10 @@ bool select_send::send_data(List<Item> &items)
     }
   }
   thd->sent_row_count++;
-  if (!thd->vio_ok()) DBUG_RETURN(0);
-  if (!thd->net.report_error) DBUG_RETURN(protocol->write());
+  if (!thd->vio_ok())
+    DBUG_RETURN(0);
+  if (!thd->net.report_error)
+    DBUG_RETURN(protocol->write());
   DBUG_RETURN(1);
 }
 
@@ -890,8 +904,10 @@ void select_to_file::send_error(uint errcode, const char *err)
 bool select_to_file::send_eof()
 {
   int error = test(end_io_cache(&cache));
-  if (my_close(file, MYF(MY_WME))) error = 1;
-  if (!error) ::send_ok(thd, row_count);
+  if (my_close(file, MYF(MY_WME)))
+    error = 1;
+  if (!error)
+    ::send_ok(thd, row_count);
   file = -1;
   return error;
 }
@@ -963,7 +979,8 @@ static File create_file(THD *thd, char *path, sql_exchange *exchange, IO_CACHE *
     return -1;
   }
   /* Create the file world readable */
-  if ((file = my_create(path, 0666, O_WRONLY | O_EXCL, MYF(MY_WME))) < 0) return file;
+  if ((file = my_create(path, 0666, O_WRONLY | O_EXCL, MYF(MY_WME))) < 0)
+    return file;
 #ifdef HAVE_FCHMOD
   (void)fchmod(file, 0666);  // Because of umask()
 #else
@@ -982,9 +999,11 @@ int select_export::prepare(List<Item> &list, SELECT_LEX_UNIT *u)
 {
   bool blob_flag = 0;
   unit = u;
-  if ((uint)strlen(exchange->file_name) + NAME_LEN >= FN_REFLEN) strmake(path, exchange->file_name, FN_REFLEN - 1);
+  if ((uint)strlen(exchange->file_name) + NAME_LEN >= FN_REFLEN)
+    strmake(path, exchange->file_name, FN_REFLEN - 1);
 
-  if ((file = create_file(thd, path, exchange, &cache)) < 0) return 1;
+  if ((file = create_file(thd, path, exchange, &cache)) < 0)
+    return 1;
   /* Check if there is any blobs in data */
   {
     List_iterator_fast<Item> li(list);
@@ -999,14 +1018,17 @@ int select_export::prepare(List<Item> &list, SELECT_LEX_UNIT *u)
     }
   }
   field_term_length = exchange->field_term->length();
-  if (!exchange->line_term->length()) exchange->line_term = exchange->field_term;  // Use this if it exists
+  if (!exchange->line_term->length())
+    exchange->line_term = exchange->field_term;  // Use this if it exists
   field_sep_char = (exchange->enclosed->length() ? (*exchange->enclosed)[0]
                     : field_term_length          ? (*exchange->field_term)[0]
                                                  : INT_MAX);
   escape_char = (exchange->escaped->length() ? (*exchange->escaped)[0] : -1);
   line_sep_char = (exchange->line_term->length() ? (*exchange->line_term)[0] : INT_MAX);
-  if (!field_term_length) exchange->opt_enclosed = 0;
-  if (!exchange->enclosed->length()) exchange->opt_enclosed = 1;  // A little quicker loop
+  if (!field_term_length)
+    exchange->opt_enclosed = 0;
+  if (!exchange->enclosed->length())
+    exchange->opt_enclosed = 1;  // A little quicker loop
   fixed_row_size = (!field_term_length && !exchange->enclosed->length() && !blob_flag);
   return 0;
 }
@@ -1030,14 +1052,16 @@ bool select_export::send_data(List<Item> &items)
   uint used_length = 0, items_left = items.elements;
   List_iterator_fast<Item> li(items);
 
-  if (my_b_write(&cache, (byte *)exchange->line_start->ptr(), exchange->line_start->length())) goto err;
+  if (my_b_write(&cache, (byte *)exchange->line_start->ptr(), exchange->line_start->length()))
+    goto err;
   while ((item = li++))
   {
     Item_result result_type = item->result_type();
     res = item->str_result(&tmp);
     if (res && (!exchange->opt_enclosed || result_type == STRING_RESULT))
     {
-      if (my_b_write(&cache, (byte *)exchange->enclosed->ptr(), exchange->enclosed->length())) goto err;
+      if (my_b_write(&cache, (byte *)exchange->enclosed->ptr(), exchange->enclosed->length()))
+        goto err;
     }
     if (!res)
     {  // NULL
@@ -1047,7 +1071,8 @@ bool select_export::send_data(List<Item> &items)
         {
           null_buff[0] = escape_char;
           null_buff[1] = 'N';
-          if (my_b_write(&cache, (byte *)null_buff, 2)) goto err;
+          if (my_b_write(&cache, (byte *)null_buff, 2))
+            goto err;
         }
         else if (my_b_write(&cache, (byte *)"NULL", 4))
           goto err;
@@ -1091,7 +1116,8 @@ bool select_export::send_data(List<Item> &items)
             start = pos + 1;
           }
         }
-        if (my_b_write(&cache, (byte *)start, (uint)(pos - start))) goto err;
+        if (my_b_write(&cache, (byte *)start, (uint)(pos - start)))
+          goto err;
       }
       else if (my_b_write(&cache, (byte *)res->ptr(), used_length))
         goto err;
@@ -1109,9 +1135,11 @@ bool select_export::send_data(List<Item> &items)
         uint length = item->max_length - used_length;
         for (; length > sizeof(space); length -= sizeof(space))
         {
-          if (my_b_write(&cache, (byte *)space, sizeof(space))) goto err;
+          if (my_b_write(&cache, (byte *)space, sizeof(space)))
+            goto err;
         }
-        if (my_b_write(&cache, (byte *)space, length)) goto err;
+        if (my_b_write(&cache, (byte *)space, length))
+          goto err;
       }
     }
     buff_ptr = buff;  // Place separators here
@@ -1125,9 +1153,11 @@ bool select_export::send_data(List<Item> &items)
       memcpy(buff_ptr, exchange->field_term->ptr(), field_term_length);
       buff_ptr += field_term_length;
     }
-    if (my_b_write(&cache, (byte *)buff, (uint)(buff_ptr - buff))) goto err;
+    if (my_b_write(&cache, (byte *)buff, (uint)(buff_ptr - buff)))
+      goto err;
   }
-  if (my_b_write(&cache, (byte *)exchange->line_term->ptr(), exchange->line_term->length())) goto err;
+  if (my_b_write(&cache, (byte *)exchange->line_term->ptr(), exchange->line_term->length()))
+    goto err;
   DBUG_RETURN(0);
 err:
   DBUG_RETURN(1);
@@ -1167,7 +1197,8 @@ bool select_dump::send_data(List<Item> &items)
     res = item->str_result(&tmp);
     if (!res)  // If NULL
     {
-      if (my_b_write(&cache, (byte *)"", 1)) goto err;
+      if (my_b_write(&cache, (byte *)"", 1))
+        goto err;
     }
     else if (my_b_write(&cache, (byte *)res->ptr(), res->length()))
     {
@@ -1220,7 +1251,8 @@ bool select_max_min_finder_subselect::send_data(List<Item> &items)
   if (it->assigned())
   {
     cache->store(val_item);
-    if ((this->*op)()) it->store(0, cache);
+    if ((this->*op)())
+      it->store(0, cache);
   }
   else
   {
@@ -1523,7 +1555,8 @@ Statement_map::Statement_map() : last_found_statement(0)
 int Statement_map::insert(Statement *statement)
 {
   int res = my_hash_insert(&st_hash, (byte *)statement);
-  if (res) return res;
+  if (res)
+    return res;
   if (statement->name.str)
   {
     if ((res = my_hash_insert(&names_hash, (byte *)statement)))
@@ -1576,7 +1609,8 @@ bool select_dumpvar::send_data(List<Item> &items)
     {
       if ((yy = var_li++))
       {
-        if (thd->spcont->set_item_eval(current_thd, yy->get_offset(), it.ref(), zz->type)) DBUG_RETURN(1);
+        if (thd->spcont->set_item_eval(current_thd, yy->get_offset(), it.ref(), zz->type))
+          DBUG_RETURN(1);
       }
     }
     else
@@ -1593,7 +1627,8 @@ bool select_dumpvar::send_data(List<Item> &items)
 
 bool select_dumpvar::send_eof()
 {
-  if (!row_count) push_warning(thd, MYSQL_ERROR::WARN_LEVEL_WARN, ER_SP_FETCH_NO_DATA, ER(ER_SP_FETCH_NO_DATA));
+  if (!row_count)
+    push_warning(thd, MYSQL_ERROR::WARN_LEVEL_WARN, ER_SP_FETCH_NO_DATA, ER(ER_SP_FETCH_NO_DATA));
   ::send_ok(thd, row_count);
   return 0;
 }
@@ -1638,8 +1673,10 @@ void Security_context::init()
 void Security_context::destroy()
 {
   // If not pointer to constant
-  if (host != my_localhost) safeFree(host);
-  if (user != delayed_user) safeFree(user);
+  if (host != my_localhost)
+    safeFree(host);
+  if (user != delayed_user)
+    safeFree(user);
   safeFree(ip);
 }
 
@@ -1722,7 +1759,8 @@ void THD::reset_sub_statement_state(Sub_statement_state *backup, uint new_state)
   backup->cuted_fields = cuted_fields;
   backup->client_capabilities = client_capabilities;
 
-  if (!lex->requires_prelocking() || is_update_query(lex->sql_command)) options &= ~OPTION_BIN_LOG;
+  if (!lex->requires_prelocking() || is_update_query(lex->sql_command))
+    options &= ~OPTION_BIN_LOG;
   /* Disable result sets */
   client_capabilities &= ~CLIENT_MULTI_RESULTS;
   in_sub_stmt |= new_state;
@@ -1775,7 +1813,8 @@ static byte *xid_get_hash_key(const byte *ptr, uint *length, my_bool not_used __
 
 static void xid_free_hash(void *ptr)
 {
-  if (!((XID_STATE *)ptr)->in_thd) my_free((gptr)ptr, MYF(0));
+  if (!((XID_STATE *)ptr)->in_thd)
+    my_free((gptr)ptr, MYF(0));
 }
 
 bool xid_cache_init()

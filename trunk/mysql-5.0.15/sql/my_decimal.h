@@ -116,7 +116,8 @@ inline int decimal_operation_results(int result) { return result; }
 
 inline int check_result(uint mask, int result)
 {
-  if (result & mask) decimal_operation_results(result);
+  if (result & mask)
+    decimal_operation_results(result);
   return result;
 }
 

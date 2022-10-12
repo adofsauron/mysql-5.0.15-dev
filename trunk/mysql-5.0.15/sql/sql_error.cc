@@ -76,7 +76,8 @@ void mysql_reset_errors(THD *thd, bool force)
     thd->warn_id = thd->query_id;
     free_root(&thd->warn_root, MYF(0));
     bzero((char *)thd->warn_count, sizeof(thd->warn_count));
-    if (force) thd->total_warn_count = 0;
+    if (force)
+      thd->total_warn_count = 0;
     thd->warn_list.empty();
     thd->row_count = 1;  // by default point to row 1
   }
@@ -102,9 +103,11 @@ MYSQL_ERROR *push_warning(THD *thd, MYSQL_ERROR::enum_warning_level level, uint 
   MYSQL_ERROR *err = 0;
   DBUG_ENTER("push_warning");
 
-  if (level == MYSQL_ERROR::WARN_LEVEL_NOTE && !(thd->options & OPTION_SQL_NOTES)) DBUG_RETURN(0);
+  if (level == MYSQL_ERROR::WARN_LEVEL_NOTE && !(thd->options & OPTION_SQL_NOTES))
+    DBUG_RETURN(0);
 
-  if (thd->query_id != thd->warn_id && !thd->spcont) mysql_reset_errors(thd, 0);
+  if (thd->query_id != thd->warn_id && !thd->spcont)
+    mysql_reset_errors(thd, 0);
   thd->got_warning = 1;
 
   /* Abort if we are using strict mode and we are not using IGNORE */
@@ -143,7 +146,8 @@ MYSQL_ERROR *push_warning(THD *thd, MYSQL_ERROR::enum_warning_level level, uint 
     */
     MEM_ROOT *old_root = thd->mem_root;
     thd->mem_root = &thd->warn_root;
-    if ((err = new MYSQL_ERROR(thd, code, level, msg))) thd->warn_list.push_back(err);
+    if ((err = new MYSQL_ERROR(thd, code, level, msg)))
+      thd->warn_list.push_back(err);
     thd->mem_root = old_root;
   }
   thd->warn_count[(uint)level]++;
@@ -204,7 +208,8 @@ bool mysqld_show_warnings(THD *thd, ulong levels_to_show)
   field_list.push_back(new Item_return_int("Code", 4, MYSQL_TYPE_LONG));
   field_list.push_back(new Item_empty_string("Message", MYSQL_ERRMSG_SIZE));
 
-  if (thd->protocol->send_fields(&field_list, Protocol::SEND_NUM_ROWS | Protocol::SEND_EOF)) DBUG_RETURN(TRUE);
+  if (thd->protocol->send_fields(&field_list, Protocol::SEND_NUM_ROWS | Protocol::SEND_EOF))
+    DBUG_RETURN(TRUE);
 
   MYSQL_ERROR *err;
   SELECT_LEX *sel = &thd->lex->select_lex;
@@ -218,14 +223,18 @@ bool mysqld_show_warnings(THD *thd, ulong levels_to_show)
   while ((err = it++))
   {
     /* Skip levels that the user is not interested in */
-    if (!(levels_to_show & ((ulong)1 << err->level))) continue;
-    if (++idx <= unit->offset_limit_cnt) continue;
-    if (idx > unit->select_limit_cnt) break;
+    if (!(levels_to_show & ((ulong)1 << err->level)))
+      continue;
+    if (++idx <= unit->offset_limit_cnt)
+      continue;
+    if (idx > unit->select_limit_cnt)
+      break;
     protocol->prepare_for_resend();
     protocol->store(warning_level_names[err->level], warning_level_length[err->level], system_charset_info);
     protocol->store((uint32)err->code);
     protocol->store(err->msg, strlen(err->msg), system_charset_info);
-    if (protocol->write()) DBUG_RETURN(TRUE);
+    if (protocol->write())
+      DBUG_RETURN(TRUE);
   }
   send_eof(thd);
   DBUG_RETURN(FALSE);

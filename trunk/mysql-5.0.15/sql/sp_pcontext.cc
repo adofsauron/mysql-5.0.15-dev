@@ -36,12 +36,14 @@ bool sp_cond_check(LEX_STRING *sqlstate)
   int i;
   const char *p;
 
-  if (sqlstate->length != 5) return FALSE;
+  if (sqlstate->length != 5)
+    return FALSE;
   for (p = sqlstate->str, i = 0; i < 5; i++)
   {
     char c = p[i];
 
-    if ((c < '0' || '9' < c) && (c < 'A' || 'Z' < c)) return FALSE;
+    if ((c < '0' || '9' < c) && (c < 'A' || 'Z' < c))
+      return FALSE;
   }
   return TRUE;
 }
@@ -83,7 +85,8 @@ sp_pcontext *sp_pcontext::push_context()
 {
   sp_pcontext *child = new sp_pcontext(this);
 
-  if (child) m_children.push_back(child);
+  if (child)
+    m_children.push_back(child);
   return child;
 }
 
@@ -91,11 +94,14 @@ sp_pcontext *sp_pcontext::pop_context()
 {
   uint submax = max_pvars();
 
-  if (submax > m_parent->m_psubsize) m_parent->m_psubsize = submax;
+  if (submax > m_parent->m_psubsize)
+    m_parent->m_psubsize = submax;
   submax = max_handlers();
-  if (submax > m_parent->m_hsubsize) m_parent->m_hsubsize = submax;
+  if (submax > m_parent->m_hsubsize)
+    m_parent->m_hsubsize = submax;
   submax = max_cursors();
-  if (submax > m_parent->m_csubsize) m_parent->m_csubsize = submax;
+  if (submax > m_parent->m_csubsize)
+    m_parent->m_csubsize = submax;
   return m_parent;
 }
 
@@ -109,7 +115,8 @@ uint sp_pcontext::diff_handlers(sp_pcontext *ctx)
     n += pctx->m_handlers;
     pctx = pctx->parent_context();
   }
-  if (pctx) return n;
+  if (pctx)
+    return n;
   return 0;  // Didn't find ctx
 }
 
@@ -118,7 +125,8 @@ uint sp_pcontext::diff_cursors(sp_pcontext *ctx)
   sp_pcontext *pctx = this;
 
   while (pctx && pctx != ctx) pctx = pctx->parent_context();
-  if (pctx) return ctx->current_cursors() - pctx->current_cursors();
+  if (pctx)
+    return ctx->current_cursors() - pctx->current_cursors();
   return 0;  // Didn't find ctx
 }
 
@@ -144,7 +152,8 @@ sp_pvar_t *sp_pcontext::find_pvar(LEX_STRING *name, my_bool scoped)
       return p;
     }
   }
-  if (!scoped && m_parent) return m_parent->find_pvar(name, scoped);
+  if (!scoped && m_parent)
+    return m_parent->find_pvar(name, scoped);
   return NULL;
 }
 
@@ -154,7 +163,8 @@ void sp_pcontext::push_pvar(LEX_STRING *name, enum enum_field_types type, sp_par
 
   if (p)
   {
-    if (m_pvar.elements == m_psubsize) m_psubsize += 1;
+    if (m_pvar.elements == m_psubsize)
+      m_psubsize += 1;
     p->name.str = name->str;
     p->name.length = name->length;
     p->type = type;
@@ -186,9 +196,11 @@ sp_label_t *sp_pcontext::find_label(char *name)
   sp_label_t *lab;
 
   while ((lab = li++))
-    if (my_strcasecmp(system_charset_info, name, lab->name) == 0) return lab;
+    if (my_strcasecmp(system_charset_info, name, lab->name) == 0)
+      return lab;
 
-  if (m_parent) return m_parent->find_label(name);
+  if (m_parent)
+    return m_parent->find_label(name);
   return NULL;
 }
 
@@ -223,7 +235,8 @@ sp_cond_type_t *sp_pcontext::find_cond(LEX_STRING *name, my_bool scoped)
       return p->val;
     }
   }
-  if (!scoped && m_parent) return m_parent->find_cond(name, scoped);
+  if (!scoped && m_parent)
+    return m_parent->find_cond(name, scoped);
   return NULL;
 }
 
@@ -246,10 +259,12 @@ bool sp_pcontext::find_handler(sp_cond_type_t *cond)
       switch (p->type)
       {
         case sp_cond_type_t::number:
-          if (cond->mysqlerr == p->mysqlerr) return TRUE;
+          if (cond->mysqlerr == p->mysqlerr)
+            return TRUE;
           break;
         case sp_cond_type_t::state:
-          if (strcmp(cond->sqlstate, p->sqlstate) == 0) return TRUE;
+          if (strcmp(cond->sqlstate, p->sqlstate) == 0)
+            return TRUE;
           break;
         default:
           return TRUE;
@@ -263,7 +278,8 @@ void sp_pcontext::push_cursor(LEX_STRING *name)
 {
   LEX_STRING n;
 
-  if (m_cursor.elements == m_csubsize) m_csubsize += 1;
+  if (m_cursor.elements == m_csubsize)
+    m_csubsize += 1;
   n.str = name->str;
   n.length = name->length;
   insert_dynamic(&m_cursor, (gptr)&n);
@@ -287,6 +303,7 @@ my_bool sp_pcontext::find_cursor(LEX_STRING *name, uint *poff, my_bool scoped)
       return TRUE;
     }
   }
-  if (!scoped && m_parent) return m_parent->find_cursor(name, poff, scoped);
+  if (!scoped && m_parent)
+    return m_parent->find_cursor(name, poff, scoped);
   return FALSE;
 }

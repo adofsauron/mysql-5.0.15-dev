@@ -47,7 +47,8 @@ extern "C"
     NET *net = &(current_thd)->net;
     DBUG_ENTER("_my_b_net_read");
 
-    if (!info->end_of_file) DBUG_RETURN(1); /* because my_b_get (no _) takes 1 byte at a time */
+    if (!info->end_of_file)
+      DBUG_RETURN(1); /* because my_b_get (no _) takes 1 byte at a time */
     read_length = my_net_read(net);
     if (read_length == packet_error)
     {

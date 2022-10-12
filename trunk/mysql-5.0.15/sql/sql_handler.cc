@@ -160,7 +160,8 @@ bool mysql_ha_open(THD *thd, TABLE_LIST *tables, bool reopen)
     if (hash_search(&thd->handler_tables_hash, (byte *)tables->alias, strlen(tables->alias) + 1))
     {
       DBUG_PRINT("info", ("duplicate '%s'", tables->alias));
-      if (!reopen) my_error(ER_NONUNIQ_TABLE, MYF(0), tables->alias);
+      if (!reopen)
+        my_error(ER_NONUNIQ_TABLE, MYF(0), tables->alias);
       goto err;
     }
   }
@@ -177,12 +178,14 @@ bool mysql_ha_open(THD *thd, TABLE_LIST *tables, bool reopen)
   error = open_tables(thd, &tables, &counter, 0);
 
   HANDLER_TABLES_HACK(thd);
-  if (error) goto err;
+  if (error)
+    goto err;
 
   /* There can be only one table in '*tables'. */
   if (!(tables->table->file->table_flags() & HA_CAN_SQL_HANDLER))
   {
-    if (!reopen) my_error(ER_ILLEGAL_HA, MYF(0), tables->alias);
+    if (!reopen)
+      my_error(ER_ILLEGAL_HA, MYF(0), tables->alias);
     mysql_ha_close(thd, tables);
     goto err;
   }
@@ -213,7 +216,8 @@ bool mysql_ha_open(THD *thd, TABLE_LIST *tables, bool reopen)
     }
   }
 
-  if (!reopen) send_ok(thd);
+  if (!reopen)
+    send_ok(thd);
   DBUG_PRINT("exit", ("OK"));
   DBUG_RETURN(FALSE);
 
@@ -379,7 +383,8 @@ bool mysql_ha_read(THD *thd, TABLE_LIST *tables, enum enum_ha_read_modes mode, c
   }
   tables->table = table;
 
-  if (cond && ((!cond->fixed && cond->fix_fields(thd, &cond)) || cond->check_cols(1))) goto err0;
+  if (cond && ((!cond->fixed && cond->fix_fields(thd, &cond)) || cond->check_cols(1)))
+    goto err0;
 
   if (keyname)
   {
@@ -390,7 +395,8 @@ bool mysql_ha_read(THD *thd, TABLE_LIST *tables, enum enum_ha_read_modes mode, c
     }
   }
 
-  if (insert_fields(thd, &thd->lex->select_lex.context, tables->db, tables->alias, &it, 0)) goto err0;
+  if (insert_fields(thd, &thd->lex->select_lex.context, tables->db, tables->alias, &it, 0))
+    goto err0;
 
   protocol->send_fields(&list, Protocol::SEND_NUM_ROWS | Protocol::SEND_EOF);
 
@@ -398,7 +404,8 @@ bool mysql_ha_read(THD *thd, TABLE_LIST *tables, enum enum_ha_read_modes mode, c
   lock = mysql_lock_tables(thd, &tables->table, 1, 0, &not_used);
   HANDLER_TABLES_HACK(thd);
 
-  if (!lock) goto err0;  // mysql_lock_tables() printed error message already
+  if (!lock)
+    goto err0;  // mysql_lock_tables() printed error message already
 
   /*
     In ::external_lock InnoDB resets the fields which tell it that
@@ -429,7 +436,8 @@ bool mysql_ha_read(THD *thd, TABLE_LIST *tables, enum enum_ha_read_modes mode, c
         else
         {
           table->file->ha_index_or_rnd_end();
-          if (!(error = table->file->ha_rnd_init(1))) error = table->file->rnd_next(table->record[0]);
+          if (!(error = table->file->ha_rnd_init(1)))
+            error = table->file->rnd_next(table->record[0]);
         }
         mode = RNEXT;
         break;
@@ -468,7 +476,8 @@ bool mysql_ha_read(THD *thd, TABLE_LIST *tables, enum enum_ha_read_modes mode, c
         for (key_len = 0; (item = it_ke++); key_part++)
         {
           // 'item' can be changed by fix_fields() call
-          if ((!item->fixed && item->fix_fields(thd, it_ke.ref())) || (item = *it_ke.ref())->check_cols(1)) goto err;
+          if ((!item->fixed && item->fix_fields(thd, it_ke.ref())) || (item = *it_ke.ref())->check_cols(1))
+            goto err;
           if (item->used_tables() & ~RAND_TABLE_BIT)
           {
             my_error(ER_WRONG_ARGUMENTS, MYF(0), "HANDLER ... READ");
@@ -477,7 +486,8 @@ bool mysql_ha_read(THD *thd, TABLE_LIST *tables, enum enum_ha_read_modes mode, c
           (void)item->save_in_field(key_part->field, 1);
           key_len += key_part->store_length;
         }
-        if (!(key = (byte *)thd->calloc(ALIGN_SIZE(key_len)))) goto err;
+        if (!(key = (byte *)thd->calloc(ALIGN_SIZE(key_len))))
+          goto err;
         table->file->ha_index_or_rnd_end();
         table->file->ha_index_init(keyno);
         key_copy(key, table->record[0], table->key_info + keyno, key_len);
@@ -492,7 +502,8 @@ bool mysql_ha_read(THD *thd, TABLE_LIST *tables, enum enum_ha_read_modes mode, c
 
     if (error)
     {
-      if (error == HA_ERR_RECORD_DELETED) continue;
+      if (error == HA_ERR_RECORD_DELETED)
+        continue;
       if (error != HA_ERR_KEY_NOT_FOUND && error != HA_ERR_END_OF_FILE)
       {
         sql_print_error("mysql_ha_read: Got error %d when reading table '%s'", error, tables->table_name);
@@ -501,7 +512,8 @@ bool mysql_ha_read(THD *thd, TABLE_LIST *tables, enum enum_ha_read_modes mode, c
       }
       goto ok;
     }
-    if (cond && !cond->val_int()) continue;
+    if (cond && !cond->val_int())
+      continue;
     if (num_rows >= offset_limit_cnt)
     {
       Item *item;

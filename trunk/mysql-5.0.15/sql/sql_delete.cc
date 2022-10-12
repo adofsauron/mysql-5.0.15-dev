@@ -39,7 +39,8 @@ bool mysql_delete(THD *thd, TABLE_LIST *table_list, COND *conds, SQL_LIST *order
   SELECT_LEX *select_lex = &thd->lex->select_lex;
   DBUG_ENTER("mysql_delete");
 
-  if (open_and_lock_tables(thd, table_list)) DBUG_RETURN(TRUE);
+  if (open_and_lock_tables(thd, table_list))
+    DBUG_RETURN(TRUE);
   if (!(table = table_list->table))
   {
     my_error(ER_VIEW_DELETE_MERGE_VIEW, MYF(0), table_list->view_db.str, table_list->view_name.str);
@@ -49,7 +50,8 @@ bool mysql_delete(THD *thd, TABLE_LIST *table_list, COND *conds, SQL_LIST *order
   thd->proc_info = "init";
   table->map = 1;
 
-  if (mysql_prepare_delete(thd, table_list, &conds)) DBUG_RETURN(TRUE);
+  if (mysql_prepare_delete(thd, table_list, &conds))
+    DBUG_RETURN(TRUE);
 
   const_cond = (!conds || conds->const_item());
   safe_update = test(thd->options & OPTION_SAFE_UPDATES);
@@ -88,7 +90,8 @@ bool mysql_delete(THD *thd, TABLE_LIST *table_list, COND *conds, SQL_LIST *order
   table->used_keys.clear_all();
   table->quick_keys.clear_all();  // Can't use 'only index'
   select = make_select(table, 0, 0, conds, 0, &error);
-  if (error) DBUG_RETURN(TRUE);
+  if (error)
+    DBUG_RETURN(TRUE);
   if ((select && select->check_quick(thd, safe_update, limit)) || !limit)
   {
     delete select;
@@ -117,7 +120,8 @@ bool mysql_delete(THD *thd, TABLE_LIST *table_list, COND *conds, SQL_LIST *order
       DBUG_RETURN(TRUE);
     }
   }
-  if (options & OPTION_QUICK) (void)table->file->extra(HA_EXTRA_QUICK);
+  if (options & OPTION_QUICK)
+    (void)table->file->extra(HA_EXTRA_QUICK);
 
   if (order && order->elements)
   {
@@ -205,11 +209,13 @@ bool mysql_delete(THD *thd, TABLE_LIST *table_list, COND *conds, SQL_LIST *order
     else
       table->file->unlock_row();  // Row failed selection, release lock on it
   }
-  if (thd->killed && !error) error = 1;  // Aborted
+  if (thd->killed && !error)
+    error = 1;  // Aborted
   thd->proc_info = "end";
   end_read_record(&info);
   free_io_cache(table);  // Will not do any harm
-  if (options & OPTION_QUICK) (void)table->file->extra(HA_EXTRA_NORMAL);
+  if (options & OPTION_QUICK)
+    (void)table->file->extra(HA_EXTRA_NORMAL);
 
   if (reset_auto_increment && (error < 0))
   {
@@ -243,15 +249,19 @@ cleanup:
   {
     if (mysql_bin_log.is_open())
     {
-      if (error < 0) thd->clear_error();
+      if (error < 0)
+        thd->clear_error();
       Query_log_event qinfo(thd, thd->query, thd->query_length, transactional_table, FALSE);
-      if (mysql_bin_log.write(&qinfo) && transactional_table) error = 1;
+      if (mysql_bin_log.write(&qinfo) && transactional_table)
+        error = 1;
     }
-    if (!transactional_table) thd->options |= OPTION_STATUS_NO_TRANS_UPDATE;
+    if (!transactional_table)
+      thd->options |= OPTION_STATUS_NO_TRANS_UPDATE;
   }
   if (transactional_table)
   {
-    if (ha_autocommit_or_rollback(thd, error >= 0)) error = 1;
+    if (ha_autocommit_or_rollback(thd, error >= 0))
+      error = 1;
   }
 
   if (thd->lock)
@@ -416,7 +426,8 @@ bool multi_delete::initialize_tables(JOIN *join)
   Unique **tempfiles_ptr;
   DBUG_ENTER("initialize_tables");
 
-  if ((thd->options & OPTION_SAFE_UPDATES) && error_if_full_join(join)) DBUG_RETURN(1);
+  if ((thd->options & OPTION_SAFE_UPDATES) && error_if_full_join(join))
+    DBUG_RETURN(1);
 
   table_map tables_to_delete_from = 0;
   for (walk = delete_tables; walk; walk = walk->next_local) tables_to_delete_from |= walk->table->map;
@@ -477,7 +488,8 @@ multi_delete::~multi_delete()
 
   for (uint counter = 0; counter < num_of_tables; counter++)
   {
-    if (tempfiles[counter]) delete tempfiles[counter];
+    if (tempfiles[counter])
+      delete tempfiles[counter];
   }
 }
 
@@ -492,7 +504,8 @@ bool multi_delete::send_data(List<Item> &values)
     TABLE *table = del_table->table;
 
     /* Check if we are using outer join and we didn't find the row */
-    if (table->status & (STATUS_NULL_ROW | STATUS_DELETED)) continue;
+    if (table->status & (STATUS_NULL_ROW | STATUS_DELETED))
+      continue;
 
     table->file->position(table->record[0]);
     found++;
@@ -537,7 +550,8 @@ void multi_delete::send_error(uint errcode, const char *err)
   my_message(errcode, err, MYF(0));
 
   /* If nothing deleted return */
-  if (!deleted) DBUG_VOID_RETURN;
+  if (!deleted)
+    DBUG_VOID_RETURN;
 
   /* Something already deleted so we have to invalidate cache */
   query_cache_invalidate3(thd, delete_tables, 1);
@@ -576,7 +590,8 @@ int multi_delete::do_deletes()
   DBUG_ASSERT(do_delete);
 
   do_delete = 0;  // Mark called
-  if (!found) DBUG_RETURN(0);
+  if (!found)
+    DBUG_RETURN(0);
 
   table_being_deleted = (delete_while_scanning ? delete_tables->next_local : delete_tables);
 
@@ -616,7 +631,8 @@ int multi_delete::do_deletes()
       }
     }
     end_read_record(&info);
-    if (thd->killed && !local_error) local_error = 1;
+    if (thd->killed && !local_error)
+      local_error = 1;
     if (local_error == -1)  // End of file
       local_error = 0;
   }
@@ -656,16 +672,19 @@ bool multi_delete::send_eof()
   {
     if (mysql_bin_log.is_open())
     {
-      if (local_error == 0) thd->clear_error();
+      if (local_error == 0)
+        thd->clear_error();
       Query_log_event qinfo(thd, thd->query, thd->query_length, transactional_tables, FALSE);
       if (mysql_bin_log.write(&qinfo) && !normal_tables)
         local_error = 1;  // Log write failed: roll back the SQL statement
     }
-    if (!transactional_tables) thd->options |= OPTION_STATUS_NO_TRANS_UPDATE;
+    if (!transactional_tables)
+      thd->options |= OPTION_STATUS_NO_TRANS_UPDATE;
   }
   /* Commit or rollback the current SQL statement */
   if (transactional_tables)
-    if (ha_autocommit_or_rollback(thd, local_error > 0)) local_error = 1;
+    if (ha_autocommit_or_rollback(thd, local_error > 0))
+      local_error = 1;
 
   if (!local_error)
   {
@@ -706,7 +725,8 @@ bool mysql_truncate(THD *thd, TABLE_LIST *table_list, bool dont_send_ok)
     TABLE *table = *table_ptr;
     table->file->info(HA_STATUS_AUTO | HA_STATUS_NO_LOCK);
     db_type table_type = table->s->db_type;
-    if (!ha_check_storage_engine_flag(table_type, HTON_CAN_RECREATE)) goto trunc_by_del;
+    if (!ha_check_storage_engine_flag(table_type, HTON_CAN_RECREATE))
+      goto trunc_by_del;
     strmov(path, table->s->path);
     *table_ptr = table->next;  // Unlink table from list
     close_temporary(table, 0);
@@ -733,8 +753,10 @@ bool mysql_truncate(THD *thd, TABLE_LIST *table_list, bool dont_send_ok)
       my_error(ER_NO_SUCH_TABLE, MYF(0), table_list->db, table_list->table_name);
       DBUG_RETURN(TRUE);
     }
-    if (!ha_check_storage_engine_flag(table_type, HTON_CAN_RECREATE) || thd->lex->sphead) goto trunc_by_del;
-    if (lock_and_wait_for_table_name(thd, table_list)) DBUG_RETURN(TRUE);
+    if (!ha_check_storage_engine_flag(table_type, HTON_CAN_RECREATE) || thd->lex->sphead)
+      goto trunc_by_del;
+    if (lock_and_wait_for_table_name(thd, table_list))
+      DBUG_RETURN(TRUE);
   }
 
   *fn_ext(path) = 0;  // Remove the .frm extension

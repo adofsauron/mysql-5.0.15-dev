@@ -178,7 +178,8 @@ static void cleanup_load_tmpdir()
   uint i;
   char fname[FN_REFLEN], prefbuf[31], *p;
 
-  if (!(dirp = my_dir(slave_load_tmpdir, MYF(MY_WME)))) return;
+  if (!(dirp = my_dir(slave_load_tmpdir, MYF(MY_WME))))
+    return;
 
   /*
      When we are deleting temporary files, we should only remove
@@ -224,7 +225,8 @@ static bool write_str(IO_CACHE *file, char *str, uint length)
 
 static inline int read_str(char **buf, char *buf_end, char **str, uint8 *len)
 {
-  if (*buf + ((uint)(uchar) * *buf) >= buf_end) return 1;
+  if (*buf + ((uint)(uchar) * *buf) >= buf_end)
+    return 1;
   *len = (uint8) * *buf;
   *str = (*buf) + 1;
   (*buf) += (uint)*len + 1;
@@ -258,7 +260,8 @@ static void print_set_option(FILE *file, uint32 bits_changed, uint32 option, uin
 {
   if (bits_changed & option)
   {
-    if (*need_comma) fprintf(file, ", ");
+    if (*need_comma)
+      fprintf(file, ", ");
     fprintf(file, "%s=%d", name, test(flags & option));
     *need_comma = 1;
   }
@@ -499,7 +502,8 @@ int Log_event::net_send(Protocol *protocol, const char *log_name, my_off_t pos)
 {
   const char *p = strrchr(log_name, FN_LIBCHAR);
   const char *event_type;
-  if (p) log_name = p + 1;
+  if (p)
+    log_name = p + 1;
 
   protocol->prepare_for_resend();
   protocol->store(log_name, &my_charset_bin);
@@ -616,7 +620,8 @@ int Log_event::read_log_event(IO_CACHE *file, String *packet, pthread_mutex_t *l
   char buf[LOG_EVENT_MINIMAL_HEADER_LEN];
   DBUG_ENTER("read_log_event");
 
-  if (log_lock) pthread_mutex_lock(log_lock);
+  if (log_lock)
+    pthread_mutex_lock(log_lock);
   if (my_b_read(file, (byte *)buf, sizeof(buf)))
   {
     /*
@@ -656,16 +661,19 @@ int Log_event::read_log_event(IO_CACHE *file, String *packet, pthread_mutex_t *l
   }
 
 end:
-  if (log_lock) pthread_mutex_unlock(log_lock);
+  if (log_lock)
+    pthread_mutex_unlock(log_lock);
   DBUG_RETURN(result);
 }
 #endif /* !MYSQL_CLIENT */
 
 #ifndef MYSQL_CLIENT
 #define UNLOCK_MUTEX \
-  if (log_lock) pthread_mutex_unlock(log_lock);
+  if (log_lock)      \
+    pthread_mutex_unlock(log_lock);
 #define LOCK_MUTEX \
-  if (log_lock) pthread_mutex_lock(log_lock);
+  if (log_lock)    \
+    pthread_mutex_lock(log_lock);
 #else
 #define UNLOCK_MUTEX
 #define LOCK_MUTEX
@@ -746,7 +754,8 @@ failed my_b_read"));
     error = "read error";
     goto err;
   }
-  if ((res = read_log_event(buf, data_len, &error, description_event))) res->register_temp_buf(buf);
+  if ((res = read_log_event(buf, data_len, &error, description_event)))
+    res->register_temp_buf(buf);
 
 err:
   UNLOCK_MUTEX;
@@ -904,7 +913,8 @@ void Log_event::print_header(FILE *file)
 void Log_event::print_timestamp(FILE *file, time_t *ts)
 {
   struct tm *res;
-  if (!ts) ts = &when;
+  if (!ts)
+    ts = &when;
 #ifdef MYSQL_SERVER  // This is always false
   struct tm tm_tmp;
   localtime_r(ts, (res = &tm_tmp));
@@ -936,7 +946,8 @@ void Query_log_event::pack_info(Protocol *protocol)
 {
   // TODO: show the catalog ??
   char *buf, *pos;
-  if (!(buf = my_malloc(9 + db_len + q_len, MYF(MY_WME)))) return;
+  if (!(buf = my_malloc(9 + db_len + q_len, MYF(MY_WME))))
+    return;
   pos = buf;
   if (!(flags & LOG_EVENT_SUPPRESS_USE_F) && db && db_len)
   {
@@ -987,7 +998,8 @@ bool Query_log_event::write(IO_CACHE *file)
       *start, *start_of_status;
   ulong event_length;
 
-  if (!query) return 1;  // Something wrong with event
+  if (!query)
+    return 1;  // Something wrong with event
 
   /*
     We want to store the thread id:
@@ -1189,7 +1201,8 @@ Query_log_event::Query_log_event(THD *thd_arg, const char *query_arg, ulong quer
 
 static void get_str_len_and_pointer(const char **dst, const char **src, uint *len)
 {
-  if ((*len = **src)) *dst = *src + 1;  // Will be copied later
+  if ((*len = **src))
+    *dst = *src + 1;  // Will be copied later
   (*src) += *len + 1;
 }
 
@@ -1239,7 +1252,8 @@ Query_log_event::Query_log_event(const char *buf, uint event_len, const Format_d
     We cannot rely on QUERY_HEADER_LEN here as it would not be format-tolerant.
     We use QUERY_HEADER_MINIMAL_LEN which is the same for 3.23, 4.0 & 5.0.
   */
-  if (event_len < (uint)(common_header_len + post_header_len)) DBUG_VOID_RETURN;
+  if (event_len < (uint)(common_header_len + post_header_len))
+    DBUG_VOID_RETURN;
   data_len = event_len - (common_header_len + post_header_len);
   buf += common_header_len;
 
@@ -1312,10 +1326,11 @@ Query_log_event::Query_log_event(const char *buf, uint event_len, const Format_d
         get_str_len_and_pointer(&time_zone_str, (const char **)(&pos), &time_zone_len);
         break;
       }
-      case Q_CATALOG_CODE:                                    /* for 5.0.x where 0<=x<=3 masters */
-        if ((catalog_len = *pos)) catalog = (char *)pos + 1;  // Will be copied later
-        pos += catalog_len + 2;                               // leap over end 0
-        catalog_nz = 0;                                       // catalog has end 0 in event
+      case Q_CATALOG_CODE: /* for 5.0.x where 0<=x<=3 masters */
+        if ((catalog_len = *pos))
+          catalog = (char *)pos + 1;  // Will be copied later
+        pos += catalog_len + 2;       // leap over end 0
+        catalog_nz = 0;               // catalog has end 0 in event
         break;
       default:
         /* That's why you must write status vars in growing order of code */
@@ -1344,7 +1359,8 @@ Query_log_event::Query_log_event(const char *buf, uint event_len, const Format_d
       start += catalog_len + 1;
     }
   }
-  if (time_zone_len) copy_str_and_move(&start, &time_zone_str, time_zone_len);
+  if (time_zone_len)
+    copy_str_and_move(&start, &time_zone_str, time_zone_len);
 
   /* A 2nd variable part; this is common to all versions */
   memcpy((char *)start, end, data_len);  // Copy db and query
@@ -1376,15 +1392,18 @@ void Query_log_event::print_query_header(FILE *file, bool short_form, LAST_EVENT
 
   if (!(flags & LOG_EVENT_SUPPRESS_USE_F) && db)
   {
-    if (different_db = memcmp(last_event_info->db, db, db_len + 1)) memcpy(last_event_info->db, db, db_len + 1);
-    if (db[0] && different_db) fprintf(file, "use %s;\n", db);
+    if (different_db = memcmp(last_event_info->db, db, db_len + 1))
+      memcpy(last_event_info->db, db, db_len + 1);
+    if (db[0] && different_db)
+      fprintf(file, "use %s;\n", db);
   }
 
   end = int10_to_str((long)when, strmov(buff, "SET TIMESTAMP="), 10);
   *end++ = ';';
   *end++ = '\n';
   my_fwrite(file, (byte *)buff, (uint)(end - buff), MYF(MY_NABP | MY_WME));
-  if (flags & LOG_EVENT_THREAD_SPECIFIC_F) fprintf(file, "SET @@session.pseudo_thread_id=%lu;\n", (ulong)thread_id);
+  if (flags & LOG_EVENT_THREAD_SPECIFIC_F)
+    fprintf(file, "SET @@session.pseudo_thread_id=%lu;\n", (ulong)thread_id);
 
   /*
     If flags2_inited==0, this is an event from 3.23 or 4.0; nothing to
@@ -1637,7 +1656,8 @@ START SLAVE; . Query: '%s'",
     }
 
     /* If the query was not ignored, it is printed to the general log */
-    if (thd->net.last_errno != ER_SLAVE_IGNORED_TABLE) mysql_log.write(thd, COM_QUERY, "%s", thd->query);
+    if (thd->net.last_errno != ER_SLAVE_IGNORED_TABLE)
+      mysql_log.write(thd, COM_QUERY, "%s", thd->query);
 
   compare_errors:
 
@@ -1769,7 +1789,8 @@ void Start_log_event_v3::print(FILE *file, bool short_form, LAST_EVENT_INFO *las
     print_header(file);
     fprintf(file, "\tStart: binlog v %d, server v %s created ", binlog_version, server_version);
     print_timestamp(file);
-    if (created) fprintf(file, " at startup");
+    if (created)
+      fprintf(file, " at startup");
     fputc('\n', file);
     if (flags & LOG_EVENT_BINLOG_IN_USE_F)
       fprintf(file,
@@ -2015,7 +2036,8 @@ Format_description_log_event::Format_description_log_event(const char *buf, uint
 {
   DBUG_ENTER("Format_description_log_event::Format_description_log_event(char*,...)");
   buf += LOG_EVENT_MINIMAL_HEADER_LEN;
-  if ((common_header_len = buf[ST_COMMON_HEADER_LEN_OFFSET]) < OLD_HEADER_LEN) DBUG_VOID_RETURN; /* sanity check */
+  if ((common_header_len = buf[ST_COMMON_HEADER_LEN_OFFSET]) < OLD_HEADER_LEN)
+    DBUG_VOID_RETURN; /* sanity check */
   number_of_event_types = event_len - (LOG_EVENT_MINIMAL_HEADER_LEN + ST_COMMON_HEADER_LEN_OFFSET + 1);
   DBUG_PRINT("info", ("common_header_len=%d number_of_event_types=%d", common_header_len, number_of_event_types));
   /* If alloc fails, we'll detect it in is_valid() */
@@ -2171,9 +2193,11 @@ void Load_log_event::print_query(bool need_db, char *buf, char **end, char **fn_
 
   pos = strmov(pos, "LOAD DATA ");
 
-  if (fn_start) *fn_start = pos;
+  if (fn_start)
+    *fn_start = pos;
 
-  if (check_fname_outside_temp_buf()) pos = strmov(pos, "LOCAL ");
+  if (check_fname_outside_temp_buf())
+    pos = strmov(pos, "LOCAL ");
   pos = strmov(pos, "INFILE '");
   memcpy(pos, fname, fname_len);
   pos = strmov(pos + fname_len, "' ");
@@ -2185,7 +2209,8 @@ void Load_log_event::print_query(bool need_db, char *buf, char **end, char **fn_
 
   pos = strmov(pos, "INTO");
 
-  if (fn_end) *fn_end = pos;
+  if (fn_end)
+    *fn_end = pos;
 
   pos = strmov(pos, " TABLE `");
   memcpy(pos, table_name, table_name_len);
@@ -2194,7 +2219,8 @@ void Load_log_event::print_query(bool need_db, char *buf, char **end, char **fn_
   /* We have to create all optinal fields as the default is not empty */
   pos = strmov(pos, "` FIELDS TERMINATED BY ");
   pos = pretty_print_str(pos, sql_ex.field_term, sql_ex.field_term_len);
-  if (sql_ex.opt_flags & OPT_ENCLOSED_FLAG) pos = strmov(pos, " OPTIONALLY ");
+  if (sql_ex.opt_flags & OPT_ENCLOSED_FLAG)
+    pos = strmov(pos, " OPTIONALLY ");
   pos = strmov(pos, " ENCLOSED BY ");
   pos = pretty_print_str(pos, sql_ex.enclosed, sql_ex.enclosed_len);
 
@@ -2242,7 +2268,8 @@ void Load_log_event::pack_info(Protocol *protocol)
 {
   char *buf, *end;
 
-  if (!(buf = my_malloc(get_query_buffer_length(), MYF(MY_WME)))) return;
+  if (!(buf = my_malloc(get_query_buffer_length(), MYF(MY_WME))))
+    return;
   print_query(TRUE, buf, &end, 0, 0);
   protocol->store(buf, end - buf, &my_charset_bin);
   my_free(buf, MYF(0));
@@ -2273,7 +2300,8 @@ bool Load_log_event::write_data_header(IO_CACHE *file)
 
 bool Load_log_event::write_data_body(IO_CACHE *file)
 {
-  if (sql_ex.write_data(file)) return 1;
+  if (sql_ex.write_data(file))
+    return 1;
   if (num_fields && fields && field_lens)
   {
     if (my_b_safe_write(file, (byte *)field_lens, num_fields) || my_b_safe_write(file, (byte *)fields, field_block_len))
@@ -2321,8 +2349,10 @@ Load_log_event::Load_log_event(THD *thd_arg, sql_exchange *ex, const char *db_ar
   sql_ex.opt_flags = 0;
   sql_ex.cached_new_format = -1;
 
-  if (ex->dumpfile) sql_ex.opt_flags |= DUMPFILE_FLAG;
-  if (ex->opt_enclosed) sql_ex.opt_flags |= OPT_ENCLOSED_FLAG;
+  if (ex->dumpfile)
+    sql_ex.opt_flags |= DUMPFILE_FLAG;
+  if (ex->opt_enclosed)
+    sql_ex.opt_flags |= OPT_ENCLOSED_FLAG;
 
   sql_ex.empty_flags = 0;
 
@@ -2335,13 +2365,19 @@ Load_log_event::Load_log_event(THD *thd_arg, sql_exchange *ex, const char *db_ar
     case DUP_ERROR:
       break;
   }
-  if (ignore) sql_ex.opt_flags |= IGNORE_FLAG;
+  if (ignore)
+    sql_ex.opt_flags |= IGNORE_FLAG;
 
-  if (!ex->field_term->length()) sql_ex.empty_flags |= FIELD_TERM_EMPTY;
-  if (!ex->enclosed->length()) sql_ex.empty_flags |= ENCLOSED_EMPTY;
-  if (!ex->line_term->length()) sql_ex.empty_flags |= LINE_TERM_EMPTY;
-  if (!ex->line_start->length()) sql_ex.empty_flags |= LINE_START_EMPTY;
-  if (!ex->escaped->length()) sql_ex.empty_flags |= ESCAPED_EMPTY;
+  if (!ex->field_term->length())
+    sql_ex.empty_flags |= FIELD_TERM_EMPTY;
+  if (!ex->enclosed->length())
+    sql_ex.empty_flags |= ENCLOSED_EMPTY;
+  if (!ex->line_term->length())
+    sql_ex.empty_flags |= LINE_TERM_EMPTY;
+  if (!ex->line_start->length())
+    sql_ex.empty_flags |= LINE_START_EMPTY;
+  if (!ex->escaped->length())
+    sql_ex.empty_flags |= ESCAPED_EMPTY;
 
   skip_lines = ex->skip_lines;
 
@@ -2415,7 +2451,8 @@ int Load_log_event::copy_log_event(const char *buf, ulong event_len, int body_of
   db_len = (uint)data_head[L_DB_LEN_OFFSET];
   num_fields = uint4korr(data_head + L_NUM_FIELDS_OFFSET);
 
-  if ((int)event_len < body_offset) DBUG_RETURN(1);
+  if ((int)event_len < body_offset)
+    DBUG_RETURN(1);
   /*
     Sql_ex.init() on success returns the pointer to the first byte after
     the sql_ex structure, which is the start of field lengths array.
@@ -2470,12 +2507,14 @@ void Load_log_event::print(FILE *file, bool short_form, LAST_EVENT_INFO *last_ev
       memcpy(last_event_info->db, db, db_len + 1);
   }
 
-  if (db && db[0] && different_db) fprintf(file, "%suse %s;\n", commented ? "# " : "", db);
+  if (db && db[0] && different_db)
+    fprintf(file, "%suse %s;\n", commented ? "# " : "", db);
 
   if (flags & LOG_EVENT_THREAD_SPECIFIC_F)
     fprintf(file, "%sSET @@session.pseudo_thread_id=%lu;\n", commented ? "# " : "", (ulong)thread_id);
   fprintf(file, "%sLOAD DATA ", commented ? "# " : "");
-  if (check_fname_outside_temp_buf()) fprintf(file, "LOCAL ");
+  if (check_fname_outside_temp_buf())
+    fprintf(file, "LOCAL ");
   fprintf(file, "INFILE '%-*s' ", fname_len, fname);
 
   if (sql_ex.opt_flags & REPLACE_FLAG)
@@ -2487,7 +2526,8 @@ void Load_log_event::print(FILE *file, bool short_form, LAST_EVENT_INFO *last_ev
   fprintf(file, " FIELDS TERMINATED BY ");
   pretty_print_str(file, sql_ex.field_term, sql_ex.field_term_len);
 
-  if (sql_ex.opt_flags & OPT_ENCLOSED_FLAG) fprintf(file, " OPTIONALLY ");
+  if (sql_ex.opt_flags & OPT_ENCLOSED_FLAG)
+    fprintf(file, " OPTIONALLY ");
   fprintf(file, " ENCLOSED BY ");
   pretty_print_str(file, sql_ex.enclosed, sql_ex.enclosed_len);
 
@@ -2502,7 +2542,8 @@ void Load_log_event::print(FILE *file, bool short_form, LAST_EVENT_INFO *last_ev
     fprintf(file, " STARTING BY ");
     pretty_print_str(file, sql_ex.line_start, sql_ex.line_start_len);
   }
-  if ((long)skip_lines > 0) fprintf(file, " IGNORE %ld LINES", (long)skip_lines);
+  if ((long)skip_lines > 0)
+    fprintf(file, " IGNORE %ld LINES", (long)skip_lines);
 
   if (num_fields)
   {
@@ -2511,7 +2552,8 @@ void Load_log_event::print(FILE *file, bool short_form, LAST_EVENT_INFO *last_ev
     fprintf(file, " (");
     for (i = 0; i < num_fields; i++)
     {
-      if (i) fputc(',', file);
+      if (i)
+        fputc(',', file);
       fprintf(file, field);
 
       field += field_lens[i] + 1;
@@ -2640,7 +2682,8 @@ int Load_log_event::exec_event(NET *net, struct st_relay_log_info *rli, bool use
     if (table_rules_on && !tables_ok(thd, &tables))
     {
       // TODO: this is a bug - this needs to be moved to the I/O thread
-      if (net) skip_load_data_infile(net);
+      if (net)
+        skip_load_data_infile(net);
     }
     else
     {
@@ -2719,7 +2762,8 @@ int Load_log_event::exec_event(NET *net, struct st_relay_log_info *rli, bool use
       ex.escaped = &escaped;
 
       ex.opt_enclosed = (sql_ex.opt_flags & OPT_ENCLOSED_FLAG);
-      if (sql_ex.empty_flags & FIELD_TERM_EMPTY) ex.field_term->length(0);
+      if (sql_ex.empty_flags & FIELD_TERM_EMPTY)
+        ex.field_term->length(0);
 
       ex.skip_lines = skip_lines;
       List<Item> field_list;
@@ -2752,7 +2796,8 @@ int Load_log_event::exec_event(NET *net, struct st_relay_log_info *rli, bool use
             (char *)table_name, llstr(log_pos, llbuff), RPL_LOG_NAME, (ulong)thd->cuted_fields,
             print_slave_db_safe(thd->db));
       }
-      if (net) net->pkt_nr = thd->net.pkt_nr;
+      if (net)
+        net->pkt_nr = thd->net.pkt_nr;
     }
   }
   else
@@ -2762,7 +2807,8 @@ int Load_log_event::exec_event(NET *net, struct st_relay_log_info *rli, bool use
       want to load the data.
       TODO: this a bug - needs to be done in I/O thread
     */
-    if (net) skip_load_data_infile(net);
+    if (net)
+      skip_load_data_infile(net);
   }
 
 error:
@@ -2838,10 +2884,12 @@ void Rotate_log_event::print(FILE *file, bool short_form, LAST_EVENT_INFO *last_
 {
   char buf[22];
 
-  if (short_form) return;
+  if (short_form)
+    return;
   print_header(file);
   fprintf(file, "\tRotate to ");
-  if (new_log_ident) my_fwrite(file, (byte *)new_log_ident, (uint)ident_len, MYF(MY_NABP | MY_WME));
+  if (new_log_ident)
+    my_fwrite(file, (byte *)new_log_ident, (uint)ident_len, MYF(MY_NABP | MY_WME));
   fprintf(file, "  pos: %s", llstr(pos, buf));
   fputc('\n', file);
   fflush(file);
@@ -2866,7 +2914,8 @@ Rotate_log_event::Rotate_log_event(THD *thd_arg, const char *new_log_ident_arg, 
   DBUG_ENTER("Rotate_log_event::Rotate_log_event(THD*,...)");
   DBUG_PRINT("enter", ("new_log_ident %s pos %s flags %lu", new_log_ident_arg, llstr(pos_arg, buff), flags));
 #endif
-  if (flags & DUP_NAME) new_log_ident = my_strdup_with_length((const byte *)new_log_ident_arg, ident_len, MYF(MY_WME));
+  if (flags & DUP_NAME)
+    new_log_ident = my_strdup_with_length((const byte *)new_log_ident_arg, ident_len, MYF(MY_WME));
   DBUG_VOID_RETURN;
 }
 #endif
@@ -2880,7 +2929,8 @@ Rotate_log_event::Rotate_log_event(const char *buf, uint event_len,
   uint8 header_size = description_event->common_header_len;
   uint8 post_header_len = description_event->post_header_len[ROTATE_EVENT - 1];
   uint ident_offset;
-  if (event_len < header_size) DBUG_VOID_RETURN;
+  if (event_len < header_size)
+    DBUG_VOID_RETURN;
   buf += header_size;
   pos = post_header_len ? uint8korr(buf + R_POS_OFFSET) : 4;
   ident_len = (uint)(event_len - (header_size + post_header_len));
@@ -3475,7 +3525,8 @@ int User_var_log_event::exec_event(struct st_relay_log_info *rli)
 {
   Item *it = 0;
   CHARSET_INFO *charset;
-  if (!(charset = get_charset(charset_number, MYF(MY_WME)))) return 1;
+  if (!(charset = get_charset(charset_number, MYF(MY_WME))))
+    return 1;
   LEX_STRING user_var_name;
   user_var_name.str = name;
   user_var_name.length = name_len;
@@ -3546,7 +3597,8 @@ int User_var_log_event::exec_event(struct st_relay_log_info *rli)
 #ifdef MYSQL_CLIENT
 void Unknown_log_event::print(FILE *file, bool short_form, LAST_EVENT_INFO *last_event_info)
 {
-  if (short_form) return;
+  if (short_form)
+    return;
   print_header(file);
   fputc('\n', file);
   fprintf(file, "# %s", "Unknown event\n");
@@ -3608,7 +3660,8 @@ Slave_log_event::~Slave_log_event() { my_free(mem_pool, MYF(MY_ALLOW_ZERO_PTR));
 void Slave_log_event::print(FILE *file, bool short_form, LAST_EVENT_INFO *last_event_info)
 {
   char llbuff[22];
-  if (short_form) return;
+  if (short_form)
+    return;
   print_header(file);
   fputc('\n', file);
   fprintf(file,
@@ -3652,9 +3705,11 @@ void Slave_log_event::init_from_mem_pool(int data_size)
 Slave_log_event::Slave_log_event(const char *buf, uint event_len)
     : Log_event(buf, 0) /*unused event*/, mem_pool(0), master_host(0)
 {
-  if (event_len < LOG_EVENT_HEADER_LEN) return;
+  if (event_len < LOG_EVENT_HEADER_LEN)
+    return;
   event_len -= LOG_EVENT_HEADER_LEN;
-  if (!(mem_pool = (char *)my_malloc(event_len + 1, MYF(MY_WME)))) return;
+  if (!(mem_pool = (char *)my_malloc(event_len + 1, MYF(MY_WME))))
+    return;
   memcpy(mem_pool, buf + LOG_EVENT_HEADER_LEN, event_len);
   mem_pool[event_len] = 0;
   init_from_mem_pool(event_len);
@@ -3663,7 +3718,8 @@ Slave_log_event::Slave_log_event(const char *buf, uint event_len)
 #ifndef MYSQL_CLIENT
 int Slave_log_event::exec_event(struct st_relay_log_info *rli)
 {
-  if (mysql_bin_log.is_open()) mysql_bin_log.write(this);
+  if (mysql_bin_log.is_open())
+    mysql_bin_log.write(this);
   return Log_event::exec_event(rli);
 }
 #endif /* !MYSQL_CLIENT */
@@ -3679,7 +3735,8 @@ int Slave_log_event::exec_event(struct st_relay_log_info *rli)
 #ifdef MYSQL_CLIENT
 void Stop_log_event::print(FILE *file, bool short_form, LAST_EVENT_INFO *last_event_info)
 {
-  if (short_form) return;
+  if (short_form)
+    return;
 
   print_header(file);
   fprintf(file, "\tStop\n");
@@ -3756,7 +3813,8 @@ Create_file_log_event::Create_file_log_event(THD *thd_arg, sql_exchange *ex, con
 bool Create_file_log_event::write_data_body(IO_CACHE *file)
 {
   bool res;
-  if ((res = Load_log_event::write_data_body(file)) || fake_base) return res;
+  if ((res = Load_log_event::write_data_body(file)) || fake_base)
+    return res;
   return (my_b_safe_write(file, (byte *)"", 1) || my_b_safe_write(file, (byte *)block, block_len));
 }
 
@@ -3768,7 +3826,8 @@ bool Create_file_log_event::write_data_header(IO_CACHE *file)
 {
   bool res;
   byte buf[CREATE_FILE_HEADER_LEN];
-  if ((res = Load_log_event::write_data_header(file)) || fake_base) return res;
+  if ((res = Load_log_event::write_data_header(file)) || fake_base)
+    return res;
   int4store(buf + CF_FILE_ID_OFFSET, file_id);
   return my_b_safe_write(file, buf, CREATE_FILE_HEADER_LEN) != 0;
 }
@@ -3825,7 +3884,8 @@ Create_file_log_event::Create_file_log_event(const char *buf, uint len,
     */
     block_offset =
         (description_event->common_header_len + Load_log_event::get_data_size() + create_file_header_len + 1);
-    if (len < block_offset) return;
+    if (len < block_offset)
+      return;
     block = (char *)buf + block_offset;
     block_len = len - block_offset;
   }
@@ -3846,7 +3906,8 @@ void Create_file_log_event::print(FILE *file, bool short_form, LAST_EVENT_INFO *
 {
   if (short_form)
   {
-    if (enable_local && check_fname_outside_temp_buf()) Load_log_event::print(file, 1, last_event_info);
+    if (enable_local && check_fname_outside_temp_buf())
+      Load_log_event::print(file, 1, last_event_info);
     return;
   }
 
@@ -3943,8 +4004,10 @@ int Create_file_log_event::exec_event(struct st_relay_log_info *rli)
   error = 0;  // Everything is ok
 
 err:
-  if (error) end_io_cache(&file);
-  if (fd >= 0) my_close(fd, MYF(0));
+  if (error)
+    end_io_cache(&file);
+  if (fd >= 0)
+    my_close(fd, MYF(0));
   thd->proc_info = 0;
   return error ? 1 : Log_event::exec_event(rli);
 }
@@ -3982,7 +4045,8 @@ Append_block_log_event::Append_block_log_event(const char *buf, uint len,
   uint8 common_header_len = description_event->common_header_len;
   uint8 append_block_header_len = description_event->post_header_len[APPEND_BLOCK_EVENT - 1];
   uint total_header_len = common_header_len + append_block_header_len;
-  if (len < total_header_len) DBUG_VOID_RETURN;
+  if (len < total_header_len)
+    DBUG_VOID_RETURN;
   file_id = uint4korr(buf + common_header_len + AB_FILE_ID_OFFSET);
   block = (char *)buf + total_header_len;
   block_len = len - total_header_len;
@@ -4010,7 +4074,8 @@ bool Append_block_log_event::write(IO_CACHE *file)
 #ifdef MYSQL_CLIENT
 void Append_block_log_event::print(FILE *file, bool short_form, LAST_EVENT_INFO *last_event_info)
 {
-  if (short_form) return;
+  if (short_form)
+    return;
   print_header(file);
   fputc('\n', file);
   fprintf(file, "#%s: file_id: %d  block_len: %d\n", get_type_str(), file_id, block_len);
@@ -4073,7 +4138,8 @@ int Append_block_log_event::exec_event(struct st_relay_log_info *rli)
   error = 0;
 
 err:
-  if (fd >= 0) my_close(fd, MYF(0));
+  if (fd >= 0)
+    my_close(fd, MYF(0));
   thd->proc_info = 0;
   DBUG_RETURN(error ? error : Log_event::exec_event(rli));
 }
@@ -4104,7 +4170,8 @@ Delete_file_log_event::Delete_file_log_event(const char *buf, uint len,
 {
   uint8 common_header_len = description_event->common_header_len;
   uint8 delete_file_header_len = description_event->post_header_len[DELETE_FILE_EVENT - 1];
-  if (len < (uint)(common_header_len + delete_file_header_len)) return;
+  if (len < (uint)(common_header_len + delete_file_header_len))
+    return;
   file_id = uint4korr(buf + common_header_len + DF_FILE_ID_OFFSET);
 }
 
@@ -4128,7 +4195,8 @@ bool Delete_file_log_event::write(IO_CACHE *file)
 #ifdef MYSQL_CLIENT
 void Delete_file_log_event::print(FILE *file, bool short_form, LAST_EVENT_INFO *last_event_info)
 {
-  if (short_form) return;
+  if (short_form)
+    return;
   print_header(file);
   fputc('\n', file);
   fprintf(file, "#Delete_file: file_id=%u\n", file_id);
@@ -4191,7 +4259,8 @@ Execute_load_log_event::Execute_load_log_event(const char *buf, uint len,
 {
   uint8 common_header_len = description_event->common_header_len;
   uint8 exec_load_header_len = description_event->post_header_len[EXEC_LOAD_EVENT - 1];
-  if (len < (uint)(common_header_len + exec_load_header_len)) return;
+  if (len < (uint)(common_header_len + exec_load_header_len))
+    return;
   file_id = uint4korr(buf + common_header_len + EL_FILE_ID_OFFSET);
 }
 
@@ -4215,7 +4284,8 @@ bool Execute_load_log_event::write(IO_CACHE *file)
 #ifdef MYSQL_CLIENT
 void Execute_load_log_event::print(FILE *file, bool short_form, LAST_EVENT_INFO *last_event_info)
 {
-  if (short_form) return;
+  if (short_form)
+    return;
   print_header(file);
   fputc('\n', file);
   fprintf(file, "#Exec_load: file_id=%d\n", file_id);
@@ -4363,7 +4433,8 @@ Execute_load_query_log_event::Execute_load_query_log_event(const char *buf, uint
                                                            const Format_description_log_event *desc_event)
     : Query_log_event(buf, event_len, desc_event, EXECUTE_LOAD_QUERY_EVENT), file_id(0), fn_pos_start(0), fn_pos_end(0)
 {
-  if (!Query_log_event::is_valid()) return;
+  if (!Query_log_event::is_valid())
+    return;
 
   buf += desc_event->common_header_len;
 
@@ -4371,7 +4442,8 @@ Execute_load_query_log_event::Execute_load_query_log_event(const char *buf, uint
   fn_pos_end = uint4korr(buf + ELQ_FN_POS_END_OFFSET);
   dup_handling = (enum_load_dup_handling)(*(buf + ELQ_DUP_HANDLING_OFFSET));
 
-  if (fn_pos_start > q_len || fn_pos_end > q_len || dup_handling > LOAD_DUP_REPLACE) return;
+  if (fn_pos_start > q_len || fn_pos_end > q_len || dup_handling > LOAD_DUP_REPLACE)
+    return;
 
   file_id = uint4korr(buf + ELQ_FILE_ID_OFFSET);
 }
@@ -4407,7 +4479,8 @@ void Execute_load_query_log_event::print(FILE *file, bool short_form, LAST_EVENT
     fprintf(file, " LOCAL INFILE \'");
     fprintf(file, local_fname);
     fprintf(file, "\'");
-    if (dup_handling == LOAD_DUP_REPLACE) fprintf(file, " REPLACE");
+    if (dup_handling == LOAD_DUP_REPLACE)
+      fprintf(file, " REPLACE");
     fprintf(file, " INTO");
     my_fwrite(file, (byte *)query + fn_pos_end, q_len - fn_pos_end, MYF(MY_NABP | MY_WME));
     fprintf(file, ";\n");
@@ -4418,7 +4491,8 @@ void Execute_load_query_log_event::print(FILE *file, bool short_form, LAST_EVENT
     fprintf(file, ";\n");
   }
 
-  if (!short_form) fprintf(file, "# file_id: %d \n", file_id);
+  if (!short_form)
+    fprintf(file, "# file_id: %d \n", file_id);
 }
 #endif
 
@@ -4426,7 +4500,8 @@ void Execute_load_query_log_event::print(FILE *file, bool short_form, LAST_EVENT
 void Execute_load_query_log_event::pack_info(Protocol *protocol)
 {
   char *buf, *pos;
-  if (!(buf = my_malloc(9 + db_len + q_len + 10 + 21, MYF(MY_WME)))) return;
+  if (!(buf = my_malloc(9 + db_len + q_len + 10 + 21, MYF(MY_WME))))
+    return;
   pos = buf;
   if (db && db_len)
   {
@@ -4491,7 +4566,8 @@ int Execute_load_query_log_event::exec_event(struct st_relay_log_info *rli)
     If there was an error the slave is going to stop, leave the
     file so that we can re-execute this event at START SLAVE.
   */
-  if (!error) (void)my_delete(fname, MYF(MY_WME));
+  if (!error)
+    (void)my_delete(fname, MYF(MY_WME));
 
   my_free(buf, MYF(MY_ALLOW_ZERO_PTR));
   return error;
@@ -4561,11 +4637,16 @@ char *sql_ex_info::init(char *buf, char *buf_end, bool use_new_format)
     escaped = buf++;
     opt_flags = *buf++;
     empty_flags = *buf++;
-    if (empty_flags & FIELD_TERM_EMPTY) field_term_len = 0;
-    if (empty_flags & ENCLOSED_EMPTY) enclosed_len = 0;
-    if (empty_flags & LINE_TERM_EMPTY) line_term_len = 0;
-    if (empty_flags & LINE_START_EMPTY) line_start_len = 0;
-    if (empty_flags & ESCAPED_EMPTY) escaped_len = 0;
+    if (empty_flags & FIELD_TERM_EMPTY)
+      field_term_len = 0;
+    if (empty_flags & ENCLOSED_EMPTY)
+      enclosed_len = 0;
+    if (empty_flags & LINE_TERM_EMPTY)
+      line_term_len = 0;
+    if (empty_flags & LINE_START_EMPTY)
+      line_start_len = 0;
+    if (empty_flags & ESCAPED_EMPTY)
+      escaped_len = 0;
   }
   return buf;
 }

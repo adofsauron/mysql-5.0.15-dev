@@ -107,7 +107,8 @@ class String
   }
   inline char *c_ptr_quick()
   {
-    if (Ptr && str_length < Alloced_length) Ptr[str_length] = 0;
+    if (Ptr && str_length < Alloced_length)
+      Ptr[str_length] = 0;
     return Ptr;
   }
   inline char *c_ptr_safe()
@@ -200,7 +201,8 @@ class String
   }
   inline bool alloc(uint32 arg_length)
   {
-    if (arg_length < Alloced_length) return 0;
+    if (arg_length < Alloced_length)
+      return 0;
     return real_alloc(arg_length);
   }
   bool real_alloc(uint32 arg_length);  // Empties old string
@@ -269,7 +271,8 @@ class String
     }
     else
     {
-      if (realloc(str_length + 1)) return 1;
+      if (realloc(str_length + 1))
+        return 1;
       Ptr[str_length++] = chr;
     }
     return 0;
@@ -332,7 +335,8 @@ class String
     uint32 new_length = arg_length + str_length;
     if (new_length > Alloced_length)
     {
-      if (realloc(new_length + step_alloc)) return 0;
+      if (realloc(new_length + step_alloc))
+        return 0;
     }
     uint32 old_length = str_length;
     str_length += arg_length;
@@ -342,7 +346,8 @@ class String
   inline bool append(const char *s, uint32 arg_length, uint32 step_alloc)
   {
     uint32 new_length = arg_length + str_length;
-    if (new_length > Alloced_length && realloc(new_length + step_alloc)) return TRUE;
+    if (new_length > Alloced_length && realloc(new_length + step_alloc))
+      return TRUE;
     memcpy(Ptr + str_length, s, arg_length);
     str_length += arg_length;
     return FALSE;

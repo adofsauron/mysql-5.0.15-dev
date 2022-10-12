@@ -38,15 +38,18 @@ String *Item_func_geometry_from_text::val_str(String *str)
   String arg_val;
   String *wkt = args[0]->val_str(&arg_val);
 
-  if ((null_value = args[0]->null_value)) return 0;
+  if ((null_value = args[0]->null_value))
+    return 0;
 
   Gis_read_stream trs(wkt->charset(), wkt->ptr(), wkt->length());
   uint32 srid = 0;
 
-  if ((arg_count == 2) && !args[1]->null_value) srid = (uint32)args[1]->val_int();
+  if ((arg_count == 2) && !args[1]->null_value)
+    srid = (uint32)args[1]->val_int();
 
   str->set_charset(&my_charset_bin);
-  if (str->reserve(SRID_SIZE, 512)) return 0;
+  if (str->reserve(SRID_SIZE, 512))
+    return 0;
   str->length(0);
   str->q_append(srid);
   if (!Geometry::create_from_wkt(&buffer, &trs, str, 0))
@@ -65,10 +68,12 @@ String *Item_func_geometry_from_wkb::val_str(String *str)
   Geometry_buffer buffer;
   uint32 srid = 0;
 
-  if ((arg_count == 2) && !args[1]->null_value) srid = (uint32)args[1]->val_int();
+  if ((arg_count == 2) && !args[1]->null_value)
+    srid = (uint32)args[1]->val_int();
 
   str->set_charset(&my_charset_bin);
-  if (str->reserve(SRID_SIZE, 512)) return 0;
+  if (str->reserve(SRID_SIZE, 512))
+    return 0;
   str->length(0);
   str->q_append(srid);
   if ((null_value = (args[0]->null_value || !Geometry::create_from_wkb(&buffer, wkb->ptr(), wkb->length()) ||
@@ -91,7 +96,8 @@ String *Item_func_as_wkt::val_str(String *str)
     return 0;
 
   str->length(0);
-  if ((null_value = geom->as_wkt(str, &dummy))) return 0;
+  if ((null_value = geom->as_wkt(str, &dummy)))
+    return 0;
 
   return str;
 }
@@ -144,7 +150,8 @@ String *Item_func_envelope::val_str(String *str)
   srid = uint4korr(swkb->ptr());
   str->set_charset(&my_charset_bin);
   str->length(0);
-  if (str->reserve(SRID_SIZE, 512)) return 0;
+  if (str->reserve(SRID_SIZE, 512))
+    return 0;
   str->q_append(srid);
   return (null_value = geom->envelope(str)) ? 0 : str;
 }
@@ -163,7 +170,8 @@ String *Item_func_centroid::val_str(String *str)
     return 0;
 
   str->set_charset(&my_charset_bin);
-  if (str->reserve(SRID_SIZE, 512)) return 0;
+  if (str->reserve(SRID_SIZE, 512))
+    return 0;
   str->length(0);
   srid = uint4korr(swkb->ptr());
   str->q_append(srid);
@@ -190,21 +198,25 @@ String *Item_func_spatial_decomp::val_str(String *str)
 
   srid = uint4korr(swkb->ptr());
   str->set_charset(&my_charset_bin);
-  if (str->reserve(SRID_SIZE, 512)) goto err;
+  if (str->reserve(SRID_SIZE, 512))
+    goto err;
   str->length(0);
   str->q_append(srid);
   switch (decomp_func)
   {
     case SP_STARTPOINT:
-      if (geom->start_point(str)) goto err;
+      if (geom->start_point(str))
+        goto err;
       break;
 
     case SP_ENDPOINT:
-      if (geom->end_point(str)) goto err;
+      if (geom->end_point(str))
+        goto err;
       break;
 
     case SP_EXTERIORRING:
-      if (geom->exterior_ring(str)) goto err;
+      if (geom->exterior_ring(str))
+        goto err;
       break;
 
     default:
@@ -233,22 +245,26 @@ String *Item_func_spatial_decomp_n::val_str(String *str)
     return 0;
 
   str->set_charset(&my_charset_bin);
-  if (str->reserve(SRID_SIZE, 512)) goto err;
+  if (str->reserve(SRID_SIZE, 512))
+    goto err;
   srid = uint4korr(swkb->ptr());
   str->length(0);
   str->q_append(srid);
   switch (decomp_func_n)
   {
     case SP_POINTN:
-      if (geom->point_n(n, str)) goto err;
+      if (geom->point_n(n, str))
+        goto err;
       break;
 
     case SP_GEOMETRYN:
-      if (geom->geometry_n(n, str)) goto err;
+      if (geom->geometry_n(n, str))
+        goto err;
       break;
 
     case SP_INTERIORRINGN:
-      if (geom->interior_ring_n(n, str)) goto err;
+      if (geom->interior_ring_n(n, str))
+        goto err;
       break;
 
     default:
@@ -305,7 +321,8 @@ String *Item_func_spatial_collection::val_str(String *str)
 
   str->set_charset(&my_charset_bin);
   str->length(0);
-  if (str->reserve(1 + 4 + 4, 512)) goto err;
+  if (str->reserve(1 + 4 + 4, 512))
+    goto err;
 
   str->q_append((char)Geometry::wkb_ndr);
   str->q_append((uint32)coll_type);
@@ -314,7 +331,8 @@ String *Item_func_spatial_collection::val_str(String *str)
   for (i = 0; i < arg_count; ++i)
   {
     String *res = args[i]->val_str(&arg_value);
-    if (args[i]->null_value) goto err;
+    if (args[i]->null_value)
+      goto err;
 
     if (coll_type == Geometry::wkb_geometrycollection)
     {
@@ -322,7 +340,8 @@ String *Item_func_spatial_collection::val_str(String *str)
         In the case of GeometryCollection we don't need any checkings
         for item types, so just copy them into target collection
       */
-      if (str->append(res->ptr(), res->length(), (uint32)512)) goto err;
+      if (str->append(res->ptr(), res->length(), (uint32)512))
+        goto err;
     }
     else
     {
@@ -335,22 +354,26 @@ String *Item_func_spatial_collection::val_str(String *str)
         are of specific type, let's do this checking now
       */
 
-      if (len < 5) goto err;
+      if (len < 5)
+        goto err;
       wkb_type = (Geometry::wkbType)uint4korr(data);
       data += 4;
       len -= 5;
-      if (wkb_type != item_type) goto err;
+      if (wkb_type != item_type)
+        goto err;
 
       switch (coll_type)
       {
         case Geometry::wkb_multipoint:
         case Geometry::wkb_multilinestring:
         case Geometry::wkb_multipolygon:
-          if (len < WKB_HEADER_SIZE || str->append(data - WKB_HEADER_SIZE, len + WKB_HEADER_SIZE, 512)) goto err;
+          if (len < WKB_HEADER_SIZE || str->append(data - WKB_HEADER_SIZE, len + WKB_HEADER_SIZE, 512))
+            goto err;
           break;
 
         case Geometry::wkb_linestring:
-          if (str->append(data, POINT_DATA_SIZE, 512)) goto err;
+          if (str->append(data, POINT_DATA_SIZE, 512))
+            goto err;
           break;
         case Geometry::wkb_polygon:
         {
@@ -358,7 +381,8 @@ String *Item_func_spatial_collection::val_str(String *str)
           double x1, y1, x2, y2;
           const char *org_data = data;
 
-          if (len < 4 + 2 * POINT_DATA_SIZE) goto err;
+          if (len < 4 + 2 * POINT_DATA_SIZE)
+            goto err;
 
           n_points = uint4korr(data);
           data += 4;
@@ -372,7 +396,8 @@ String *Item_func_spatial_collection::val_str(String *str)
           float8get(x2, data);
           float8get(y2, data + SIZEOF_STORED_DOUBLE);
 
-          if ((x1 != x2) || (y1 != y2) || str->append(org_data, len, 512)) goto err;
+          if ((x1 != x2) || (y1 != y2) || str->append(org_data, len, 512))
+            goto err;
         }
         break;
 
@@ -456,7 +481,8 @@ longlong Item_func_issimple::val_int()
   String tmp;
   String *wkb = args[0]->val_str(&tmp);
 
-  if ((null_value = (!wkb || args[0]->null_value))) return 0;
+  if ((null_value = (!wkb || args[0]->null_value)))
+    return 0;
   /* TODO: Ramil or Holyfoot, add real IsSimple calculation */
   return 0;
 }
@@ -602,7 +628,8 @@ longlong Item_func_srid::val_int()
   Geometry_buffer buffer;
 
   null_value = (!swkb || !Geometry::create_from_wkb(&buffer, swkb->ptr() + SRID_SIZE, swkb->length() - SRID_SIZE));
-  if (null_value) return 0;
+  if (null_value)
+    return 0;
 
   return (longlong)(uint4korr(swkb->ptr()));
 }

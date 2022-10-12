@@ -499,7 +499,8 @@ class Item_dec_func : public Item_real_func
     return value;
 #else
     /* The following should be safe, even if we compare doubles */
-    if (finite(value) && value != POSTFIX_ERROR) return value;
+    if (finite(value) && value != POSTFIX_ERROR)
+      return value;
     null_value = 1;
     return 0.0;
 #endif
@@ -915,7 +916,8 @@ class Item_func_last_insert_id : public Item_int_func
   const char *func_name() const { return "last_insert_id"; }
   void fix_length_and_dec()
   {
-    if (arg_count) max_length = args[0]->max_length;
+    if (arg_count)
+      max_length = args[0]->max_length;
   }
 };
 
@@ -987,7 +989,8 @@ class Item_func_udf_float : public Item_udf_func
   my_decimal *val_decimal(my_decimal *dec_buf)
   {
     double res = val_real();
-    if (null_value) return NULL;
+    if (null_value)
+      return NULL;
     double2my_decimal(E_DEC_FATAL_ERROR, res, dec_buf);
     return dec_buf;
   }
@@ -1049,7 +1052,8 @@ class Item_func_udf_str : public Item_udf_func
   my_decimal *val_decimal(my_decimal *dec_buf)
   {
     String *res = val_str(&str_value);
-    if (!res) return NULL;
+    if (!res)
+      return NULL;
     string2my_decimal(E_DEC_FATAL_ERROR, res, dec_buf);
     return dec_buf;
   }
@@ -1493,25 +1497,29 @@ class Item_func_sp : public Item_func
 
   longlong val_int()
   {
-    if (execute(&result_field)) return (longlong)0;
+    if (execute(&result_field))
+      return (longlong)0;
     return result_field->val_int();
   }
 
   double val_real()
   {
-    if (execute(&result_field)) return 0.0;
+    if (execute(&result_field))
+      return 0.0;
     return result_field->val_real();
   }
 
   my_decimal *val_decimal(my_decimal *dec_buf)
   {
-    if (execute(&result_field)) return NULL;
+    if (execute(&result_field))
+      return NULL;
     return result_field->val_decimal(dec_buf);
   }
 
   String *val_str(String *str)
   {
-    if (execute(&result_field)) return NULL;
+    if (execute(&result_field))
+      return NULL;
     return result_field->val_str(str);
   }
 

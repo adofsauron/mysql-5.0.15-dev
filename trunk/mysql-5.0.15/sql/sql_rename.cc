@@ -46,9 +46,11 @@ bool mysql_rename_tables(THD *thd, TABLE_LIST *table_list)
     DBUG_RETURN(1);
   }
 
-  if (wait_if_global_read_lock(thd, 0, 1)) DBUG_RETURN(1);
+  if (wait_if_global_read_lock(thd, 0, 1))
+    DBUG_RETURN(1);
   VOID(pthread_mutex_lock(&LOCK_open));
-  if (lock_table_names(thd, table_list)) goto err;
+  if (lock_table_names(thd, table_list))
+    goto err;
 
   error = 0;
   if ((ren_table = rename_tables(thd, table_list, 0)))
@@ -179,7 +181,8 @@ static TABLE_LIST *rename_tables(THD *thd, TABLE_LIST *table_list, bool skip_err
         my_error(ER_FILE_NOT_FOUND, MYF(0), name, my_errno);
         break;
     }
-    if (rc && !skip_error) DBUG_RETURN(ren_table);
+    if (rc && !skip_error)
+      DBUG_RETURN(ren_table);
   }
   DBUG_RETURN(0);
 }

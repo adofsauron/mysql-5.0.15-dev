@@ -519,7 +519,8 @@ class store_key_const_item : public store_key_item
       inited = 1;
       if ((res = item->save_in_field(to_field, 1)))
       {
-        if (!err) err = res;
+        if (!err)
+          err = res;
       }
     }
     return (err > 2 ? STORE_KEY_FATAL : (store_key_result)err);

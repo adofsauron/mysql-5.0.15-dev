@@ -252,13 +252,15 @@ double Unique::get_use_cost(uint *buffer, uint nkeys, uint key_size, ulong max_i
 
   /* Calculate cost of creating trees */
   result = 2 * log2_n_fact(last_tree_elems + 1.0);
-  if (n_full_trees) result += n_full_trees * log2_n_fact(max_elements_in_tree + 1.0);
+  if (n_full_trees)
+    result += n_full_trees * log2_n_fact(max_elements_in_tree + 1.0);
   result /= TIME_FOR_COMPARE_ROWID;
 
   DBUG_PRINT("info", ("unique trees sizes: %u=%u*%lu + %lu", nkeys, n_full_trees,
                       n_full_trees ? max_elements_in_tree : 0, last_tree_elems));
 
-  if (!n_full_trees) return result;
+  if (!n_full_trees)
+    return result;
 
   /*
     There is more then one tree and merging is necessary.
@@ -270,7 +272,8 @@ double Unique::get_use_cost(uint *buffer, uint nkeys, uint key_size, ulong max_i
 
   /* Cost of merge */
   double merge_cost = get_merge_many_buffs_cost(buffer, n_full_trees, max_elements_in_tree, last_tree_elems, key_size);
-  if (merge_cost < 0.0) return merge_cost;
+  if (merge_cost < 0.0)
+    return merge_cost;
 
   result += merge_cost;
   /*
@@ -409,7 +412,8 @@ static bool merge_walk(uchar *merge_buffer, uint merge_buffer_size, uint key_len
     top->base = merge_buffer + (top - begin) * piece_size;
     top->max_keys = max_key_count_per_piece;
     bytes_read = read_to_buffer(file, top, key_length);
-    if (bytes_read == (uint)(-1)) goto end;
+    if (bytes_read == (uint)(-1))
+      goto end;
     DBUG_ASSERT(bytes_read);
     queue_insert(&queue, (byte *)top);
   }
@@ -455,7 +459,8 @@ static bool merge_walk(uchar *merge_buffer, uint merge_buffer_size, uint key_len
     /* new top has been obtained; if old top is unique, apply the action */
     if (compare(compare_arg, old_key, top->key))
     {
-      if (walk_action(old_key, 1, walk_action_arg)) goto end;
+      if (walk_action(old_key, 1, walk_action_arg))
+        goto end;
     }
   }
   /*
@@ -467,11 +472,13 @@ static bool merge_walk(uchar *merge_buffer, uint merge_buffer_size, uint key_len
   {
     do
     {
-      if (walk_action(top->key, 1, walk_action_arg)) goto end;
+      if (walk_action(top->key, 1, walk_action_arg))
+        goto end;
       top->key += key_length;
     } while (--top->mem_count);
     bytes_read = read_to_buffer(file, top, key_length);
-    if (bytes_read == (uint)(-1)) goto end;
+    if (bytes_read == (uint)(-1))
+      goto end;
   } while (bytes_read);
   res = 0;
 end:
@@ -505,10 +512,13 @@ bool Unique::walk(tree_walk_action action, void *walk_action_arg)
     return tree_walk(&tree, action, walk_action_arg, left_root_right);
 
   /* flush current tree to the file to have some memory for merge buffer */
-  if (flush()) return 1;
-  if (flush_io_cache(&file) || reinit_io_cache(&file, READ_CACHE, 0L, 0, 0)) return 1;
+  if (flush())
+    return 1;
+  if (flush_io_cache(&file) || reinit_io_cache(&file, READ_CACHE, 0L, 0, 0))
+    return 1;
   uchar *merge_buffer = (uchar *)my_malloc(max_in_memory_size, MYF(0));
-  if (merge_buffer == 0) return 1;
+  if (merge_buffer == 0)
+    return 1;
   int res = merge_walk(merge_buffer, max_in_memory_size, size, (BUFFPEK *)file_ptrs.buffer,
                        (BUFFPEK *)file_ptrs.buffer + file_ptrs.elements, action, walk_action_arg, tree.compare,
                        tree.custom_arg, &file);
@@ -536,7 +546,8 @@ bool Unique::get(TABLE *table)
     }
   }
   /* Not enough memory; Save the result to file && free memory used by tree */
-  if (flush()) return 1;
+  if (flush())
+    return 1;
 
   IO_CACHE *outfile = table->sort.io_cache;
   BUFFPEK *file_ptr = (BUFFPEK *)file_ptrs.buffer;
@@ -560,21 +571,27 @@ bool Unique::get(TABLE *table)
   sort_param.keys = max_in_memory_size / sort_param.sort_length;
   sort_param.not_killable = 1;
 
-  if (!(sort_buffer = (uchar *)my_malloc((sort_param.keys + 1) * sort_param.sort_length, MYF(0)))) return 1;
+  if (!(sort_buffer = (uchar *)my_malloc((sort_param.keys + 1) * sort_param.sort_length, MYF(0))))
+    return 1;
   sort_param.unique_buff = sort_buffer + (sort_param.keys * sort_param.sort_length);
 
   /* Merge the buffers to one file, removing duplicates */
-  if (merge_many_buff(&sort_param, sort_buffer, file_ptr, &maxbuffer, &file)) goto err;
-  if (flush_io_cache(&file) || reinit_io_cache(&file, READ_CACHE, 0L, 0, 0)) goto err;
-  if (merge_buffers(&sort_param, &file, outfile, sort_buffer, file_ptr, file_ptr, file_ptr + maxbuffer, 0)) goto err;
+  if (merge_many_buff(&sort_param, sort_buffer, file_ptr, &maxbuffer, &file))
+    goto err;
+  if (flush_io_cache(&file) || reinit_io_cache(&file, READ_CACHE, 0L, 0, 0))
+    goto err;
+  if (merge_buffers(&sort_param, &file, outfile, sort_buffer, file_ptr, file_ptr, file_ptr + maxbuffer, 0))
+    goto err;
   error = 0;
 err:
   x_free((gptr)sort_buffer);
-  if (flush_io_cache(outfile)) error = 1;
+  if (flush_io_cache(outfile))
+    error = 1;
 
   /* Setup io_cache for reading */
   save_pos = outfile->pos_in_file;
-  if (reinit_io_cache(outfile, READ_CACHE, 0L, 0, 0)) error = 1;
+  if (reinit_io_cache(outfile, READ_CACHE, 0L, 0, 0))
+    error = 1;
   outfile->end_of_file = save_pos;
   return error;
 }

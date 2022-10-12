@@ -280,7 +280,8 @@ char *metaphon(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *le
    *-------------------------------------------------------*/
 
   for (n = ntrans + 1, n_end = ntrans + sizeof(ntrans) - 2; word != w_end && n < n_end; word++)
-    if (my_isalpha(&my_charset_latin1, *word)) *n++ = my_toupper(&my_charset_latin1, *word);
+    if (my_isalpha(&my_charset_latin1, *word))
+      *n++ = my_toupper(&my_charset_latin1, *word);
 
   if (n == ntrans + 1) /* return empty string if 0 bytes */
   {
@@ -302,10 +303,12 @@ char *metaphon(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *le
     case 'P':
     case 'K':
     case 'G':
-      if (n[1] == 'N') *n++ = 0;
+      if (n[1] == 'N')
+        *n++ = 0;
       break;
     case 'A':
-      if (n[1] == 'E') *n++ = 0;
+      if (n[1] == 'E')
+        *n++ = 0;
       break;
     case 'W':
       if (n[1] == 'R')
@@ -338,7 +341,8 @@ char *metaphon(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *le
     else
     {
       /* drop duplicates except for CC */
-      if (*(n - 1) == *n && *n != 'C') continue;
+      if (*(n - 1) == *n && *n != 'C')
+        continue;
 
       /* check for F J L M N R or first letter vowel */
       if (NOCHANGE(*n) || (n == n_start && ISVOWEL(*n)))
@@ -347,7 +351,8 @@ char *metaphon(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *le
         switch (*n)
         {
           case 'B': /* check for -MB */
-            if (n < n_end || *(n - 1) != 'M') *result++ = *n;
+            if (n < n_end || *(n - 1) != 'M')
+              *result++ = *n;
             break;
 
           case 'C': /* C = X ("sh" sound) in CH and CIA */
@@ -383,11 +388,13 @@ char *metaphon(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *le
           case 'H': /* H if before a vowel and not after */
             /* C, G, P, S, T */
 
-            if (!AFFECTH(*(n - 1)) && (!ISVOWEL(*(n - 1)) || ISVOWEL(n[1]))) *result++ = 'H';
+            if (!AFFECTH(*(n - 1)) && (!ISVOWEL(*(n - 1)) || ISVOWEL(n[1])))
+              *result++ = 'H';
             break;
 
           case 'K': /* K = K, except dropped after C */
-            if (*(n - 1) != 'C') *result++ = 'K';
+            if (*(n - 1) != 'C')
+              *result++ = 'K';
             break;
 
           case 'P': /* PH = F, else P = P */
@@ -417,7 +424,8 @@ char *metaphon(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *le
 
           case 'W': /* only exist if a vowel follows */
           case 'Y':
-            if (ISVOWEL(n[1])) *result++ = *n;
+            if (ISVOWEL(n[1]))
+              *result++ = *n;
             break;
 
           case 'X': /* X = KS, except at start */
@@ -481,11 +489,13 @@ double myfunc_double(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *erro
 
   for (uint i = 0; i < args->arg_count; i++)
   {
-    if (args->args[i] == NULL) continue;
+    if (args->args[i] == NULL)
+      continue;
     val += args->lengths[i];
     for (uint j = args->lengths[i]; j-- > 0;) v += args->args[i][j];
   }
-  if (val) return (double)v / (double)val;
+  if (val)
+    return (double)v / (double)val;
   *is_null = 1;
   return 0.0;
 }
@@ -512,7 +522,8 @@ longlong myfunc_int(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error
   longlong val = 0;
   for (uint i = 0; i < args->arg_count; i++)
   {
-    if (args->args[i] == NULL) continue;
+    if (args->args[i] == NULL)
+      continue;
     switch (args->arg_type[i])
     {
       case STRING_RESULT:  // Add string lengths
@@ -543,7 +554,8 @@ my_bool sequence_init(UDF_INIT *initid, UDF_ARGS *args, char *message)
     strmov(message, "This function takes none or 1 argument");
     return 1;
   }
-  if (args->arg_count) args->arg_type[0] = INT_RESULT;  // Force argument to int
+  if (args->arg_count)
+    args->arg_type[0] = INT_RESULT;  // Force argument to int
 
   if (!(initid->ptr = (char *)malloc(sizeof(longlong))))
   {
@@ -563,13 +575,15 @@ my_bool sequence_init(UDF_INIT *initid, UDF_ARGS *args, char *message)
 
 void sequence_deinit(UDF_INIT *initid)
 {
-  if (initid->ptr) free(initid->ptr);
+  if (initid->ptr)
+    free(initid->ptr);
 }
 
 longlong sequence(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error)
 {
   ulonglong val = 0;
-  if (args->arg_count) val = *((longlong *)args->args[0]);
+  if (args->arg_count)
+    val = *((longlong *)args->args[0]);
   return ++*((longlong *)initid->ptr) + val;
 }
 
@@ -639,7 +653,8 @@ char *lookup(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *res_
     *null_value = 1;
     return 0;
   }
-  if (length >= sizeof(name_buff)) length = sizeof(name_buff) - 1;
+  if (length >= sizeof(name_buff))
+    length = sizeof(name_buff) - 1;
   memcpy(name_buff, args->args[0], length);
   name_buff[length] = 0;
 #if defined(HAVE_GETHOSTBYADDR_R) && defined(HAVE_SOLARIS_STYLE_GETHOST)
@@ -721,7 +736,8 @@ char *reverse_lookup(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned lo
       return 0;
     }
     length = args->lengths[0];
-    if (length >= (uint)*res_length - 1) length = (uint)*res_length;
+    if (length >= (uint)*res_length - 1)
+      length = (uint)*res_length;
     memcpy(result, args->args[0], length);
     result[length] = 0;
   }
@@ -866,7 +882,8 @@ void avgcost_add(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *message)
       data->totalprice += price * double(quantity);
     }
 
-    if (data->totalquantity == 0) data->totalprice = 0.0;
+    if (data->totalquantity == 0)
+      data->totalprice = 0.0;
   }
 }
 
@@ -912,7 +929,8 @@ char *myfunc_argument_name(UDF_INIT *initid, UDF_ARGS *args, char *result, unsig
     return 0;
   }
   (*length)--;  // space for ending \0 (for debugging purposes)
-  if (*length > args->attribute_lengths[0]) *length = args->attribute_lengths[0];
+  if (*length > args->attribute_lengths[0])
+    *length = args->attribute_lengths[0];
   memcpy(result, args->attributes[0], *length);
   result[*length] = 0;
   return result;

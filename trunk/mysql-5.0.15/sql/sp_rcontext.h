@@ -75,12 +75,14 @@ class sp_rcontext : public Sql_alloc
 
   inline void push_item(Item *i)
   {
-    if (m_count < m_fsize) m_frame[m_count++] = i;
+    if (m_count < m_fsize)
+      m_frame[m_count++] = i;
   }
 
   inline void set_item(uint idx, Item *i)
   {
-    if (idx < m_count) m_frame[idx] = i;
+    if (idx < m_count)
+      m_frame[idx] = i;
   }
 
   /* Returns 0 on success, -1 on (eval) failure */
@@ -111,7 +113,8 @@ class sp_rcontext : public Sql_alloc
   // Returns handler type and sets *ip to location if one was found
   inline int found_handler(uint *ip, uint *fp)
   {
-    if (m_hfound < 0) return SP_HANDLER_NONE;
+    if (m_hfound < 0)
+      return SP_HANDLER_NONE;
     *ip = m_handler[m_hfound].handler;
     *fp = m_handler[m_hfound].foffset;
     return m_handler[m_hfound].type;

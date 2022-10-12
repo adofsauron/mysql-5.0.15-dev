@@ -23,7 +23,8 @@ bool mysql_do(THD *thd, List<Item> &values)
   List_iterator<Item> li(values);
   Item *value;
   DBUG_ENTER("mysql_do");
-  if (setup_fields(thd, 0, values, 0, 0, 0)) DBUG_RETURN(TRUE);
+  if (setup_fields(thd, 0, values, 0, 0, 0))
+    DBUG_RETURN(TRUE);
   while ((value = li++)) value->val_int();
   free_underlaid_joins(thd, &thd->lex->select_lex);
   thd->clear_error();  // DO always is OK

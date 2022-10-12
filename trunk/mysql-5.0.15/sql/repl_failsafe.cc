@@ -81,7 +81,8 @@ static int init_failsafe_rpl_thread(THD *thd)
 #endif
 
   thd->mem_root->free = thd->mem_root->used = 0;
-  if (thd->variables.max_join_size == HA_POS_ERROR) thd->options |= OPTION_BIG_SELECTS;
+  if (thd->variables.max_join_size == HA_POS_ERROR)
+    thd->options |= OPTION_BIG_SELECTS;
 
   thd->proc_info = "Thread initialized";
   thd->version = refresh_version;
@@ -92,17 +93,19 @@ static int init_failsafe_rpl_thread(THD *thd)
 void change_rpl_status(RPL_STATUS from_status, RPL_STATUS to_status)
 {
   pthread_mutex_lock(&LOCK_rpl_status);
-  if (rpl_status == from_status || rpl_status == RPL_ANY) rpl_status = to_status;
+  if (rpl_status == from_status || rpl_status == RPL_ANY)
+    rpl_status = to_status;
   pthread_cond_signal(&COND_rpl_status);
   pthread_mutex_unlock(&LOCK_rpl_status);
 }
 
-#define get_object(p, obj)                               \
-  {                                                      \
-    uint len = (uint)*p++;                               \
-    if (p + len > p_end || len >= sizeof(obj)) goto err; \
-    strmake(obj, (char *)p, len);                        \
-    p += len;                                            \
+#define get_object(p, obj)                     \
+  {                                            \
+    uint len = (uint)*p++;                     \
+    if (p + len > p_end || len >= sizeof(obj)) \
+      goto err;                                \
+    strmake(obj, (char *)p, len);              \
+    p += len;                                  \
   }
 
 static inline int cmp_master_pos(Slave_log_event *sev, LEX_MASTER_INFO *mi)
@@ -114,14 +117,16 @@ void unregister_slave(THD *thd, bool only_mine, bool need_mutex)
 {
   if (thd->server_id)
   {
-    if (need_mutex) pthread_mutex_lock(&LOCK_slave_list);
+    if (need_mutex)
+      pthread_mutex_lock(&LOCK_slave_list);
 
     SLAVE_INFO *old_si;
     if ((old_si = (SLAVE_INFO *)hash_search(&slave_list, (byte *)&thd->server_id, 4)) &&
         (!only_mine || old_si->thd == thd))
       hash_delete(&slave_list, (byte *)old_si);
 
-    if (need_mutex) pthread_mutex_unlock(&LOCK_slave_list);
+    if (need_mutex)
+      pthread_mutex_unlock(&LOCK_slave_list);
   }
 }
 
@@ -139,20 +144,24 @@ int register_slave(THD *thd, uchar *packet, uint packet_length)
   SLAVE_INFO *si;
   uchar *p = packet, *p_end = packet + packet_length;
 
-  if (check_access(thd, REPL_SLAVE_ACL, any_db, 0, 0, 0, 0)) return 1;
-  if (!(si = (SLAVE_INFO *)my_malloc(sizeof(SLAVE_INFO), MYF(MY_WME)))) goto err2;
+  if (check_access(thd, REPL_SLAVE_ACL, any_db, 0, 0, 0, 0))
+    return 1;
+  if (!(si = (SLAVE_INFO *)my_malloc(sizeof(SLAVE_INFO), MYF(MY_WME))))
+    goto err2;
 
   thd->server_id = si->server_id = uint4korr(p);
   p += 4;
   get_object(p, si->host);
   get_object(p, si->user);
   get_object(p, si->password);
-  if (p + 10 > p_end) goto err;
+  if (p + 10 > p_end)
+    goto err;
   si->port = uint2korr(p);
   p += 2;
   si->rpl_recovery_rank = uint4korr(p);
   p += 4;
-  if (!(si->master_id = uint4korr(p))) si->master_id = server_id;
+  if (!(si->master_id = uint4korr(p)))
+    si->master_id = server_id;
   si->thd = thd;
 
   pthread_mutex_lock(&LOCK_slave_list);
@@ -282,7 +291,8 @@ int translate_master(THD *thd, LEX_MASTER_INFO *mi, char *errmsg)
       goto err;
     }
 
-    if (!(sev = find_slave_event(&log, linfo.log_file_name, errmsg))) goto err;
+    if (!(sev = find_slave_event(&log, linfo.log_file_name, errmsg)))
+      goto err;
 
     cmp_res = cmp_master_pos(sev, mi);
     delete sev;
@@ -317,7 +327,8 @@ int translate_master(THD *thd, LEX_MASTER_INFO *mi, char *errmsg)
     switch (mysql_bin_log.find_next_log(&linfo, 1))
     {
       case LOG_INFO_EOF:
-        if (last_file >= 0) (void)my_close(last_file, MYF(MY_WME));
+        if (last_file >= 0)
+          (void)my_close(last_file, MYF(MY_WME));
         last_file = -1;
         goto found_log;
       case 0:
@@ -328,13 +339,15 @@ int translate_master(THD *thd, LEX_MASTER_INFO *mi, char *errmsg)
     }
 
     end_io_cache(&log);
-    if (last_file >= 0) (void)my_close(last_file, MYF(MY_WME));
+    if (last_file >= 0)
+      (void)my_close(last_file, MYF(MY_WME));
     last_file = file;
   }
 
 found_log:
   my_b_seek(&log, last_pos);
-  if (find_target_pos(mi, &log, errmsg)) goto err;
+  if (find_target_pos(mi, &log, errmsg))
+    goto err;
   fn_format(mi->log_file_name, last_log_name, "", "", 1); /* Copy basename */
 
 mi_inited:
@@ -345,8 +358,10 @@ err:
   pthread_mutex_lock(&LOCK_thread_count);
   thd->current_linfo = 0;
   pthread_mutex_unlock(&LOCK_thread_count);
-  if (file >= 0) (void)my_close(file, MYF(MY_WME));
-  if (last_file >= 0 && last_file != file) (void)my_close(last_file, MYF(MY_WME));
+  if (file >= 0)
+    (void)my_close(file, MYF(MY_WME));
+  if (last_file >= 0 && last_file != file)
+    (void)my_close(last_file, MYF(MY_WME));
 
   DBUG_RETURN(error);
 }
@@ -400,18 +415,21 @@ bool show_new_master(THD *thd)
   errmsg[0] = 0;  // Safety
   if (translate_master(thd, lex_mi, errmsg))
   {
-    if (errmsg[0]) my_error(ER_ERROR_WHEN_EXECUTING_COMMAND, MYF(0), "SHOW NEW MASTER", errmsg);
+    if (errmsg[0])
+      my_error(ER_ERROR_WHEN_EXECUTING_COMMAND, MYF(0), "SHOW NEW MASTER", errmsg);
     DBUG_RETURN(TRUE);
   }
   else
   {
     field_list.push_back(new Item_empty_string("Log_name", 20));
     field_list.push_back(new Item_return_int("Log_pos", 10, MYSQL_TYPE_LONGLONG));
-    if (protocol->send_fields(&field_list, Protocol::SEND_NUM_ROWS | Protocol::SEND_EOF)) DBUG_RETURN(TRUE);
+    if (protocol->send_fields(&field_list, Protocol::SEND_NUM_ROWS | Protocol::SEND_EOF))
+      DBUG_RETURN(TRUE);
     protocol->prepare_for_resend();
     protocol->store(lex_mi->log_file_name, &my_charset_bin);
     protocol->store((ulonglong)lex_mi->pos);
-    if (protocol->write()) DBUG_RETURN(TRUE);
+    if (protocol->write())
+      DBUG_RETURN(TRUE);
     send_eof(thd);
     DBUG_RETURN(FALSE);
   }
@@ -508,7 +526,8 @@ HOSTS";
   pthread_mutex_unlock(&LOCK_slave_list);
 
 err:
-  if (res) mysql_free_result(res);
+  if (res)
+    mysql_free_result(res);
   if (error)
   {
     sql_print_error(
@@ -562,7 +581,8 @@ pthread_handler_t handle_failsafe_rpl(void *arg)
   }
   thd->exit_cond(msg);
 err:
-  if (recovery_captain) mysql_close(recovery_captain);
+  if (recovery_captain)
+    mysql_close(recovery_captain);
   delete thd;
   my_thread_end();
   pthread_exit(0);
@@ -586,7 +606,8 @@ bool show_slave_hosts(THD *thd)
   field_list.push_back(new Item_return_int("Rpl_recovery_rank", 7, MYSQL_TYPE_LONG));
   field_list.push_back(new Item_return_int("Master_id", 10, MYSQL_TYPE_LONG));
 
-  if (protocol->send_fields(&field_list, Protocol::SEND_NUM_ROWS | Protocol::SEND_EOF)) DBUG_RETURN(TRUE);
+  if (protocol->send_fields(&field_list, Protocol::SEND_NUM_ROWS | Protocol::SEND_EOF))
+    DBUG_RETURN(TRUE);
 
   pthread_mutex_lock(&LOCK_slave_list);
 
@@ -636,7 +657,8 @@ int connect_to_master(THD *thd, MYSQL *mysql, MASTER_INFO *mi)
 
   mysql_options(mysql, MYSQL_SET_CHARSET_NAME, default_charset_info->csname);
   mysql_options(mysql, MYSQL_SET_CHARSET_DIR, (char *)charsets_dir);
-  if (!mysql_real_connect(mysql, mi->host, mi->user, mi->password, 0, mi->port, 0, 0)) DBUG_RETURN(1);
+  if (!mysql_real_connect(mysql, mi->host, mi->user, mi->password, 0, mi->port, 0, 0))
+    DBUG_RETURN(1);
   mysql->reconnect = 1;
   DBUG_RETURN(0);
 }
@@ -645,7 +667,8 @@ static inline void cleanup_mysql_results(MYSQL_RES *db_res, MYSQL_RES **cur, MYS
 {
   for (; cur >= start; --cur)
   {
-    if (*cur) mysql_free_result(*cur);
+    if (*cur)
+      mysql_free_result(*cur);
   }
   mysql_free_result(db_res);
 }
@@ -665,10 +688,12 @@ static int fetch_db_tables(THD *thd, MYSQL *mysql, const char *db, MYSQL_RES *ta
       table.table_name = (char *)table_name;
       table.updating = 1;
 
-      if (!tables_ok(thd, &table)) continue;
+      if (!tables_ok(thd, &table))
+        continue;
     }
     /* download master's table and overwrite slave's table */
-    if ((error = fetch_master_table(thd, db, table_name, mi, mysql, 1))) return error;
+    if ((error = fetch_master_table(thd, db, table_name, mi, mysql, 1)))
+      return error;
   }
   return 0;
 }
@@ -723,7 +748,8 @@ bool load_master_data(THD *thd)
       goto err;
     }
 
-    if (!(num_dbs = (uint)mysql_num_rows(db_res))) goto err;
+    if (!(num_dbs = (uint)mysql_num_rows(db_res)))
+      goto err;
     /*
       In theory, the master could have no databases at all
       and run with skip-grant
@@ -834,7 +860,8 @@ bool load_master_data(THD *thd)
         strmake(active_mi->master_log_name, row[0], sizeof(active_mi->master_log_name));
         active_mi->master_log_pos = my_strtoll10(row[1], (char **)0, &error);
         /* at least in recent versions, the condition below should be false */
-        if (active_mi->master_log_pos < BIN_LOG_HEADER_SIZE) active_mi->master_log_pos = BIN_LOG_HEADER_SIZE;
+        if (active_mi->master_log_pos < BIN_LOG_HEADER_SIZE)
+          active_mi->master_log_pos = BIN_LOG_HEADER_SIZE;
         /*
           Relay log's IO_CACHE may not be inited (even if we are sure that some
           host was specified; there could have been a problem when replication
@@ -889,7 +916,8 @@ err:
   thd->proc_info = 0;
 
   mysql_close(&mysql);  // safe to call since we always do mysql_init()
-  if (!error) send_ok(thd);
+  if (!error)
+    send_ok(thd);
 
   return error;
 }

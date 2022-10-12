@@ -53,17 +53,20 @@ int readfrm(const char *name, const void **frmdata, uint *len)
   *frmdata = NULL;  // In case of errors
   *len = 0;
   error = 1;
-  if ((file = my_open(fn_format(index_file, name, "", reg_ext, 4), O_RDONLY | O_SHARE, MYF(0))) < 0) goto err_end;
+  if ((file = my_open(fn_format(index_file, name, "", reg_ext, 4), O_RDONLY | O_SHARE, MYF(0))) < 0)
+    goto err_end;
 
   // Get length of file
   error = 2;
-  if (my_fstat(file, &state, MYF(0))) goto err;
+  if (my_fstat(file, &state, MYF(0)))
+    goto err;
   read_len = state.st_size;
 
   // Read whole frm file
   error = 3;
   read_data = 0;
-  if (read_string(file, &read_data, read_len)) goto err;
+  if (read_string(file, &read_data, read_len))
+    goto err;
 
   // Setup return data
   *frmdata = (void *)read_data;
@@ -71,7 +74,8 @@ int readfrm(const char *name, const void **frmdata, uint *len)
   error = 0;
 
 err:
-  if (file > 0) VOID(my_close(file, MYF(MY_WME)));
+  if (file > 0)
+    VOID(my_close(file, MYF(MY_WME)));
 
 err_end: /* Here when no file */
   DBUG_RETURN(error);
@@ -105,7 +109,8 @@ int writefrm(const char *name, const void *frmdata, uint len)
   error = 0;
   if ((file = my_create(fn_format(index_file, name, "", reg_ext, 4), CREATE_MODE, O_RDWR | O_TRUNC, MYF(MY_WME))) >= 0)
   {
-    if (my_write(file, (byte *)frmdata, len, MYF(MY_WME | MY_NABP))) error = 2;
+    if (my_write(file, (byte *)frmdata, len, MYF(MY_WME | MY_NABP)))
+      error = 2;
   }
   VOID(my_close(file, MYF(0)));
   DBUG_RETURN(error);

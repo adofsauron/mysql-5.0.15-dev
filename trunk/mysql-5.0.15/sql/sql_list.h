@@ -116,7 +116,8 @@ class base_list : public Sql_alloc
     list_node *node = new list_node(info, first);
     if (node)
     {
-      if (last == &first) last = &node->next;
+      if (last == &first)
+        last = &node->next;
       first = node;
       elements++;
       return 0;
@@ -144,10 +145,12 @@ class base_list : public Sql_alloc
   }
   inline void *pop(void)
   {
-    if (first == &end_of_list) return 0;
+    if (first == &end_of_list)
+      return 0;
     list_node *tmp = first;
     first = first->next;
-    if (!--elements) last = &first;
+    if (!--elements)
+      last = &first;
     return tmp->info;
   }
   inline void disjoin(base_list *list)
@@ -237,7 +240,8 @@ class base_list : public Sql_alloc
     list_node *new_node = new list_node(info, node->next);
     node->next = new_node;
     elements++;
-    if (last == &(node->next)) last = &new_node->next;
+    if (last == &(node->next))
+      last = &new_node->next;
   }
 };
 
@@ -286,7 +290,8 @@ class base_list_iterator
       *new_list.last = current->next;
       current->info = new_list.first->info;
       current->next = new_list.first->next;
-      if ((list->last == &current->next) && (new_list.elements > 1)) list->last = new_list.last;
+      if ((list->last == &current->next) && (new_list.elements > 1))
+        list->last = new_list.last;
       list->elements += new_list.elements - 1;
     }
     return ret_value;  // return old element
@@ -388,8 +393,10 @@ struct ilink
   inline void unlink()
   {
     /* Extra tests because element doesn't have to be linked */
-    if (prev) *prev = next;
-    if (next) next->prev = prev;
+    if (prev)
+      *prev = next;
+    if (next)
+      next->prev = prev;
     prev = 0;
     next = 0;
   }
@@ -432,7 +439,8 @@ class base_ilist
   inline struct ilink *get()
   {
     struct ilink *first_link = first;
-    if (first_link == &last) return 0;
+    if (first_link == &last)
+      return 0;
     first_link->unlink();  // Unlink from list
     return first_link;
   }
@@ -451,7 +459,8 @@ class base_ilist_iterator
   {
     /* This is coded to allow push_back() while iterating */
     current = *el;
-    if (current == &list->last) return 0;
+    if (current == &list->last)
+      return 0;
     el = &current->next;
     return current;
   }

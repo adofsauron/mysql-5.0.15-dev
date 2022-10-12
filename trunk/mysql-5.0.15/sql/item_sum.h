@@ -767,7 +767,8 @@ class Item_sum_udf_str : public Item_udf_sum
     String *res;
     CHARSET_INFO *cs;
 
-    if (!(res = val_str(&str_value))) return 0; /* Null value */
+    if (!(res = val_str(&str_value)))
+      return 0; /* Null value */
     cs = res->charset();
     end = (char *)res->ptr() + res->length();
     return cs->cset->strtoll10(cs, res->ptr(), &end, &err_not_used);
@@ -955,7 +956,8 @@ class Item_func_group_concat : public Item_sum
     String *res;
     char *end_ptr;
     int error;
-    if (!(res = val_str(&str_value))) return (longlong)0;
+    if (!(res = val_str(&str_value)))
+      return (longlong)0;
     end_ptr = (char *)res->ptr() + res->length();
     return my_strtoll10(res->ptr(), &end_ptr, &error);
   }

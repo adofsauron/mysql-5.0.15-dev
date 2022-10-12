@@ -694,7 +694,8 @@ class Item_typecast : public Item_str_func
     DBUG_ASSERT(fixed == 1);
     String *tmp = args[0]->val_str(a);
     null_value = args[0]->null_value;
-    if (tmp) tmp->set_charset(collation.collation);
+    if (tmp)
+      tmp->set_charset(collation.collation);
     return tmp;
   }
   void fix_length_and_dec()

@@ -7300,7 +7300,7 @@ simplify_joins(JOIN *join, List<TABLE_LIST> *join_list, COND *conds, bool top)
            an inner table of an embedded outer join is found,
            the outer join is converted to an inner join and
            the corresponding on expression is added to E. 
-	*/ 
+		*/ 
         expr= simplify_joins(join, &nested_join->join_list,
                              expr, FALSE);
         table->prep_on_expr= table->on_expr= expr;

@@ -1,0 +1,877 @@
+#
+# Basic triggers test
+#
+
+--disable_warnings
+drop table if exists t1, t2, t3;
+drop view if exists v1;
+drop database if exists mysqltest;
+drop function if exists f1;
+drop procedure if exists p1;
+--enable_warnings
+
+# Create additional connections used through test
+connect (addconroot1, localhost, root,,);
+connect (addconroot2, localhost, root,,);
+connection default;
+
+create table t1 (i int);
+
+# let us test some very simple trigger
+create trigger trg before insert on t1 for each row set @a:=1;
+set @a:=0;
+select @a;
+insert into t1 values (1);
+select @a;
+drop trigger trg;
+
+# let us test simple trigger reading some values 
+create trigger trg before insert on t1 for each row set @a:=new.i;
+insert into t1 values (123);
+select @a;
+drop trigger trg;
+
+drop table t1;
+
+# Let us test before insert trigger
+# Such triggers can be used for setting complex default values
+create table t1 (i int not null, j int);
+delimiter |;
+create trigger trg before insert on t1 for each row 
+begin 
+  if isnull(new.j) then
+    set new.j:= new.i * 10;
+  end if;
+end|
+insert into t1 (i) values (1)|
+insert into t1 (i,j) values (2, 3)|
+select * from t1|
+drop trigger trg|
+drop table t1|
+delimiter ;|
+
+# After insert trigger
+# Useful for aggregating data
+create table t1 (i int not null primary key);
+create trigger trg after insert on t1 for each row 
+  set @a:= if(@a,concat(@a, ":", new.i), new.i);
+set @a:="";
+insert into t1 values (2),(3),(4),(5);
+select @a;
+drop trigger trg;
+drop table t1;
+
+# PS doesn't work with multi-row statements
+--disable_ps_protocol
+# Before update trigger
+# (In future we will achieve this via proper error handling in triggers)
+create table t1 (aid int not null primary key, balance int not null default 0);
+insert into t1 values (1, 1000), (2,3000);
+delimiter |;
+create trigger trg before update on t1 for each row 
+begin
+  declare loc_err varchar(255);
+  if abs(new.balance - old.balance) > 1000 then
+    set new.balance:= old.balance;
+    set loc_err := concat("Too big change for aid = ", new.aid);
+    set @update_failed:= if(@update_failed, concat(@a, ":", loc_err), loc_err);
+  end if;
+end|
+set @update_failed:=""|
+update t1 set balance=1500|
+select @update_failed;
+select * from t1|
+drop trigger trg|
+drop table t1|
+delimiter ;|
+--enable_ps_protocol
+
+# After update trigger
+create table t1 (i int);
+insert into t1 values (1),(2),(3),(4);
+create trigger trg after update on t1 for each row 
+  set @total_change:=@total_change + new.i - old.i;
+set @total_change:=0;
+update t1 set i=3;
+select @total_change;
+drop trigger trg;
+drop table t1;
+
+# Before delete trigger
+# This can be used for aggregation too :)
+create table t1 (i int);
+insert into t1 values (1),(2),(3),(4);
+create trigger trg before delete on t1 for each row 
+  set @del_sum:= @del_sum + old.i;
+set @del_sum:= 0;
+delete from t1 where i <= 3;
+select @del_sum;
+drop trigger trg;
+drop table t1;
+
+# After delete trigger. 
+# Just run out of imagination.
+create table t1 (i int);
+insert into t1 values (1),(2),(3),(4);
+create trigger trg after delete on t1 for each row set @del:= 1;
+set @del:= 0;
+delete from t1 where i <> 0;
+select @del;
+drop trigger trg;
+drop table t1;
+
+# Several triggers on one table
+create table t1 (i int, j int);
+
+delimiter |;
+create trigger trg1 before insert on t1 for each row 
+begin
+  if new.j > 10 then
+    set new.j := 10;
+  end if;
+end|
+create trigger trg2 before update on t1 for each row 
+begin
+  if old.i % 2 = 0 then
+    set new.j := -1;
+  end if;
+end|
+create trigger trg3 after update on t1 for each row 
+begin
+  if new.j = -1 then
+    set @fired:= "Yes";
+  end if;
+end|
+delimiter ;|
+set @fired:="";
+insert into t1 values (1,2),(2,3),(3,14);
+select @fired;
+select * from t1;
+update t1 set j= 20;
+select @fired;
+select * from t1;
+
+drop trigger trg1;
+drop trigger trg2;
+drop trigger trg3;
+drop table t1;
+
+
+# Let us test how triggers work for special forms of INSERT such as
+# REPLACE and INSERT ... ON DUPLICATE KEY UPDATE
+create table t1 (id int not null primary key, data int);
+create trigger t1_bi before insert on t1 for each row
+  set @log:= concat(@log, "(BEFORE_INSERT: new=(id=", new.id, ", data=", new.data,"))");
+create trigger t1_ai after insert on t1 for each row
+  set @log:= concat(@log, "(AFTER_INSERT: new=(id=", new.id, ", data=", new.data,"))");
+create trigger t1_bu before update on t1 for each row
+  set @log:= concat(@log, "(BEFORE_UPDATE: old=(id=", old.id, ", data=", old.data,
+                                        ") new=(id=", new.id, ", data=", new.data,"))");
+create trigger t1_au after update on t1 for each row
+  set @log:= concat(@log, "(AFTER_UPDATE: old=(id=", old.id, ", data=", old.data,
+                                       ") new=(id=", new.id, ", data=", new.data,"))");
+create trigger t1_bd before delete on t1 for each row
+  set @log:= concat(@log, "(BEFORE_DELETE: old=(id=", old.id, ", data=", old.data,"))");
+create trigger t1_ad after delete on t1 for each row
+  set @log:= concat(@log, "(AFTER_DELETE: old=(id=", old.id, ", data=", old.data,"))");
+# Simple INSERT - both triggers should be called
+set @log:= "";
+insert into t1 values (1, 1);
+select @log;
+# INSERT IGNORE for already existing key - only before trigger should fire
+set @log:= "";
+insert ignore t1 values (1, 2);
+select @log;
+# REPLACE: before insert trigger should be called for both records,
+#          but then for first one update will be executed (and both update
+#          triggers should fire). For second after insert trigger will be
+#          called as for usual insert
+set @log:= "";
+replace t1 values (1, 3), (2, 2);
+select @log;
+# Now let us change table in such way that REPLACE on won't be executed
+# using update.
+alter table t1 add ts timestamp default now();
+set @log:= "";
+# This REPLACE should be executed via DELETE and INSERT so proper 
+# triggers should be invoked.
+replace t1 (id, data) values (1, 4);
+select @log;
+# Finally let us test INSERT ... ON DUPLICATE KEY UPDATE ...
+set @log:= "";
+insert into t1 (id, data) values (1, 5), (3, 3) on duplicate key update data= data + 2; 
+select @log;
+
+# This also drops associated triggers
+drop table t1;
+
+
+#
+# Let us test triggers which access other tables.
+#
+# Trivial trigger which inserts data into another table
+create table t1 (id int primary key, data varchar(10), fk int);
+create table t2 (event varchar(100));
+create table t3 (id int primary key);
+create trigger t1_ai after insert on t1 for each row 
+  insert into t2 values (concat("INSERT INTO t1 id=", new.id, " data='", new.data, "'"));
+insert into t1 (id, data) values (1, "one"), (2, "two");
+select * from t1;
+select * from t2;
+drop trigger t1_ai;
+# Trigger which uses couple of tables (and partially emulates FK constraint)
+delimiter |;
+create trigger t1_bi before insert on t1 for each row
+begin
+  if exists (select id from t3 where id=new.fk) then
+    insert into t2 values (concat("INSERT INTO t1 id=", new.id, " data='", new.data, "' fk=", new.fk));
+  else
+    insert into t2 values (concat("INSERT INTO t1 FAILED id=", new.id, " data='", new.data, "' fk=", new.fk));
+    set new.id= NULL;
+  end if;
+end|
+delimiter ;|
+insert into t3 values (1);
+--error 1048
+insert into t1 values (4, "four", 1), (5, "five", 2);
+select * from t1;
+select * from t2;
+drop table t1, t2, t3;
+# Trigger which invokes function
+create table t1 (id int primary key, data varchar(10));
+create table t2 (seq int);
+insert into t2 values (10);
+create function f1 () returns int return (select max(seq) from t2);
+delimiter |;
+create trigger t1_bi before insert on t1 for each row
+begin
+  if new.id > f1() then
+    set new.id:= f1();
+  end if;
+end|
+delimiter ;|
+insert into t1 values (1, "first");
+insert into t1 values (f1(), "max");
+select * from t1;
+drop table t1, t2;
+drop function f1;
+# Trigger which forces invocation of another trigger
+# (emulation of FK on delete cascade policy)
+create table t1 (id int primary key, fk_t2 int);
+create table t2 (id int primary key, fk_t3 int);
+create table t3 (id int primary key);
+insert into t1 values (1,1), (2,1), (3,2);
+insert into t2 values (1,1), (2,2);
+insert into t3 values (1), (2);
+create trigger t3_ad after delete on t3 for each row
+  delete from t2 where fk_t3=old.id;
+create trigger t2_ad after delete on t2 for each row
+  delete from t1 where fk_t2=old.id;
+delete from t3 where id = 1;
+select * from t1 left join (t2 left join t3 on t2.fk_t3 = t3.id) on t1.fk_t2 = t2.id;
+drop table t1, t2, t3;
+# Trigger which assigns value selected from table to field of row
+# being inserted/updated.
+create table t1 (id int primary key, copy int);
+create table t2 (id int primary key, data int);
+insert into t2 values (1,1), (2,2);
+create trigger t1_bi before insert on t1 for each row
+  set new.copy= (select data from t2 where id = new.id);
+create trigger t1_bu before update on t1 for each row
+  set new.copy= (select data from t2 where id = new.id);
+insert into t1 values (1,3), (2,4), (3,3);
+update t1 set copy= 1 where id = 2;
+select * from t1;
+drop table t1, t2;
+
+#
+# Test of wrong column specifiers in triggers
+#
+create table t1 (i int);
+create table t3 (i int);
+
+--error 1363
+create trigger trg before insert on t1 for each row set @a:= old.i;
+--error 1363
+create trigger trg before delete on t1 for each row set @a:= new.i;
+--error 1362
+create trigger trg before update on t1 for each row set old.i:=1;
+--error 1363
+create trigger trg before delete on t1 for each row set new.i:=1;
+--error 1362
+create trigger trg after update on t1 for each row set new.i:=1;
+--error 1054
+create trigger trg before update on t1 for each row set new.j:=1;
+--error 1054
+create trigger trg before update on t1 for each row set @a:=old.j;
+
+
+#
+# Let us test various trigger creation errors
+# Also quickly test table namespace (bug#5892/6182)
+#
+--error 1146
+create trigger trg before insert on t2 for each row set @a:=1;
+
+create trigger trg before insert on t1 for each row set @a:=1;
+--error 1359
+create trigger trg after insert on t1 for each row set @a:=1;
+--error 1359
+create trigger trg2 before insert on t1 for each row set @a:=1;
+--error 1359
+create trigger trg before insert on t3 for each row set @a:=1;
+create trigger trg2 before insert on t3 for each row set @a:=1;
+drop trigger trg2;
+drop trigger trg;
+
+--error 1360
+drop trigger trg;
+
+create view v1 as select * from t1;
+--error 1347
+create trigger trg before insert on v1 for each row set @a:=1;
+drop view v1;
+
+drop table t1;
+drop table t3;
+
+create temporary table t1 (i int);
+--error 1361
+create trigger trg before insert on t1 for each row set @a:=1;
+drop table t1;
+
+
+
+#
+# Tests for various trigger-related bugs
+#
+
+# Test for bug #5887 "Triggers with string literals cause errors".
+# New .FRM parser was not handling escaped strings properly.
+create table t1 (x1col char);  
+create trigger tx1 before insert on t1 for each row set new.x1col = 'x';
+insert into t1 values ('y');
+drop trigger tx1;
+drop table t1;
+
+#
+# Test for bug #5890 "Triggers fail for DELETE without WHERE".
+# If we are going to delete all rows in table but DELETE triggers exist
+# we should perform row-by-row deletion instead of using optimized
+# delete_all_rows() method.
+#
+create table t1 (i int) engine=myisam;
+insert into t1 values (1), (2);
+create trigger trg1 before delete on t1 for each row set @del_before:= @del_before + old.i;
+create trigger trg2 after delete on t1 for each row set @del_after:= @del_after + old.i;
+set @del_before:=0, @del_after:= 0;
+delete from t1;
+select @del_before, @del_after;
+drop trigger trg1;
+drop trigger trg2;
+drop table t1;
+
+# Test for bug #5859 "DROP TABLE does not drop triggers". Trigger should not
+# magically reappear when we recreate dropped table.
+create table t1 (a int);
+create trigger trg1 before insert on t1 for each row set new.a= 10;
+drop table t1;
+create table t1 (a int);
+insert into t1 values ();
+select * from t1;
+drop table t1;
+
+# Test for bug #6559 "DROP DATABASE forgets to drop triggers". 
+create database mysqltest;
+use mysqltest;
+create table t1 (i int);
+create trigger trg1 before insert on t1 for each row set @a:= 1;
+# This should succeed
+drop database mysqltest;
+use test;
+
+# Test for bug #8791
+# "Triggers: Allowed to create triggers on a subject table in a different DB". 
+create database mysqltest;
+create table mysqltest.t1 (i int);
+--error ER_TRG_IN_WRONG_SCHEMA
+create trigger trg1 before insert on mysqltest.t1 for each row set @a:= 1;
+use mysqltest;
+--error ER_TRG_IN_WRONG_SCHEMA
+create trigger test.trg1 before insert on t1 for each row set @a:= 1;
+drop database mysqltest;
+use test;
+
+
+# Test for bug #5860 "Multi-table UPDATE does not activate update triggers"
+# We will also test how delete triggers wor for multi-table DELETE.
+create table t1 (i int, j int default 10, k int not null, key (k));
+create table t2 (i int);
+insert into t1 (i, k) values (1, 1);
+insert into t2 values (1);
+create trigger trg1 before update on t1 for each row set @a:= @a + new.j - old.j;
+create trigger trg2 after update on t1 for each row set @b:= "Fired";
+set @a:= 0, @b:= "";
+# Check that trigger works in case of update on the fly
+update t1, t2 set j = j + 10 where t1.i = t2.i;
+select @a, @b;
+insert into t1 values (2, 13, 2);
+insert into t2 values (2);
+set @a:= 0, @b:= "";
+# And now let us check that triggers work in case of multi-update which
+# is done through temporary tables...
+update t1, t2 set j = j + 15 where t1.i = t2.i and t1.k >= 2;
+select @a, @b;
+# Let us test delete triggers for multi-delete now.
+# We create triggers for both tables because we want test how they
+# work in both on-the-fly and via-temp-tables cases.
+create trigger trg3 before delete on t1 for each row set @c:= @c + old.j;
+create trigger trg4 before delete on t2 for each row set @d:= @d + old.i;
+create trigger trg5 after delete on t1 for each row set @e:= "After delete t1 fired";
+create trigger trg6 after delete on t2 for each row set @f:= "After delete t2 fired";
+set @c:= 0, @d:= 0, @e:= "", @f:= "";
+delete t1, t2 from t1, t2 where t1.i = t2.i;
+select @c, @d, @e, @f;
+# This also will drop triggers
+drop table t1, t2;
+
+# Test for bug #6812 "Triggers are not activated for INSERT ... SELECT".
+# (We also check the fact that trigger modifies some field does not affect
+#  value of next record inserted).
+delimiter |;
+create table t1 (i int, j int default 10)|
+create table t2 (i int)|
+insert into t2 values (1), (2)|
+create trigger trg1 before insert on t1 for each row 
+begin
+  if new.i = 1 then
+    set new.j := 1;
+  end if;
+end|
+create trigger trg2 after insert on t1 for each row set @a:= 1|
+set @a:= 0|
+insert into t1 (i) select * from t2|
+select * from t1|
+select @a|
+# This also will drop triggers
+drop table t1, t2|
+delimiter ;|
+
+# Test for bug #8755 "Trigger is not activated by LOAD DATA"
+create table t1 (i int, j int, k int);
+create trigger trg1 before insert on t1 for each row set new.k = new.i;
+create trigger trg2 after insert on t1 for each row set @b:= "Fired"; 
+set @b:="";
+# Test triggers with file with separators
+load data infile '../../std_data/rpl_loaddata.dat' into table t1 (@a, i);
+select *, @b from t1;
+set @b:="";
+# Test triggers with fixed size row file
+load data infile '../../std_data/loaddata5.dat' into table t1 fields terminated by '' enclosed by '' (i, j);
+select *, @b from t1;
+# This also will drop triggers
+drop table t1;
+
+# Test for bug #5894 "Triggers with altered tables cause corrupt databases"
+# Also tests basic error handling for various kinds of triggers.
+create table t1 (i int, at int, k int, key(k)) engine=myisam;
+create table t2 (i int);
+insert into t1 values (1, 1, 1);
+# We need at least 3 elements in t2 to test multi-update properly
+insert into t2 values (1), (2), (3);
+# Create and then break "after" triggers
+create trigger ai after insert on t1 for each row set @a:= new.at;
+create trigger au after update on t1 for each row set @a:= new.at;
+create trigger ad after delete on t1 for each row set @a:= old.at;
+alter table t1 drop column at;
+# We still should be able select data from tables.
+select * from t1;
+# The following statements changing t1 should fail, but still cause
+# their main effect. This is because operation on the table row is
+# executed before "after" trigger and its effect cannot be rolled back
+# when whole statement fails, because t1 is MyISAM table.
+--error 1054
+insert into t1 values (2, 1);
+select * from t1;
+--error 1054
+update t1 set k = 2 where i = 2;
+select * from t1;
+--error 1054
+delete from t1 where i = 2;
+select * from t1;
+# Should fail and insert only 1 row
+--error 1054
+load data infile '../../std_data/loaddata5.dat' into table t1 fields terminated by '' enclosed by '' (i, k);
+select * from t1;
+--error 1054
+insert into t1 select 3, 3;
+select * from t1;
+# Multi-update working on the fly, again it will update only
+# one row even if more matches
+--error 1054
+update t1, t2 set k = k + 10 where t1.i = t2.i;
+select * from t1;
+# The same for multi-update via temp table
+--error 1054
+update t1, t2 set k = k + 10 where t1.i = t2.i and k < 3;
+select * from t1;
+# Multi-delete on the fly
+--error 1054
+delete t1, t2 from t1 straight_join t2 where t1.i = t2.i;
+select * from t1;
+# And via temporary storage
+--error 1054
+delete t2, t1 from t2 straight_join t1 where t1.i = t2.i;
+select * from t1;
+# Prepare table for testing of REPLACE and INSERT ... ON DUPLICATE KEY UPDATE
+alter table t1 add primary key (i);
+--error 1054
+insert into t1 values (3, 4) on duplicate key update k= k + 10;
+select * from t1;
+--error 1054
+replace into t1 values (3, 3);
+select * from t1;
+# Change table in such way that REPLACE will delete row
+alter table t1 add ts timestamp default now();
+--error 1054
+replace into t1 (i, k) values (3, 13);
+select * from t1;
+# Also drops all triggers
+drop table t1, t2;
+
+create table t1 (i int, bt int, k int, key(k)) engine=myisam;
+create table t2 (i int);
+insert into t1 values (1, 1, 1), (2, 2, 2);
+insert into t2 values (1), (2), (3);
+# Create and then break "before" triggers
+create trigger bi before insert on t1 for each row set @a:= new.bt;
+create trigger bu before update on t1 for each row set @a:= new.bt;
+create trigger bd before delete on t1 for each row set @a:= old.bt;
+alter table t1 drop column bt;
+# The following statements changing t1 should fail and should not
+# cause any effect on table, since "before" trigger is executed 
+# before operation on the table row.
+--error 1054
+insert into t1 values (3, 3);
+select * from t1;
+--error 1054
+update t1 set i = 2;
+select * from t1;
+--error 1054
+delete from t1;
+select * from t1;
+--error 1054
+load data infile '../../std_data/loaddata5.dat' into table t1 fields terminated by '' enclosed by '' (i, k);
+select * from t1;
+--error 1054
+insert into t1 select 3, 3;
+select * from t1;
+# Both types of multi-update (on the fly and via temp table)
+--error 1054
+update t1, t2 set k = k + 10 where t1.i = t2.i;
+select * from t1;
+--error 1054
+update t1, t2 set k = k + 10 where t1.i = t2.i and k < 2;
+select * from t1;
+# Both types of multi-delete
+--error 1054
+delete t1, t2 from t1 straight_join t2 where t1.i = t2.i;
+select * from t1;
+--error 1054
+delete t2, t1 from t2 straight_join t1 where t1.i = t2.i;
+select * from t1;
+# Let us test REPLACE/INSERT ... ON DUPLICATE KEY UPDATE.
+# To test properly code-paths different from those that are used
+# in ordinary INSERT we need to drop "before insert" trigger.
+alter table t1 add primary key (i);
+drop trigger bi;
+--error 1054
+insert into t1 values (2, 4) on duplicate key update k= k + 10;
+select * from t1;
+--error 1054
+replace into t1 values (2, 4);
+select * from t1;
+# Change table in such way that REPLACE will delete row
+alter table t1 add ts timestamp default now();
+--error 1054
+replace into t1 (i, k) values (2, 11);
+select * from t1;
+# Also drops all triggers
+drop table t1, t2;
+
+# Test for bug #5893 "Triggers with dropped functions cause crashes"
+# Appropriate error should be reported instead of crash.
+# Also test for bug #11889 "Server crashes when dropping trigger
+# using stored routine".
+--disable_warnings
+drop function if exists bug5893;
+--enable_warnings
+create table t1 (col1 int, col2 int); 
+insert into t1 values (1, 2);
+create function bug5893 () returns int return 5;
+create trigger t1_bu before update on t1 for each row set new.col1= bug5893();
+drop function bug5893; 
+--error 1305
+update t1 set col2 = 4;
+# This should not crash server too.
+drop trigger t1_bu;
+drop table t1;
+
+#
+# storing and restoring parsing modes for triggers (BUG#5891)
+#
+set sql_mode='ansi';
+create table t1 ("t1 column" int);
+create trigger t1_bi before insert on t1 for each row set new."t1 column" = 5;
+set sql_mode="";
+insert into t1 values (0);
+# create trigger with different sql_mode
+create trigger t1_af after insert on t1 for each row set @a=10;
+insert into t1 values (0);
+select * from t1;
+select @a;
+--replace_column 6 #
+show triggers;
+drop table t1;
+# check that rigger preserve sql_mode during execution
+set sql_mode="traditional";
+create table t1 (a date);
+-- error 1292
+insert into t1 values ('2004-01-00');
+set sql_mode="";
+create trigger t1_bi before insert on t1 for each row set new.a = '2004-01-00';
+set sql_mode="traditional";
+insert into t1 values ('2004-01-01');
+select * from t1;
+set sql_mode=default;
+show create table t1;
+--replace_column 6 #
+show triggers;
+drop table t1;
+
+# Test for bug #12280 "Triggers: crash if flush tables"
+# FLUSH TABLES and FLUSH PRIVILEGES should be disallowed inside
+# of functions and triggers.
+create table t1 (id int);
+--error ER_STMT_NOT_ALLOWED_IN_SF_OR_TRG
+create trigger t1_ai after insert on t1 for each row flush tables;
+--error ER_STMT_NOT_ALLOWED_IN_SF_OR_TRG
+create trigger t1_ai after insert on t1 for each row flush privileges;
+create procedure p1() flush tables;
+create trigger t1_ai after insert on t1 for each row call p1();
+--error ER_STMT_NOT_ALLOWED_IN_SF_OR_TRG
+insert into t1 values (0);
+drop procedure p1;
+create procedure p1() flush privileges;
+--error ER_STMT_NOT_ALLOWED_IN_SF_OR_TRG
+insert into t1 values (0);
+drop procedure p1;
+drop table t1;
+
+# Test for bug #11973 "SELECT .. INTO var_name; in trigger cause
+#                      crash on update"
+
+create table t1 (id int, data int, username varchar(16));
+insert into t1 (id, data) values (1, 0);
+delimiter |;
+create trigger t1_whoupdated before update on t1 for each row
+begin
+  declare user varchar(32);
+  declare i int;
+  select user() into user;
+  set NEW.username = user;
+  select count(*) from ((select 1) union (select 2)) as d1 into i;
+end|
+delimiter ;|
+update t1 set data = 1;
+
+connection addconroot1;
+update t1 set data = 2;
+
+connection default;
+drop table t1;
+
+#
+# #11587 Trigger causes lost connection error
+#
+
+create table t1 (c1 int, c2 datetime);
+delimiter |;
+--error ER_SP_NO_RETSET
+create trigger tr1 before insert on t1 for each row 
+begin 
+  set new.c2= '2004-04-01';
+  select 'hello';
+end|
+delimiter ;|
+
+insert into t1 (c1) values (1),(2),(3);
+select * from t1;
+
+--disable_warnings
+drop procedure if exists bug11587;
+--enable_warnings
+
+delimiter |;
+create procedure bug11587(x char(16))
+begin
+  select "hello";
+  select "hello again";
+end|
+
+create trigger tr1 before insert on t1 for each row 
+begin 
+  call bug11587();
+  set new.c2= '2004-04-02';
+end|
+delimiter ;|
+
+--error ER_SP_NO_RETSET
+insert into t1 (c1) values (4),(5),(6);
+select * from t1;
+
+drop procedure bug11587;
+drop table t1;
+
+# Test for bug #11896 "Partial locking in case of recursive trigger
+# definitions". Recursion in triggers should not be allowed.
+# We also should not allow to change tables which are used in
+# statements invoking this trigger.
+create table t1 (f1 integer);
+create table t2 (f2 integer);
+create trigger t1_ai after insert on t1
+  for each row insert into t2 values (new.f1+1);
+create trigger t2_ai after insert on t2
+  for each row insert into t1 values (new.f2+1);
+--error ER_CANT_UPDATE_USED_TABLE_IN_SF_OR_TRG
+insert into t1 values (1);
+select * from t1;
+select * from t2;
+drop trigger t1_ai;
+drop trigger t2_ai;
+create trigger t1_bu before update on t1
+  for each row insert into t1 values (2);
+--error ER_CANT_UPDATE_USED_TABLE_IN_SF_OR_TRG
+update t1 set f1= 10;
+select * from t1;
+drop trigger t1_bu;
+create trigger t1_bu before update on t1
+  for each row delete from t1 where f1=new.f1;
+--error ER_CANT_UPDATE_USED_TABLE_IN_SF_OR_TRG
+update t1 set f1= 10;
+select * from t1;
+drop trigger t1_bu;
+# This should work tough
+create trigger t1_bi before insert on t1
+  for each row set new.f1=(select sum(f1) from t1);
+insert into t1 values (3);
+select * from t1;
+drop trigger t1_bi;
+drop tables t1, t2;
+
+# Tests for bug #12704 "Server crashes during trigger execution".
+# If we run DML statements and CREATE TRIGGER statements concurrently
+# it may happen that trigger will be created while DML statement is
+# waiting for table lock. In this case we have to reopen tables and
+# recalculate prelocking set.
+# Unfortunately these tests rely on the order in which tables are locked
+# by statement so they are non determenistic and are disabled.
+--disable_parsing
+create table t1 (id int);
+create table t2 (id int);
+create table t3 (id int);
+create function f1() returns int return (select max(id)+2 from t2);
+create view v1 as select f1() as f;
+
+# Let us check that we notice trigger at all
+connection addconroot1;
+lock tables t2 write;
+connection default;
+send insert into t1 values ((select max(id) from t2)), (2);
+--sleep 1
+connection addconroot2;
+create trigger t1_trg before insert on t1 for each row set NEW.id:= 1;
+connection addconroot1;
+unlock tables;
+connection default;
+reap;
+select * from t1;
+
+# Check that we properly calculate new prelocking set
+insert into t2 values (3);
+connection addconroot1;
+lock tables t2 write;
+connection default;
+send insert into t1 values ((select max(id) from t2)), (4);
+--sleep 1
+connection addconroot2;
+drop trigger t1_trg;
+create trigger t1_trg before insert on t1 for each row
+  insert into t3 values (new.id);
+connection addconroot1;
+unlock tables;
+connection default;
+reap;
+select * from t1;
+select * from t3;
+
+# We should be able to do this even if fancy views are involved
+connection addconroot1;
+lock tables t2 write;
+connection default;
+send insert into t1 values ((select max(f) from v1)), (6);
+--sleep 1
+connection addconroot2;
+drop trigger t1_trg;
+create trigger t1_trg before insert on t1 for each row
+  insert into t3 values (new.id + 100);
+connection addconroot1;
+unlock tables;
+connection default;
+reap;
+select * from t1;
+select * from t3;
+
+# This also should work for multi-update
+# Let us drop trigger to demonstrate that prelocking set is really
+# rebuilt
+drop trigger t1_trg;
+connection addconroot1;
+lock tables t2 write;
+connection default;
+send update t1, t2 set t1.id=10 where t1.id=t2.id;
+--sleep 1
+connection addconroot2;
+create trigger t1_trg before update on t1 for each row
+  insert into t3 values (new.id);
+connection addconroot1;
+unlock tables;
+connection default;
+reap;
+select * from t1;
+select * from t3;
+
+# And even for multi-update converted from ordinary update thanks to view
+drop view v1;
+drop trigger t1_trg;
+create view v1 as select t1.id as id1 from t1, t2 where t1.id= t2.id;
+insert into t2 values (10);
+connection addconroot1;
+lock tables t2 write;
+connection default;
+send update v1 set id1= 11;
+--sleep 1
+connection addconroot2;
+create trigger t1_trg before update on t1 for each row
+  insert into t3 values (new.id + 100);
+connection addconroot1;
+unlock tables;
+connection default;
+reap;
+select * from t1;
+select * from t3;
+
+drop function f1;
+drop view v1;
+drop table t1, t2, t3;
+--enable_parsing

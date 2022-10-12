@@ -26236,7 +26236,7 @@ echo "$as_me: WARNING: Using --with-named-thread=-lpthread" >&2;}
       FLAGS="-traditional-cpp -DHAVE_DARWIN5_THREADS -D_P1003_1B_VISIBLE -DSIGNAL_WITH_VIO_CLOSE -DSIGNALS_DONT_BREAK_READ -DHAVE_BROKEN_REALPATH"
       CFLAGS="$CFLAGS $FLAGS"
       CXXFLAGS="$CXXFLAGS $FLAGS"
-      MAX_C_OPTIMIZE="-O"
+      MAX_C_OPTIMIZE="-O0"
       with_named_curses=""
     fi
     ;;
@@ -26246,7 +26246,7 @@ echo "$as_me: WARNING: Using --with-named-thread=-lpthread" >&2;}
       FLAGS="-D_P1003_1B_VISIBLE -DSIGNAL_WITH_VIO_CLOSE -DSIGNALS_DONT_BREAK_READ -DHAVE_BROKEN_REALPATH"
       CFLAGS="$CFLAGS $FLAGS"
       CXXFLAGS="$CXXFLAGS $FLAGS"
-      MAX_C_OPTIMIZE="-O"
+      MAX_C_OPTIMIZE="-O0"
     fi
     ;;
   *darwin*)
@@ -26255,7 +26255,7 @@ echo "$as_me: WARNING: Using --with-named-thread=-lpthread" >&2;}
       FLAGS="-D_P1003_1B_VISIBLE -DSIGNAL_WITH_VIO_CLOSE -DSIGNALS_DONT_BREAK_READ -DIGNORE_SIGHUP_SIGQUIT"
       CFLAGS="$CFLAGS $FLAGS"
       CXXFLAGS="$CXXFLAGS $FLAGS"
-      MAX_C_OPTIMIZE="-O"
+      MAX_C_OPTIMIZE="-O0"
     fi
     ;;
   *freebsd*)
@@ -27790,22 +27790,22 @@ esac
 if test "$ac_cv_c_compiler_gnu" = "yes"
 then
   DEBUG_CFLAGS="-g"
-  DEBUG_OPTIMIZE_CC="-O"
+  DEBUG_OPTIMIZE_CC="-O0"
   OPTIMIZE_CFLAGS="$MAX_C_OPTIMIZE"
 else
   DEBUG_CFLAGS="-g"
   DEBUG_OPTIMIZE_CC=""
-  OPTIMIZE_CFLAGS="-O"
+  OPTIMIZE_CFLAGS="-O0"
 fi
 if test "$ac_cv_prog_cxx_g" = "yes"
 then
   DEBUG_CXXFLAGS="-g"
-  DEBUG_OPTIMIZE_CXX="-O"
+  DEBUG_OPTIMIZE_CXX="-O0"
   OPTIMIZE_CXXFLAGS="$MAX_CXX_OPTIMIZE"
 else
   DEBUG_CXXFLAGS="-g"
   DEBUG_OPTIMIZE_CXX=""
-  OPTIMIZE_CXXFLAGS="-O"
+  OPTIMIZE_CXXFLAGS="-O0"
 fi
 
 if expr "$SYSTEM_TYPE" : ".*netware.*" > /dev/null; then

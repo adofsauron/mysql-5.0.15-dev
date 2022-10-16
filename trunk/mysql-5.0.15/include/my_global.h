@@ -1273,4 +1273,8 @@ do { doubleget_union _tmp; \
 #define NO_EMBEDDED_ACCESS_CHECKS
 #endif
 
+#ifndef HAVE_INNOBASE_DB
+#define HAVE_INNOBASE_DB
+#endif // HAVE_INNOBASE_DB
+
 #endif /* my_global_h */

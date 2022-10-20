@@ -14,7 +14,6 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-
 /* Functions for discover of frm file from handler */
 
 #include "mysql_priv.h"
@@ -40,54 +39,50 @@
    frmdata and len are set to 0 on error
 */
 
-int readfrm(const char *name,
-	    const void **frmdata, uint *len)
+int readfrm(const char *name, const void **frmdata, uint *len)
 {
-  int    error;
-  char	 index_file[FN_REFLEN];
-  File	 file;
+  int error;
+  char index_file[FN_REFLEN];
+  File file;
   ulong read_len;
   char *read_data;
-  MY_STAT state;  
+  MY_STAT state;
   DBUG_ENTER("readfrm");
-  DBUG_PRINT("enter",("name: '%s'",name));
-  
-  *frmdata= NULL;      // In case of errors
-  *len= 0;
-  error= 1;
-  if ((file=my_open(fn_format(index_file,name,"",reg_ext,4),
-		    O_RDONLY | O_SHARE,
-		    MYF(0))) < 0)  
-    goto err_end; 
-  
+  DBUG_PRINT("enter", ("name: '%s'", name));
+
+  *frmdata = NULL;  // In case of errors
+  *len = 0;
+  error = 1;
+  if ((file = my_open(fn_format(index_file, name, "", reg_ext, 4), O_RDONLY | O_SHARE, MYF(0))) < 0)
+    goto err_end;
+
   // Get length of file
-  error= 2;
+  error = 2;
   if (my_fstat(file, &state, MYF(0)))
     goto err;
-  read_len= state.st_size;  
+  read_len = state.st_size;
 
   // Read whole frm file
-  error= 3;
-  read_data= 0; 
+  error = 3;
+  read_data = 0;
   if (read_string(file, &read_data, read_len))
     goto err;
 
   // Setup return data
-  *frmdata= (void*) read_data;
-  *len= read_len;
-  error= 0;
-  
- err:
+  *frmdata = (void *)read_data;
+  *len = read_len;
+  error = 0;
+
+err:
   if (file > 0)
-    VOID(my_close(file,MYF(MY_WME)));
-  
- err_end:		      /* Here when no file */
-  DBUG_RETURN (error);
+    VOID(my_close(file, MYF(MY_WME)));
+
+err_end: /* Here when no file */
+  DBUG_RETURN(error);
 } /* readfrm */
 
-
 /*
-  Write the content of a frm data pointer 
+  Write the content of a frm data pointer
   to a frm file
 
   SYNOPSIS
@@ -105,24 +100,18 @@ int readfrm(const char *name,
 int writefrm(const char *name, const void *frmdata, uint len)
 {
   File file;
-  char	 index_file[FN_REFLEN];
+  char index_file[FN_REFLEN];
   int error;
   DBUG_ENTER("writefrm");
-  DBUG_PRINT("enter",("name: '%s' len: %d ",name,len));
-  //DBUG_DUMP("frmdata", (char*)frmdata, len);
+  DBUG_PRINT("enter", ("name: '%s' len: %d ", name, len));
+  // DBUG_DUMP("frmdata", (char*)frmdata, len);
 
-  error= 0;
-  if ((file=my_create(fn_format(index_file,name,"",reg_ext,4),
-		      CREATE_MODE,O_RDWR | O_TRUNC,MYF(MY_WME))) >= 0)
+  error = 0;
+  if ((file = my_create(fn_format(index_file, name, "", reg_ext, 4), CREATE_MODE, O_RDWR | O_TRUNC, MYF(MY_WME))) >= 0)
   {
-    if (my_write(file,(byte*)frmdata,len,MYF(MY_WME | MY_NABP)))
-      error= 2;
+    if (my_write(file, (byte *)frmdata, len, MYF(MY_WME | MY_NABP)))
+      error = 2;
   }
-  VOID(my_close(file,MYF(0)));
+  VOID(my_close(file, MYF(0)));
   DBUG_RETURN(error);
 } /* writefrm */
-
-
-
-
-

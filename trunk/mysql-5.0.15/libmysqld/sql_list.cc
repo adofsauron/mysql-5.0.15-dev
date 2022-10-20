@@ -14,26 +14,22 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-
 #ifdef USE_PRAGMA_IMPLEMENTATION
-#pragma implementation				// gcc: Class implementation
+#pragma implementation  // gcc: Class implementation
 #endif
 
 #include "mysql_priv.h"
 
 list_node end_of_list;
 
-void free_list(I_List <i_string_pair> *list)
+void free_list(I_List<i_string_pair> *list)
 {
   i_string_pair *tmp;
-  while ((tmp= list->get()))
-    delete tmp;
+  while ((tmp = list->get())) delete tmp;
 }
 
-
-void free_list(I_List <i_string> *list)
+void free_list(I_List<i_string> *list)
 {
   i_string *tmp;
-  while ((tmp= list->get()))
-    delete tmp;
+  while ((tmp = list->get())) delete tmp;
 }

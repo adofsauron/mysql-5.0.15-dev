@@ -18,18 +18,18 @@
 
 /*
    Known bugs:
-  
+
    Memory for functions is never freed!
    Shared libraries are not closed before mysqld exits;
      - This is because we can't be sure if some threads are using
        a function.
-  
+
    The bugs only affect applications that create and free a lot of
    dynamic functions, so this shouldn't be a real problem.
 */
 
 #ifdef USE_PRAGMA_IMPLEMENTATION
-#pragma implementation				// gcc: Class implementation
+#pragma implementation  // gcc: Class implementation
 #endif
 
 #include "mysql_priv.h"
@@ -39,18 +39,9 @@
 extern "C"
 {
 #if defined(__WIN__)
-  void* dlsym(void* lib,const char* name)
-  {
-    return GetProcAddress((HMODULE)lib,name);
-  }
-  void* dlopen(const char* libname,int unused)
-  {
-    return LoadLibraryEx(libname,NULL,0);
-  }
-  void dlclose(void* lib)
-  {
-    FreeLibrary((HMODULE)lib);
-  }
+  void *dlsym(void *lib, const char *name) { return GetProcAddress((HMODULE)lib, name); }
+  void *dlopen(const char *libname, int unused) { return LoadLibraryEx(libname, NULL, 0); }
+  void dlclose(void *lib) { FreeLibrary((HMODULE)lib); }
 
 #elif !defined(OS2)
 #include <dlfcn.h>
@@ -61,7 +52,7 @@ extern "C"
 }
 
 #ifndef RTLD_NOW
-#define RTLD_NOW 1				// For FreeBSD 2.2.2
+#define RTLD_NOW 1  // For FreeBSD 2.2.2
 #endif
 
 #ifndef HAVE_DLERROR
@@ -73,9 +64,7 @@ static MEM_ROOT mem;
 static HASH udf_hash;
 static rw_lock_t THR_LOCK_udf;
 
-
-static udf_func *add_udf(LEX_STRING *name, Item_result ret,
-                         char *dl, Item_udftype typ);
+static udf_func *add_udf(LEX_STRING *name, Item_result ret, char *dl, Item_udftype typ);
 static void del_udf(udf_func *udf);
 static void *find_udf_dl(const char *dl);
 
@@ -83,26 +72,26 @@ static char *init_syms(udf_func *tmp, char *nm)
 {
   char *end;
 
-  if (!((tmp->func= dlsym(tmp->dlhandle, tmp->name.str))))
+  if (!((tmp->func = dlsym(tmp->dlhandle, tmp->name.str))))
     return tmp->name.str;
 
-  end=strmov(nm,tmp->name.str);
+  end = strmov(nm, tmp->name.str);
 
   if (tmp->type == UDFTYPE_AGGREGATE)
   {
     (void)strmov(end, "_clear");
-    if (!((tmp->func_clear= dlsym(tmp->dlhandle, nm))))
+    if (!((tmp->func_clear = dlsym(tmp->dlhandle, nm))))
       return nm;
     (void)strmov(end, "_add");
-    if (!((tmp->func_add= dlsym(tmp->dlhandle, nm))))
+    if (!((tmp->func_add = dlsym(tmp->dlhandle, nm))))
       return nm;
   }
 
-  (void) strmov(end,"_deinit");
-  tmp->func_deinit= dlsym(tmp->dlhandle, nm);
+  (void)strmov(end, "_deinit");
+  tmp->func_deinit = dlsym(tmp->dlhandle, nm);
 
-  (void) strmov(end,"_init");
-  tmp->func_init= dlsym(tmp->dlhandle, nm);
+  (void)strmov(end, "_init");
+  tmp->func_init = dlsym(tmp->dlhandle, nm);
 
   /*
     to prefent loading "udf" from, e.g. libc.so
@@ -118,15 +107,12 @@ static char *init_syms(udf_func *tmp, char *nm)
   return 0;
 }
 
-
-extern "C" byte* get_hash_key(const byte *buff,uint *length,
-			      my_bool not_used __attribute__((unused)))
+extern "C" byte *get_hash_key(const byte *buff, uint *length, my_bool not_used __attribute__((unused)))
 {
-  udf_func *udf=(udf_func*) buff;
-  *length=(uint) udf->name.length;
-  return (byte*) udf->name.str;
+  udf_func *udf = (udf_func *)buff;
+  *length = (uint)udf->name.length;
+  return (byte *)udf->name.str;
 }
-
 
 /*
   Read all predeclared functions from mysql.func and accept all that
@@ -145,67 +131,61 @@ void udf_init()
   if (initialized)
     DBUG_VOID_RETURN;
 
-  my_rwlock_init(&THR_LOCK_udf,NULL);
-  
+  my_rwlock_init(&THR_LOCK_udf, NULL);
+
   init_sql_alloc(&mem, UDF_ALLOC_BLOCK_SIZE, 0);
   THD *new_thd = new THD;
-  if (!new_thd ||
-      hash_init(&udf_hash,system_charset_info,32,0,0,get_hash_key, NULL, 0))
+  if (!new_thd || hash_init(&udf_hash, system_charset_info, 32, 0, 0, get_hash_key, NULL, 0))
   {
     sql_print_error("Can't allocate memory for udf structures");
     hash_free(&udf_hash);
-    free_root(&mem,MYF(0));
+    free_root(&mem, MYF(0));
     delete new_thd;
     DBUG_VOID_RETURN;
   }
   initialized = 1;
   new_thd->store_globals();
-  new_thd->db= my_strdup("mysql", MYF(0));
-  new_thd->db_length=5;
+  new_thd->db = my_strdup("mysql", MYF(0));
+  new_thd->db_length = 5;
 
-  bzero((gptr) &tables,sizeof(tables));
-  tables.alias= tables.table_name= (char*) "func";
+  bzero((gptr)&tables, sizeof(tables));
+  tables.alias = tables.table_name = (char *)"func";
   tables.lock_type = TL_READ;
-  tables.db=new_thd->db;
+  tables.db = new_thd->db;
 
   if (simple_open_n_lock_tables(new_thd, &tables))
   {
-    DBUG_PRINT("error",("Can't open udf table"));
+    DBUG_PRINT("error", ("Can't open udf table"));
     sql_print_error("Can't open the mysql.func table. Please run the mysql_install_db script to create it.");
     goto end;
   }
 
-  table= tables.table;
-  init_read_record(&read_record_info, new_thd, table, NULL,1,0);
+  table = tables.table;
+  init_read_record(&read_record_info, new_thd, table, NULL, 1, 0);
   while (!(error = read_record_info.read_record(&read_record_info)))
   {
-    DBUG_PRINT("info",("init udf record"));
+    DBUG_PRINT("info", ("init udf record"));
     LEX_STRING name;
-    name.str=get_field(&mem, table->field[0]);
+    name.str = get_field(&mem, table->field[0]);
     name.length = strlen(name.str);
-    char *dl_name= get_field(&mem, table->field[2]);
-    bool new_dl=0;
-    Item_udftype udftype=UDFTYPE_FUNCTION;
-    if (table->s->fields >= 4)			// New func table
-      udftype=(Item_udftype) table->field[3]->val_int();
+    char *dl_name = get_field(&mem, table->field[2]);
+    bool new_dl = 0;
+    Item_udftype udftype = UDFTYPE_FUNCTION;
+    if (table->s->fields >= 4)  // New func table
+      udftype = (Item_udftype)table->field[3]->val_int();
 
     /*
       Ensure that the .dll doesn't have a path
       This is done to ensure that only approved dll from the system
       directories are used (to make this even remotely secure).
     */
-    if (strchr(dl_name, '/') ||
-        IF_WIN(strchr(dl_name, '\\'),0) ||
-        strlen(name.str) > NAME_LEN)
+    if (strchr(dl_name, '/') || IF_WIN(strchr(dl_name, '\\'), 0) || strlen(name.str) > NAME_LEN)
     {
-      sql_print_error("Invalid row in mysql.func table for function '%.64s'",
-                      name.str);
+      sql_print_error("Invalid row in mysql.func table for function '%.64s'", name.str);
       continue;
     }
 
-
-    if (!(tmp= add_udf(&name,(Item_result) table->field[1]->val_int(),
-                       dl_name, udftype)))
+    if (!(tmp = add_udf(&name, (Item_result)table->field[1]->val_int(), dl_name, udftype)))
     {
       sql_print_error("Can't alloc memory for udf function: '%.64s'", name.str);
       continue;
@@ -216,17 +196,17 @@ void udf_init()
     {
       if (!(dl = dlopen(tmp->dl, RTLD_NOW)))
       {
-	/* Print warning to log */
-	sql_print_error(ER(ER_CANT_OPEN_LIBRARY), tmp->dl,errno,dlerror());
-	/* Keep the udf in the hash so that we can remove it later */
-	continue;
+        /* Print warning to log */
+        sql_print_error(ER(ER_CANT_OPEN_LIBRARY), tmp->dl, errno, dlerror());
+        /* Keep the udf in the hash so that we can remove it later */
+        continue;
       }
-      new_dl=1;
+      new_dl = 1;
     }
     tmp->dlhandle = dl;
     {
-      char buf[NAME_LEN+16], *missing;
-      if ((missing= init_syms(tmp, buf)))
+      char buf[NAME_LEN + 16], *missing;
+      if ((missing = init_syms(tmp, buf)))
       {
         sql_print_error(ER(ER_CANT_FIND_DL_ENTRY), missing);
         del_udf(tmp);
@@ -238,54 +218,52 @@ void udf_init()
   if (error > 0)
     sql_print_error(ER(ER_GET_ERRNO), my_errno);
   end_read_record(&read_record_info);
-  new_thd->version--;				// Force close to free memory
+  new_thd->version--;  // Force close to free memory
 
 end:
   close_thread_tables(new_thd);
   delete new_thd;
   /* Remember that we don't have a THD */
-  my_pthread_setspecific_ptr(THR_THD,  0);
+  my_pthread_setspecific_ptr(THR_THD, 0);
   DBUG_VOID_RETURN;
 }
-
 
 void udf_free()
 {
   /* close all shared libraries */
   DBUG_ENTER("udf_free");
-  for (uint idx=0 ; idx < udf_hash.records ; idx++)
+  for (uint idx = 0; idx < udf_hash.records; idx++)
   {
-    udf_func *udf=(udf_func*) hash_element(&udf_hash,idx);
-    if (udf->dlhandle)				// Not closed before
+    udf_func *udf = (udf_func *)hash_element(&udf_hash, idx);
+    if (udf->dlhandle)  // Not closed before
     {
       /* Mark all versions using the same handler as closed */
-      for (uint j=idx+1 ;  j < udf_hash.records ; j++)
+      for (uint j = idx + 1; j < udf_hash.records; j++)
       {
-	udf_func *tmp=(udf_func*) hash_element(&udf_hash,j);
-	if (udf->dlhandle == tmp->dlhandle)
-	  tmp->dlhandle=0;			// Already closed
+        udf_func *tmp = (udf_func *)hash_element(&udf_hash, j);
+        if (udf->dlhandle == tmp->dlhandle)
+          tmp->dlhandle = 0;  // Already closed
       }
       dlclose(udf->dlhandle);
     }
   }
   hash_free(&udf_hash);
-  free_root(&mem,MYF(0));
+  free_root(&mem, MYF(0));
   if (initialized)
   {
-    initialized= 0;
+    initialized = 0;
     rwlock_destroy(&THR_LOCK_udf);
   }
   DBUG_VOID_RETURN;
 }
-
 
 static void del_udf(udf_func *udf)
 {
   DBUG_ENTER("del_udf");
   if (!--udf->usage_count)
   {
-    hash_delete(&udf_hash,(byte*) udf);
-    using_udf_functions=udf_hash.records != 0;
+    hash_delete(&udf_hash, (byte *)udf);
+    using_udf_functions = udf_hash.records != 0;
   }
   else
   {
@@ -294,15 +272,14 @@ static void del_udf(udf_func *udf)
       The functions will be automaticly removed when the least threads
       doesn't use it anymore
     */
-    char *name= udf->name.str;
-    uint name_length=udf->name.length;
-    udf->name.str=(char*) "*";
-    udf->name.length=1;
-    hash_update(&udf_hash,(byte*) udf,(byte*) name,name_length);
+    char *name = udf->name.str;
+    uint name_length = udf->name.length;
+    udf->name.str = (char *)"*";
+    udf->name.length = 1;
+    hash_update(&udf_hash, (byte *)udf, (byte *)name, name_length);
   }
   DBUG_VOID_RETURN;
 }
-
 
 void free_udf(udf_func *udf)
 {
@@ -314,8 +291,8 @@ void free_udf(udf_func *udf)
       We come here when someone has deleted the udf function
       while another thread still was using the udf
     */
-    hash_delete(&udf_hash,(byte*) udf);
-    using_udf_functions=udf_hash.records != 0;
+    hash_delete(&udf_hash, (byte *)udf);
+    using_udf_functions = udf_hash.records != 0;
     if (!find_udf_dl(udf->dl))
       dlclose(udf->dlhandle);
   }
@@ -323,32 +300,29 @@ void free_udf(udf_func *udf)
   DBUG_VOID_RETURN;
 }
 
-
 /* This is only called if using_udf_functions != 0 */
 
-udf_func *find_udf(const char *name,uint length,bool mark_used)
+udf_func *find_udf(const char *name, uint length, bool mark_used)
 {
-  udf_func *udf=0;
+  udf_func *udf = 0;
   DBUG_ENTER("find_udf");
 
   /* TODO: This should be changed to reader locks someday! */
   if (mark_used)
-    rw_wrlock(&THR_LOCK_udf);  /* Called during fix_fields */
+    rw_wrlock(&THR_LOCK_udf); /* Called during fix_fields */
   else
-    rw_rdlock(&THR_LOCK_udf);  /* Called during parsing */
+    rw_rdlock(&THR_LOCK_udf); /* Called during parsing */
 
-  if ((udf=(udf_func*) hash_search(&udf_hash,(byte*) name,
-				   length ? length : (uint) strlen(name))))
+  if ((udf = (udf_func *)hash_search(&udf_hash, (byte *)name, length ? length : (uint)strlen(name))))
   {
     if (!udf->dlhandle)
-      udf=0;					// Could not be opened
+      udf = 0;  // Could not be opened
     else if (mark_used)
       udf->usage_count++;
   }
   rw_unlock(&THR_LOCK_udf);
   DBUG_RETURN(udf);
 }
-
 
 static void *find_udf_dl(const char *dl)
 {
@@ -358,44 +332,41 @@ static void *find_udf_dl(const char *dl)
     Because only the function name is hashed, we have to search trough
     all rows to find the dl.
   */
-  for (uint idx=0 ; idx < udf_hash.records ; idx++)
+  for (uint idx = 0; idx < udf_hash.records; idx++)
   {
-    udf_func *udf=(udf_func*) hash_element(&udf_hash,idx);
+    udf_func *udf = (udf_func *)hash_element(&udf_hash, idx);
     if (!strcmp(dl, udf->dl) && udf->dlhandle != NULL)
       DBUG_RETURN(udf->dlhandle);
   }
   DBUG_RETURN(0);
 }
 
-
 /* Assume that name && dl is already allocated */
 
-static udf_func *add_udf(LEX_STRING *name, Item_result ret, char *dl,
-			 Item_udftype type)
+static udf_func *add_udf(LEX_STRING *name, Item_result ret, char *dl, Item_udftype type)
 {
-  if (!name || !dl || !(uint) type || (uint) type > (uint) UDFTYPE_AGGREGATE)
+  if (!name || !dl || !(uint)type || (uint)type > (uint)UDFTYPE_AGGREGATE)
     return 0;
-  udf_func *tmp= (udf_func*) alloc_root(&mem, sizeof(udf_func));
+  udf_func *tmp = (udf_func *)alloc_root(&mem, sizeof(udf_func));
   if (!tmp)
     return 0;
-  bzero((char*) tmp,sizeof(*tmp));
-  tmp->name = *name; //dup !!
+  bzero((char *)tmp, sizeof(*tmp));
+  tmp->name = *name;  // dup !!
   tmp->dl = dl;
   tmp->returns = ret;
   tmp->type = type;
-  tmp->usage_count=1;
-  if (my_hash_insert(&udf_hash,(byte*)  tmp))
+  tmp->usage_count = 1;
+  if (my_hash_insert(&udf_hash, (byte *)tmp))
     return 0;
-  using_udf_functions=1;
+  using_udf_functions = 1;
   return tmp;
 }
 
-
-int mysql_create_function(THD *thd,udf_func *udf)
+int mysql_create_function(THD *thd, udf_func *udf)
 {
   int error;
-  void *dl=0;
-  bool new_dl=0;
+  void *dl = 0;
+  bool new_dl = 0;
   TABLE *table;
   TABLE_LIST tables;
   udf_func *u_d;
@@ -412,7 +383,7 @@ int mysql_create_function(THD *thd,udf_func *udf)
     This is done to ensure that only approved dll from the system
     directories are used (to make this even remotely secure).
   */
-  if (strchr(udf->dl, '/') || IF_WIN(strchr(udf->dl, '\\'),0))
+  if (strchr(udf->dl, '/') || IF_WIN(strchr(udf->dl, '\\'), 0))
   {
     my_message(ER_UDF_NO_PATHS, ER(ER_UDF_NO_PATHS), MYF(0));
     DBUG_RETURN(1);
@@ -424,7 +395,7 @@ int mysql_create_function(THD *thd,udf_func *udf)
   }
 
   rw_wrlock(&THR_LOCK_udf);
-  if ((hash_search(&udf_hash,(byte*) udf->name.str, udf->name.length)))
+  if ((hash_search(&udf_hash, (byte *)udf->name.str, udf->name.length)))
   {
     my_error(ER_UDF_EXISTS, MYF(0), udf->name);
     goto err;
@@ -433,49 +404,47 @@ int mysql_create_function(THD *thd,udf_func *udf)
   {
     if (!(dl = dlopen(udf->dl, RTLD_NOW)))
     {
-      DBUG_PRINT("error",("dlopen of %s failed, error: %d (%s)",
-			  udf->dl,errno,dlerror()));
-      my_error(ER_CANT_OPEN_LIBRARY, MYF(0),
-                      udf->dl, errno, dlerror());
+      DBUG_PRINT("error", ("dlopen of %s failed, error: %d (%s)", udf->dl, errno, dlerror()));
+      my_error(ER_CANT_OPEN_LIBRARY, MYF(0), udf->dl, errno, dlerror());
       goto err;
     }
-    new_dl=1;
+    new_dl = 1;
   }
-  udf->dlhandle=dl;
+  udf->dlhandle = dl;
   {
-    char buf[NAME_LEN+16], *missing;
-    if ((missing= init_syms(udf, buf)))
+    char buf[NAME_LEN + 16], *missing;
+    if ((missing = init_syms(udf, buf)))
     {
       my_error(ER_CANT_FIND_DL_ENTRY, MYF(0), missing);
       goto err;
     }
   }
-  udf->name.str=strdup_root(&mem,udf->name.str);
-  udf->dl=strdup_root(&mem,udf->dl);
-  if (!(u_d=add_udf(&udf->name,udf->returns,udf->dl,udf->type)))
+  udf->name.str = strdup_root(&mem, udf->name.str);
+  udf->dl = strdup_root(&mem, udf->dl);
+  if (!(u_d = add_udf(&udf->name, udf->returns, udf->dl, udf->type)))
     goto err;
   u_d->dlhandle = dl;
-  u_d->func=udf->func;
-  u_d->func_init=udf->func_init;
-  u_d->func_deinit=udf->func_deinit;
-  u_d->func_clear=udf->func_clear;
-  u_d->func_add=udf->func_add;
+  u_d->func = udf->func;
+  u_d->func_init = udf->func_init;
+  u_d->func_deinit = udf->func_deinit;
+  u_d->func_clear = udf->func_clear;
+  u_d->func_add = udf->func_add;
 
   /* create entry in mysql.func table */
 
-  bzero((char*) &tables,sizeof(tables));
-  tables.db= (char*) "mysql";
-  tables.table_name= tables.alias= (char*) "func";
+  bzero((char *)&tables, sizeof(tables));
+  tables.db = (char *)"mysql";
+  tables.table_name = tables.alias = (char *)"func";
   /* Allow creation of functions even if we can't open func table */
-  if (!(table = open_ltable(thd,&tables,TL_WRITE)))
+  if (!(table = open_ltable(thd, &tables, TL_WRITE)))
     goto err;
 
-  restore_record(table, s->default_values);	// Default values for fields
+  restore_record(table, s->default_values);  // Default values for fields
   table->field[0]->store(u_d->name.str, u_d->name.length, system_charset_info);
-  table->field[1]->store((longlong) u_d->returns, TRUE);
-  table->field[2]->store(u_d->dl,(uint) strlen(u_d->dl), system_charset_info);
-  if (table->s->fields >= 4)			// If not old func format
-    table->field[3]->store((longlong) u_d->type, TRUE);
+  table->field[1]->store((longlong)u_d->returns, TRUE);
+  table->field[2]->store(u_d->dl, (uint)strlen(u_d->dl), system_charset_info);
+  if (table->s->fields >= 4)  // If not old func format
+    table->field[3]->store((longlong)u_d->type, TRUE);
   error = table->file->write_row(table->record[0]);
 
   close_thread_tables(thd);
@@ -488,15 +457,14 @@ int mysql_create_function(THD *thd,udf_func *udf)
   rw_unlock(&THR_LOCK_udf);
   DBUG_RETURN(0);
 
- err:
+err:
   if (new_dl)
     dlclose(dl);
   rw_unlock(&THR_LOCK_udf);
   DBUG_RETURN(1);
 }
 
-
-int mysql_drop_function(THD *thd,const LEX_STRING *udf_name)
+int mysql_drop_function(THD *thd, const LEX_STRING *udf_name)
 {
   TABLE *table;
   TABLE_LIST tables;
@@ -507,9 +475,8 @@ int mysql_drop_function(THD *thd,const LEX_STRING *udf_name)
     my_message(ER_OUT_OF_RESOURCES, ER(ER_OUT_OF_RESOURCES), MYF(0));
     DBUG_RETURN(1);
   }
-  rw_wrlock(&THR_LOCK_udf);  
-  if (!(udf=(udf_func*) hash_search(&udf_hash,(byte*) udf_name->str,
-				    (uint) udf_name->length)))
+  rw_wrlock(&THR_LOCK_udf);
+  if (!(udf = (udf_func *)hash_search(&udf_hash, (byte *)udf_name->str, (uint)udf_name->length)))
   {
     my_error(ER_FUNCTION_NOT_DEFINED, MYF(0), udf_name->str);
     goto err;
@@ -522,17 +489,15 @@ int mysql_drop_function(THD *thd,const LEX_STRING *udf_name)
   if (udf->dlhandle && !find_udf_dl(udf->dl))
     dlclose(udf->dlhandle);
 
-  bzero((char*) &tables,sizeof(tables));
-  tables.db=(char*) "mysql";
-  tables.table_name= tables.alias= (char*) "func";
-  if (!(table = open_ltable(thd,&tables,TL_WRITE)))
+  bzero((char *)&tables, sizeof(tables));
+  tables.db = (char *)"mysql";
+  tables.table_name = tables.alias = (char *)"func";
+  if (!(table = open_ltable(thd, &tables, TL_WRITE)))
     goto err;
   table->field[0]->store(udf_name->str, udf_name->length, system_charset_info);
   table->file->extra(HA_EXTRA_RETRIEVE_ALL_COLS);
-  if (!table->file->index_read_idx(table->record[0], 0,
-				   (byte*) table->field[0]->ptr,
-				   table->key_info[0].key_length,
-				   HA_READ_KEY_EXACT))
+  if (!table->file->index_read_idx(table->record[0], 0, (byte *)table->field[0]->ptr, table->key_info[0].key_length,
+                                   HA_READ_KEY_EXACT))
   {
     int error;
     if ((error = table->file->delete_row(table->record[0])))
@@ -540,9 +505,9 @@ int mysql_drop_function(THD *thd,const LEX_STRING *udf_name)
   }
   close_thread_tables(thd);
 
-  rw_unlock(&THR_LOCK_udf);  
+  rw_unlock(&THR_LOCK_udf);
   DBUG_RETURN(0);
- err:
+err:
   rw_unlock(&THR_LOCK_udf);
   DBUG_RETURN(1);
 }

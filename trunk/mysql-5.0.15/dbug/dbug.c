@@ -1183,6 +1183,9 @@ static void PushState ()
 
 static BOOLEAN DoTrace (CODE_STATE *state)
 {
+	// TODO:
+  return FALSE;
+
   reg2 BOOLEAN trace=TRUE;
 
   if (0==strcmp("alloc_root", state->func))

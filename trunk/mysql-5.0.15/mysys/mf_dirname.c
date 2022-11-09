@@ -17,55 +17,53 @@
 #include "mysys_priv.h"
 #include <m_string.h>
 
-	/* Functions definied in this file */
+/* Functions definied in this file */
 
 uint dirname_length(const char *name)
 {
-  register my_string pos,gpos;
+  register my_string pos, gpos;
 #ifdef BASKSLASH_MBTAIL
-  CHARSET_INFO *fs= fs_character_set();
+  CHARSET_INFO *fs = fs_character_set();
 #endif
 #ifdef FN_DEVCHAR
-  if ((pos=(char*)strrchr(name,FN_DEVCHAR)) == 0)
+  if ((pos = (char *)strrchr(name, FN_DEVCHAR)) == 0)
 #endif
-    pos=(char*) name-1;
+    pos = (char *)name - 1;
 
-  gpos= pos++;
-  for ( ; *pos ; pos++)				/* Find last FN_LIBCHAR */
+  gpos = pos++;
+  for (; *pos; pos++) /* Find last FN_LIBCHAR */
   {
 #ifdef BASKSLASH_MBTAIL
     uint l;
-    if (use_mb(fs) && (l= my_ismbchar(fs, pos, pos + 3)))
+    if (use_mb(fs) && (l = my_ismbchar(fs, pos, pos + 3)))
     {
-      pos+= l - 1;
+      pos += l - 1;
       continue;
     }
 #endif
     if (*pos == FN_LIBCHAR || *pos == '/'
 #ifdef FN_C_AFTER_DIR
-	|| *pos == FN_C_AFTER_DIR || *pos == FN_C_AFTER_DIR_2
+        || *pos == FN_C_AFTER_DIR || *pos == FN_C_AFTER_DIR_2
 #endif
-	)
-      gpos=pos;
+    )
+      gpos = pos;
   }
-  return ((uint) (uint) (gpos+1-(char*) name));
+  return ((uint)(uint)(gpos + 1 - (char *)name));
 }
 
-
-	/* Gives directory part of filename. Directory ends with '/' */
-	/* Returns length of directory part */
+/* Gives directory part of filename. Directory ends with '/' */
+/* Returns length of directory part */
 
 uint dirname_part(my_string to, const char *name)
 {
   uint length;
   DBUG_ENTER("dirname_part");
-  DBUG_PRINT("enter",("'%s'",name));
+  DBUG_PRINT("enter", ("'%s'", name));
 
-  length=dirname_length(name);
-  convert_dirname(to, name, name+length);
+  length = dirname_length(name);
+  convert_dirname(to, name, name + length);
   DBUG_RETURN(length);
 } /* dirname */
-
 
 /*
   Convert directory name to use under this system
@@ -92,62 +90,62 @@ uint dirname_part(my_string to, const char *name)
 */
 
 #ifndef FN_DEVCHAR
-#define FN_DEVCHAR '\0'				/* For easier code */
+#define FN_DEVCHAR '\0' /* For easier code */
 #endif
 
 char *convert_dirname(char *to, const char *from, const char *from_end)
 {
-  char *to_org=to;
+  char *to_org = to;
 #ifdef BACKSLASH_MBTAIL
-  CHARSET_INFO *fs= fs_character_set();
+  CHARSET_INFO *fs = fs_character_set();
 #endif
 
   /* We use -2 here, becasue we need place for the last FN_LIBCHAR */
-  if (!from_end || (from_end - from) > FN_REFLEN-2)
-    from_end=from+FN_REFLEN -2;
+  if (!from_end || (from_end - from) > FN_REFLEN - 2)
+    from_end = from + FN_REFLEN - 2;
 
 #if FN_LIBCHAR != '/' || defined(FN_C_BEFORE_DIR_2)
   {
     for (; *from && from != from_end; from++)
     {
       if (*from == '/')
-	*to++= FN_LIBCHAR;
+        *to++ = FN_LIBCHAR;
 #ifdef FN_C_BEFORE_DIR_2
       else if (*from == FN_C_BEFORE_DIR_2)
-	*to++= FN_C_BEFORE_DIR;
+        *to++ = FN_C_BEFORE_DIR;
       else if (*from == FN_C_AFTER_DIR_2)
-	*to++= FN_C_AFTER_DIR;
+        *to++ = FN_C_AFTER_DIR;
 #endif
       else
       {
 #ifdef BACKSLASH_MBTAIL
         uint l;
-        if (use_mb(fs) && (l= my_ismbchar(fs, from, from + 3)))
+        if (use_mb(fs) && (l = my_ismbchar(fs, from, from + 3)))
         {
           memmove(to, from, l);
-          to+= l;
-          from+= l - 1;
-          to_org= to; /* Don't look inside mbchar */
+          to += l;
+          from += l - 1;
+          to_org = to; /* Don't look inside mbchar */
         }
         else
 #endif
         {
-          *to++= *from;
+          *to++ = *from;
         }
       }
     }
-    *to=0;
+    *to = 0;
   }
 #else
   /* This is ok even if to == from, becasue we need to cut the string */
-  to= strmake(to, from, (uint) (from_end-from));
+  to = strmake(to, from, (uint)(from_end - from));
 #endif
 
   /* Add FN_LIBCHAR to the end of directory path */
   if (to != to_org && (to[-1] != FN_LIBCHAR && to[-1] != FN_DEVCHAR))
   {
-    *to++=FN_LIBCHAR;
-    *to=0;
+    *to++ = FN_LIBCHAR;
+    *to = 0;
   }
-  return to;					/* Pointer to end of dir */
+  return to; /* Pointer to end of dir */
 } /* convert_dirname */

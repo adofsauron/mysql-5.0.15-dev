@@ -22,19 +22,20 @@
 void my_sleep(ulong m_seconds)
 {
 #ifdef __NETWARE__
-  delay(m_seconds/1000+1);
+  delay(m_seconds / 1000 + 1);
 #elif defined(__WIN__)
-  Sleep(m_seconds/1000+1);      /* Sleep() has millisecond arg */
+  Sleep(m_seconds / 1000 + 1); /* Sleep() has millisecond arg */
 #elif defined(OS2)
-  DosSleep(m_seconds/1000+1);
+  DosSleep(m_seconds / 1000 + 1);
 #elif defined(HAVE_SELECT)
   struct timeval t;
-  t.tv_sec=  m_seconds / 1000000L;
-  t.tv_usec= m_seconds % 1000000L;
-  select(0,0,0,0,&t); /* sleep */
+  t.tv_sec = m_seconds / 1000000L;
+  t.tv_usec = m_seconds % 1000000L;
+  select(0, 0, 0, 0, &t); /* sleep */
 #else
-  uint sec=    (uint) (m_seconds / 1000000L);
-  ulong start= (ulong) time((time_t*) 0);
-  while ((ulong) time((time_t*) 0) < start+sec);
+  uint sec = (uint)(m_seconds / 1000000L);
+  ulong start = (ulong)time((time_t *)0);
+  while ((ulong)time((time_t *)0) < start + sec)
+    ;
 #endif
 }

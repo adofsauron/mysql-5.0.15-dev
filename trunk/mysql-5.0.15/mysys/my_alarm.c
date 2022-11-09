@@ -17,16 +17,15 @@
 /* Function to set a varible when we got a alarm */
 /* Used by my_lock samt functions in m_alarm.h */
 
-
 #include "mysys_priv.h"
 #include "my_alarm.h"
 
 #ifdef HAVE_ALARM
 
-	/* ARGSUSED */
+/* ARGSUSED */
 sig_handler my_set_alarm_variable(int signo __attribute__((unused)))
 {
-  my_have_got_alarm=1;			/* Tell program that time expired */
+  my_have_got_alarm = 1; /* Tell program that time expired */
   return;
 }
 

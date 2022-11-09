@@ -76,7 +76,7 @@ my_bool init_compiled_charsets(myf flags __attribute__((unused)))
   CHARSET_INFO *cs;
 
   add_compiled_collation(&my_charset_bin);
-  
+
   add_compiled_collation(&my_charset_latin1);
   add_compiled_collation(&my_charset_latin1_bin);
   add_compiled_collation(&my_charset_latin1_german2_ci);
@@ -188,8 +188,7 @@ my_bool init_compiled_charsets(myf flags __attribute__((unused)))
 #endif
 
   /* Copy compiled charsets */
-  for (cs=compiled_charsets; cs->name; cs++)
-    add_compiled_collation(cs);
-  
+  for (cs = compiled_charsets; cs->name; cs++) add_compiled_collation(cs);
+
   return FALSE;
 }

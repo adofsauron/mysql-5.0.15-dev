@@ -51,7 +51,6 @@ typedef struct st_safe_hash_entry
   struct st_safe_hash_entry *next, **prev;
 } SAFE_HASH_ENTRY;
 
-
 typedef struct st_safe_hash_with_default
 {
 #ifdef THREAD
@@ -62,7 +61,6 @@ typedef struct st_safe_hash_with_default
   SAFE_HASH_ENTRY *root;
 } SAFE_HASH;
 
-
 /*
   Free a SAFE_HASH_ENTRY
 
@@ -72,20 +70,17 @@ typedef struct st_safe_hash_with_default
 static void safe_hash_entry_free(SAFE_HASH_ENTRY *entry)
 {
   DBUG_ENTER("free_assign_entry");
-  my_free((gptr) entry, MYF(0));
+  my_free((gptr)entry, MYF(0));
   DBUG_VOID_RETURN;
 }
 
-
 /* Get key and length for a SAFE_HASH_ENTRY */
 
-static byte *safe_hash_entry_get(SAFE_HASH_ENTRY *entry, uint *length,
-				 my_bool not_used __attribute__((unused)))
+static byte *safe_hash_entry_get(SAFE_HASH_ENTRY *entry, uint *length, my_bool not_used __attribute__((unused)))
 {
-  *length=entry->length;
-  return (byte*) entry->key;
+  *length = entry->length;
+  return (byte *)entry->key;
 }
-
 
 /*
   Init a SAFE_HASH object
@@ -105,23 +100,20 @@ static byte *safe_hash_entry_get(SAFE_HASH_ENTRY *entry, uint *length,
     1  error
 */
 
-static my_bool safe_hash_init(SAFE_HASH *hash, uint elements,
-			      byte *default_value)
+static my_bool safe_hash_init(SAFE_HASH *hash, uint elements, byte *default_value)
 {
   DBUG_ENTER("safe_hash");
-  if (hash_init(&hash->hash, &my_charset_bin, elements,
-		0, 0, (hash_get_key) safe_hash_entry_get,
-		(void (*)(void*)) safe_hash_entry_free, 0))
+  if (hash_init(&hash->hash, &my_charset_bin, elements, 0, 0, (hash_get_key)safe_hash_entry_get,
+                (void (*)(void *))safe_hash_entry_free, 0))
   {
-    hash->default_value= 0;
+    hash->default_value = 0;
     DBUG_RETURN(1);
   }
   my_rwlock_init(&hash->mutex, 0);
-  hash->default_value= default_value;
-  hash->root= 0;
+  hash->default_value = default_value;
+  hash->root = 0;
   DBUG_RETURN(0);
 }
-
 
 /*
   Free a SAFE_HASH object
@@ -140,7 +132,7 @@ static void safe_hash_free(SAFE_HASH *hash)
   {
     hash_free(&hash->hash);
     rwlock_destroy(&hash->mutex);
-    hash->default_value=0;
+    hash->default_value = 0;
   }
 }
 
@@ -153,16 +145,15 @@ static byte *safe_hash_search(SAFE_HASH *hash, const byte *key, uint length)
   byte *result;
   DBUG_ENTER("safe_hash_search");
   rw_rdlock(&hash->mutex);
-  result= hash_search(&hash->hash, key, length);
+  result = hash_search(&hash->hash, key, length);
   rw_unlock(&hash->mutex);
   if (!result)
-    result= hash->default_value;
+    result = hash->default_value;
   else
-    result= ((SAFE_HASH_ENTRY*) result)->data;
-  DBUG_PRINT("exit",("data: 0x%lx", result));
+    result = ((SAFE_HASH_ENTRY *)result)->data;
+  DBUG_PRINT("exit", ("data: 0x%lx", result));
   DBUG_RETURN(result);
 }
-
 
 /*
   Associate a key with some data
@@ -184,16 +175,15 @@ static byte *safe_hash_search(SAFE_HASH *hash, const byte *key, uint length)
     1  error (Can only be EOM). In this case my_message() is called.
 */
 
-static my_bool safe_hash_set(SAFE_HASH *hash, const byte *key, uint length,
-			     byte *data)
+static my_bool safe_hash_set(SAFE_HASH *hash, const byte *key, uint length, byte *data)
 {
   SAFE_HASH_ENTRY *entry;
-  my_bool error= 0;
+  my_bool error = 0;
   DBUG_ENTER("safe_hash_set");
-  DBUG_PRINT("enter",("key: %.*s  data: 0x%lx", length, key, data));
+  DBUG_PRINT("enter", ("key: %.*s  data: 0x%lx", length, key, data));
 
   rw_wrlock(&hash->mutex);
-  entry= (SAFE_HASH_ENTRY*) hash_search(&hash->hash, key, length);
+  entry = (SAFE_HASH_ENTRY *)hash_search(&hash->hash, key, length);
 
   if (data == hash->default_value)
   {
@@ -202,41 +192,40 @@ static my_bool safe_hash_set(SAFE_HASH *hash, const byte *key, uint length,
       we can just delete the entry (if it existed) from the hash as a
       search will return the default entry
     */
-    if (!entry)					/* nothing to do */
+    if (!entry) /* nothing to do */
       goto end;
     /* unlink entry from list */
-    if ((*entry->prev= entry->next))
-      entry->next->prev= entry->prev;
-    hash_delete(&hash->hash, (byte*) entry);
+    if ((*entry->prev = entry->next))
+      entry->next->prev = entry->prev;
+    hash_delete(&hash->hash, (byte *)entry);
     goto end;
   }
   if (entry)
   {
     /* Entry existed;  Just change the pointer to point at the new data */
-    entry->data= data;
+    entry->data = data;
   }
   else
   {
-    if (!(entry= (SAFE_HASH_ENTRY *) my_malloc(sizeof(*entry) + length,
-					       MYF(MY_WME))))
+    if (!(entry = (SAFE_HASH_ENTRY *)my_malloc(sizeof(*entry) + length, MYF(MY_WME))))
     {
-      error= 1;
+      error = 1;
       goto end;
     }
-    entry->key= (byte*) (entry +1);
-    memcpy((char*) entry->key, (char*) key, length);
-    entry->length= length;
-    entry->data= data;
+    entry->key = (byte *)(entry + 1);
+    memcpy((char *)entry->key, (char *)key, length);
+    entry->length = length;
+    entry->data = data;
     /* Link entry to list */
-    if ((entry->next= hash->root))
-      entry->next->prev= &entry->next;
-    entry->prev= &hash->root;
-    hash->root= entry;
-    if (my_hash_insert(&hash->hash, (byte*) entry))
+    if ((entry->next = hash->root))
+      entry->next->prev = &entry->next;
+    entry->prev = &hash->root;
+    hash->root = entry;
+    if (my_hash_insert(&hash->hash, (byte *)entry))
     {
       /* This can only happen if hash got out of memory */
-      my_free((char*) entry, MYF(0));
-      error= 1;
+      my_free((char *)entry, MYF(0));
+      error = 1;
       goto end;
     }
   }
@@ -245,7 +234,6 @@ end:
   rw_unlock(&hash->mutex);
   DBUG_RETURN(error);
 }
-
 
 /*
   Change all entres with one data value to another data value
@@ -269,26 +257,25 @@ static void safe_hash_change(SAFE_HASH *hash, byte *old_data, byte *new_data)
 
   rw_wrlock(&hash->mutex);
 
-  for (entry= hash->root ; entry ; entry= next)
+  for (entry = hash->root; entry; entry = next)
   {
-    next= entry->next;
+    next = entry->next;
     if (entry->data == old_data)
     {
       if (new_data == hash->default_value)
       {
-        if ((*entry->prev= entry->next))
-          entry->next->prev= entry->prev;
-	hash_delete(&hash->hash, (byte*) entry);
+        if ((*entry->prev = entry->next))
+          entry->next->prev = entry->prev;
+        hash_delete(&hash->hash, (byte *)entry);
       }
       else
-	entry->data= new_data;
+        entry->data = new_data;
     }
   }
 
   rw_unlock(&hash->mutex);
   DBUG_VOID_RETURN;
 }
-
 
 /*****************************************************************************
   Functions to handle the key cache objects
@@ -297,17 +284,9 @@ static void safe_hash_change(SAFE_HASH *hash, byte *old_data, byte *new_data)
 /* Variable to store all key cache objects */
 static SAFE_HASH key_cache_hash;
 
+my_bool multi_keycache_init(void) { return safe_hash_init(&key_cache_hash, 16, (byte *)dflt_key_cache); }
 
-my_bool multi_keycache_init(void)
-{
-  return safe_hash_init(&key_cache_hash, 16, (byte*) dflt_key_cache);
-}
-
-
-void multi_keycache_free(void)
-{
-  safe_hash_free(&key_cache_hash);
-}
+void multi_keycache_free(void) { safe_hash_free(&key_cache_hash); }
 
 /*
   Get a key cache to be used for a specific table.
@@ -330,9 +309,8 @@ KEY_CACHE *multi_key_cache_search(byte *key, uint length)
 {
   if (!key_cache_hash.hash.records)
     return dflt_key_cache;
-  return (KEY_CACHE*) safe_hash_search(&key_cache_hash, key, length);
+  return (KEY_CACHE *)safe_hash_search(&key_cache_hash, key, length);
 }
-
 
 /*
   Assosiate a key cache with a key
@@ -349,16 +327,12 @@ KEY_CACHE *multi_key_cache_search(byte *key, uint length)
     entry
 */
 
-
-my_bool multi_key_cache_set(const byte *key, uint length,
-			    KEY_CACHE *key_cache)
+my_bool multi_key_cache_set(const byte *key, uint length, KEY_CACHE *key_cache)
 {
-  return safe_hash_set(&key_cache_hash, key, length, (byte*) key_cache);
+  return safe_hash_set(&key_cache_hash, key, length, (byte *)key_cache);
 }
 
-
-void multi_key_cache_change(KEY_CACHE *old_data,
-			    KEY_CACHE *new_data)
+void multi_key_cache_change(KEY_CACHE *old_data, KEY_CACHE *new_data)
 {
-  safe_hash_change(&key_cache_hash, (byte*) old_data, (byte*) new_data);
+  safe_hash_change(&key_cache_hash, (byte *)old_data, (byte *)new_data);
 }

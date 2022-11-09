@@ -29,126 +29,135 @@ static int ptr_compare_1(uint *compare_length, uchar **a, uchar **b);
 static int ptr_compare_2(uint *compare_length, uchar **a, uchar **b);
 static int ptr_compare_3(uint *compare_length, uchar **a, uchar **b);
 
-	/* Get a pointer to a optimal byte-compare function for a given size */
+/* Get a pointer to a optimal byte-compare function for a given size */
 
-qsort2_cmp get_ptr_compare (uint size)
+qsort2_cmp get_ptr_compare(uint size)
 {
   if (size < 4)
-    return (qsort2_cmp) ptr_compare;
-  switch (size & 3) {
-    case 0: return (qsort2_cmp) ptr_compare_0;
-    case 1: return (qsort2_cmp) ptr_compare_1;
-    case 2: return (qsort2_cmp) ptr_compare_2;
-    case 3: return (qsort2_cmp) ptr_compare_3;
-    }
-  return 0;					/* Impossible */
+    return (qsort2_cmp)ptr_compare;
+  switch (size & 3)
+  {
+    case 0:
+      return (qsort2_cmp)ptr_compare_0;
+    case 1:
+      return (qsort2_cmp)ptr_compare_1;
+    case 2:
+      return (qsort2_cmp)ptr_compare_2;
+    case 3:
+      return (qsort2_cmp)ptr_compare_3;
+  }
+  return 0; /* Impossible */
 }
 
+/*
+  Compare to keys to see witch is smaller.
+  Loop unrolled to make it quick !!
+*/
 
-	/*
-	  Compare to keys to see witch is smaller.
-	  Loop unrolled to make it quick !!
-	*/
-
-#define cmp(N) if (first[N] != last[N]) return (int) first[N] - (int) last[N]
+#define cmp(N)             \
+  if (first[N] != last[N]) \
+  return (int)first[N] - (int)last[N]
 
 static int ptr_compare(uint *compare_length, uchar **a, uchar **b)
 {
-  reg3 int length= *compare_length;
-  reg1 uchar *first,*last;
+  reg3 int length = *compare_length;
+  reg1 uchar *first, *last;
 
-  first= *a; last= *b;
+  first = *a;
+  last = *b;
   while (--length)
   {
     if (*first++ != *last++)
-      return (int) first[-1] - (int) last[-1];
+      return (int)first[-1] - (int)last[-1];
   }
-  return (int) first[0] - (int) last[0];
+  return (int)first[0] - (int)last[0];
 }
 
-
-static int ptr_compare_0(uint *compare_length,uchar **a, uchar **b)
+static int ptr_compare_0(uint *compare_length, uchar **a, uchar **b)
 {
-  reg3 int length= *compare_length;
-  reg1 uchar *first,*last;
+  reg3 int length = *compare_length;
+  reg1 uchar *first, *last;
 
-  first= *a; last= *b;
- loop:
+  first = *a;
+  last = *b;
+loop:
   cmp(0);
   cmp(1);
   cmp(2);
   cmp(3);
-  if ((length-=4))
+  if ((length -= 4))
   {
-    first+=4;
-    last+=4;
+    first += 4;
+    last += 4;
     goto loop;
   }
   return (0);
 }
 
-
-static int ptr_compare_1(uint *compare_length,uchar **a, uchar **b)
+static int ptr_compare_1(uint *compare_length, uchar **a, uchar **b)
 {
-  reg3 int length= *compare_length-1;
-  reg1 uchar *first,*last;
+  reg3 int length = *compare_length - 1;
+  reg1 uchar *first, *last;
 
-  first= *a+1; last= *b+1;
+  first = *a + 1;
+  last = *b + 1;
   cmp(-1);
- loop:
+loop:
   cmp(0);
   cmp(1);
   cmp(2);
   cmp(3);
-  if ((length-=4))
+  if ((length -= 4))
   {
-    first+=4;
-    last+=4;
+    first += 4;
+    last += 4;
     goto loop;
   }
   return (0);
 }
 
-static int ptr_compare_2(uint *compare_length,uchar **a, uchar **b)
+static int ptr_compare_2(uint *compare_length, uchar **a, uchar **b)
 {
-  reg3 int length= *compare_length-2;
-  reg1 uchar *first,*last;
+  reg3 int length = *compare_length - 2;
+  reg1 uchar *first, *last;
 
-  first= *a +2 ; last= *b +2;
+  first = *a + 2;
+  last = *b + 2;
   cmp(-2);
   cmp(-1);
- loop:
+loop:
   cmp(0);
   cmp(1);
   cmp(2);
   cmp(3);
-  if ((length-=4))
+  if ((length -= 4))
   {
-    first+=4;
-    last+=4;
+    first += 4;
+    last += 4;
     goto loop;
   }
   return (0);
 }
 
-static int ptr_compare_3(uint *compare_length,uchar **a, uchar **b)
+static int ptr_compare_3(uint *compare_length, uchar **a, uchar **b)
 {
-  reg3 int length= *compare_length-3;
-  reg1 uchar *first,*last;
+  reg3 int length = *compare_length - 3;
+  reg1 uchar *first, *last;
 
-  first= *a +3 ; last= *b +3;
+  first = *a + 3;
+  last = *b + 3;
   cmp(-3);
   cmp(-2);
   cmp(-1);
- loop:
+loop:
   cmp(0);
   cmp(1);
   cmp(2);
   cmp(3);
-  if ((length-=4))
+  if ((length -= 4))
   {
-    first+=4;
-    last+=4;
+    first += 4;
+    last += 4;
     goto loop;
   }
   return (0);
@@ -156,18 +165,36 @@ static int ptr_compare_3(uint *compare_length,uchar **a, uchar **b)
 
 void my_store_ptr(byte *buff, uint pack_length, my_off_t pos)
 {
-  switch (pack_length) {
+  switch (pack_length)
+  {
 #if SIZEOF_OFF_T > 4
-  case 8: mi_int8store(buff,pos); break;
-  case 7: mi_int7store(buff,pos); break;
-  case 6: mi_int6store(buff,pos); break;
-  case 5: mi_int5store(buff,pos); break;
+    case 8:
+      mi_int8store(buff, pos);
+      break;
+    case 7:
+      mi_int7store(buff, pos);
+      break;
+    case 6:
+      mi_int6store(buff, pos);
+      break;
+    case 5:
+      mi_int5store(buff, pos);
+      break;
 #endif
-  case 4: mi_int4store(buff,pos); break;
-  case 3: mi_int3store(buff,pos); break;
-  case 2: mi_int2store(buff,pos); break;
-  case 1: buff[0]= (uchar) pos; break;
-  default: DBUG_ASSERT(0);
+    case 4:
+      mi_int4store(buff, pos);
+      break;
+    case 3:
+      mi_int3store(buff, pos);
+      break;
+    case 2:
+      mi_int2store(buff, pos);
+      break;
+    case 1:
+      buff[0] = (uchar)pos;
+      break;
+    default:
+      DBUG_ASSERT(0);
   }
   return;
 }
@@ -175,19 +202,36 @@ void my_store_ptr(byte *buff, uint pack_length, my_off_t pos)
 my_off_t my_get_ptr(byte *ptr, uint pack_length)
 {
   my_off_t pos;
-  switch (pack_length) {
+  switch (pack_length)
+  {
 #if SIZEOF_OFF_T > 4
-  case 8: pos= (my_off_t) mi_uint8korr(ptr); break;
-  case 7: pos= (my_off_t) mi_uint7korr(ptr); break;
-  case 6: pos= (my_off_t) mi_uint6korr(ptr); break;
-  case 5: pos= (my_off_t) mi_uint5korr(ptr); break;
+    case 8:
+      pos = (my_off_t)mi_uint8korr(ptr);
+      break;
+    case 7:
+      pos = (my_off_t)mi_uint7korr(ptr);
+      break;
+    case 6:
+      pos = (my_off_t)mi_uint6korr(ptr);
+      break;
+    case 5:
+      pos = (my_off_t)mi_uint5korr(ptr);
+      break;
 #endif
-  case 4: pos= (my_off_t) mi_uint4korr(ptr); break;
-  case 3: pos= (my_off_t) mi_uint3korr(ptr); break;
-  case 2: pos= (my_off_t) mi_uint2korr(ptr); break;
-  case 1: pos= (my_off_t) mi_uint2korr(ptr); break;
-  default: DBUG_ASSERT(0);
+    case 4:
+      pos = (my_off_t)mi_uint4korr(ptr);
+      break;
+    case 3:
+      pos = (my_off_t)mi_uint3korr(ptr);
+      break;
+    case 2:
+      pos = (my_off_t)mi_uint2korr(ptr);
+      break;
+    case 1:
+      pos = (my_off_t)mi_uint2korr(ptr);
+      break;
+    default:
+      DBUG_ASSERT(0);
   }
- return pos;
+  return pos;
 }
-

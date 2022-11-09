@@ -17,7 +17,7 @@
 #include "mysys_priv.h"
 #include <m_string.h>
 
-#if defined( __WIN__) || defined(OS2) || defined(__NETWARE__)
+#if defined(__WIN__) || defined(OS2) || defined(__NETWARE__)
 #define DELIM ';'
 #else
 #define DELIM ':'
@@ -29,36 +29,35 @@ my_bool init_tmpdir(MY_TMPDIR *tmpdir, const char *pathlist)
   char buff[FN_REFLEN];
   DYNAMIC_ARRAY t_arr;
   pthread_mutex_init(&tmpdir->mutex, MY_MUTEX_INIT_FAST);
-  if (my_init_dynamic_array(&t_arr, sizeof(char*), 1, 5))
+  if (my_init_dynamic_array(&t_arr, sizeof(char *), 1, 5))
     return TRUE;
   if (!pathlist || !pathlist[0])
   {
     /* Get default temporary directory */
-    pathlist=getenv("TMPDIR");	/* Use this if possible */
-#if defined( __WIN__) || defined(OS2) || defined(__NETWARE__)
+    pathlist = getenv("TMPDIR"); /* Use this if possible */
+#if defined(__WIN__) || defined(OS2) || defined(__NETWARE__)
     if (!pathlist)
-      pathlist=getenv("TEMP");
+      pathlist = getenv("TEMP");
     if (!pathlist)
-      pathlist=getenv("TMP");
+      pathlist = getenv("TMP");
 #endif
     if (!pathlist || !pathlist[0])
-      pathlist=(char*) P_tmpdir;
+      pathlist = (char *)P_tmpdir;
   }
   do
   {
-    end=strcend(pathlist, DELIM);
+    end = strcend(pathlist, DELIM);
     convert_dirname(buff, pathlist, end);
-    if (!(copy=my_strdup(buff, MYF(MY_WME))))
+    if (!(copy = my_strdup(buff, MYF(MY_WME))))
       return TRUE;
     if (insert_dynamic(&t_arr, (gptr)&copy))
       return TRUE;
-    pathlist=end+1;
-  }
-  while (*end);
+    pathlist = end + 1;
+  } while (*end);
   freeze_size(&t_arr);
-  tmpdir->list=(char **)t_arr.buffer;
-  tmpdir->max=t_arr.elements-1;
-  tmpdir->cur=0;
+  tmpdir->list = (char **)t_arr.buffer;
+  tmpdir->max = t_arr.elements - 1;
+  tmpdir->cur = 0;
   return FALSE;
 }
 
@@ -66,8 +65,8 @@ char *my_tmpdir(MY_TMPDIR *tmpdir)
 {
   char *dir;
   pthread_mutex_lock(&tmpdir->mutex);
-  dir=tmpdir->list[tmpdir->cur];
-  tmpdir->cur= (tmpdir->cur == tmpdir->max) ? 0 : tmpdir->cur+1;
+  dir = tmpdir->list[tmpdir->cur];
+  tmpdir->cur = (tmpdir->cur == tmpdir->max) ? 0 : tmpdir->cur + 1;
   pthread_mutex_unlock(&tmpdir->mutex);
   return dir;
 }
@@ -75,9 +74,7 @@ char *my_tmpdir(MY_TMPDIR *tmpdir)
 void free_tmpdir(MY_TMPDIR *tmpdir)
 {
   uint i;
-  for (i=0; i<=tmpdir->max; i++)
-    my_free(tmpdir->list[i], MYF(0));
+  for (i = 0; i <= tmpdir->max; i++) my_free(tmpdir->list[i], MYF(0));
   my_free((gptr)tmpdir->list, MYF(0));
   pthread_mutex_destroy(&tmpdir->mutex);
 }
-

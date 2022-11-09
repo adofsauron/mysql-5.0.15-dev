@@ -26,7 +26,7 @@
       fd		File descriptor
       new_length	New file size
       filler		If we don't have truncate, fill up all bytes after
-			new_length with this character
+                        new_length with this character
       MyFlags		Flags
 
   DESCRIPTION
@@ -36,46 +36,45 @@
 
   RETURN VALUE
     0	Ok
-    1	Error 
+    1	Error
 */
 int my_chsize(File fd, my_off_t newlength, int filler, myf MyFlags)
 {
   my_off_t oldsize;
   char buff[IO_SIZE];
   DBUG_ENTER("my_chsize");
-  DBUG_PRINT("my",("fd: %d  length: %lu  MyFlags: %d",fd,(ulong) newlength,
-		   MyFlags));
+  DBUG_PRINT("my", ("fd: %d  length: %lu  MyFlags: %d", fd, (ulong)newlength, MyFlags));
 
-  oldsize = my_seek(fd, 0L, MY_SEEK_END, MYF(MY_WME+MY_FAE));
-  DBUG_PRINT("info",("old_size: %ld", (ulong) oldsize));
+  oldsize = my_seek(fd, 0L, MY_SEEK_END, MYF(MY_WME + MY_FAE));
+  DBUG_PRINT("info", ("old_size: %ld", (ulong)oldsize));
 
   if (oldsize > newlength)
   {
 #if defined(HAVE_SETFILEPOINTER)
-  /* This is for the moment only true on windows */
+    /* This is for the moment only true on windows */
     long is_success;
-    HANDLE win_file= (HANDLE) _get_osfhandle(fd);
+    HANDLE win_file = (HANDLE)_get_osfhandle(fd);
     long length_low, length_high;
-    length_low= (long) (ulong) newlength;
-    length_high= (long) ((ulonglong) newlength >> 32);
-    is_success= SetFilePointer(win_file, length_low, &length_high, FILE_BEGIN);
-    if (is_success == -1 && (my_errno= GetLastError()) != NO_ERROR)
+    length_low = (long)(ulong)newlength;
+    length_high = (long)((ulonglong)newlength >> 32);
+    is_success = SetFilePointer(win_file, length_low, &length_high, FILE_BEGIN);
+    if (is_success == -1 && (my_errno = GetLastError()) != NO_ERROR)
       goto err;
     if (SetEndOfFile(win_file))
       DBUG_RETURN(0);
-    my_errno= GetLastError();
+    my_errno = GetLastError();
     goto err;
 #elif defined(HAVE_FTRUNCATE)
-    if (ftruncate(fd, (off_t) newlength))
+    if (ftruncate(fd, (off_t)newlength))
     {
-      my_errno= errno;
+      my_errno = errno;
       goto err;
     }
     DBUG_RETURN(0);
 #elif defined(HAVE_CHSIZE)
-    if (chsize(fd, (off_t) newlength))
+    if (chsize(fd, (off_t)newlength))
     {
-      my_errno=errno;
+      my_errno = errno;
       goto err;
     }
     DBUG_RETURN(0);
@@ -84,26 +83,26 @@ int my_chsize(File fd, my_off_t newlength, int filler, myf MyFlags)
       Fill space between requested length and true length with 'filler'
       We should never come here on any modern machine
     */
-    VOID(my_seek(fd, newlength, MY_SEEK_SET, MYF(MY_WME+MY_FAE)));
+    VOID(my_seek(fd, newlength, MY_SEEK_SET, MYF(MY_WME + MY_FAE)));
     swap_variables(my_off_t, newlength, oldsize);
 #endif
   }
 
   /* Full file with 'filler' until it's as big as requested */
   bfill(buff, IO_SIZE, filler);
-  while (newlength-oldsize > IO_SIZE)
+  while (newlength - oldsize > IO_SIZE)
   {
-    if (my_write(fd,(byte*) buff,IO_SIZE,MYF(MY_NABP)))
+    if (my_write(fd, (byte *)buff, IO_SIZE, MYF(MY_NABP)))
       goto err;
-    oldsize+= IO_SIZE;
+    oldsize += IO_SIZE;
   }
-  if (my_write(fd,(byte*) buff,(uint) (newlength-oldsize),MYF(MY_NABP)))
+  if (my_write(fd, (byte *)buff, (uint)(newlength - oldsize), MYF(MY_NABP)))
     goto err;
   DBUG_RETURN(0);
 
 err:
   DBUG_PRINT("error", ("errno: %d", errno));
   if (MyFlags & MY_WME)
-    my_error(EE_CANT_CHSIZE, MYF(ME_BELL+ME_WAITTANG), my_errno);
+    my_error(EE_CANT_CHSIZE, MYF(ME_BELL + ME_WAITTANG), my_errno);
   DBUG_RETURN(1);
 } /* my_chsize */

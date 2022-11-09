@@ -37,47 +37,40 @@
 #include <errno.h>
 #ifdef _THREAD_SAFE
 
-int
-pthread_mutex_init(pthread_mutex_t * mutex,
-		   const pthread_mutexattr_t * mutex_attr)
+int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *mutex_attr)
 {
-  (void) DosCreateMutexSem(NULL,mutex,0,0);
-  return (0);				/* Return the completion status: */
+  (void)DosCreateMutexSem(NULL, mutex, 0, 0);
+  return (0); /* Return the completion status: */
 }
 
-
-int
-pthread_mutex_destroy(pthread_mutex_t * mutex)
+int pthread_mutex_destroy(pthread_mutex_t *mutex)
 {
   APIRET rc;
 
   do
   {
     rc = DosCloseMutexSem(*mutex);
-    if (rc == 301) DosReleaseMutexSem(*mutex);
+    if (rc == 301)
+      DosReleaseMutexSem(*mutex);
   } while (rc == 301);
 
   *mutex = 0;
-  return (0);				/* Return the completion status: */
+  return (0); /* Return the completion status: */
 }
 
-
-int
-pthread_mutex_lock(pthread_mutex_t * mutex)
+int pthread_mutex_lock(pthread_mutex_t *mutex)
 {
   APIRET rc;
 
-  rc = DosRequestMutexSem(*mutex,SEM_INDEFINITE_WAIT);
+  rc = DosRequestMutexSem(*mutex, SEM_INDEFINITE_WAIT);
   if (rc)
-    return(EINVAL);
-  return (0);				/* Return the completion status: */
+    return (EINVAL);
+  return (0); /* Return the completion status: */
 }
 
-
-int
-pthread_mutex_unlock(pthread_mutex_t * mutex)
+int pthread_mutex_unlock(pthread_mutex_t *mutex)
 {
-  (void) DosReleaseMutexSem(*mutex);
-  return (0);				/* Return the completion status: */
+  (void)DosReleaseMutexSem(*mutex);
+  return (0); /* Return the completion status: */
 }
 #endif

@@ -18,42 +18,39 @@
 #include "mysys_err.h"
 #include <errno.h>
 
-
-	/* Write a chunk of bytes to a file */
+/* Write a chunk of bytes to a file */
 
 uint my_write(int Filedes, const byte *Buffer, uint Count, myf MyFlags)
 {
-  uint writenbytes,errors;
+  uint writenbytes, errors;
   ulong written;
   DBUG_ENTER("my_write");
-  DBUG_PRINT("my",("Fd: %d  Buffer: 0x%lx  Count: %d  MyFlags: %d",
-		   Filedes, Buffer, Count, MyFlags));
-  errors=0; written=0L;
+  DBUG_PRINT("my", ("Fd: %d  Buffer: 0x%lx  Count: %d  MyFlags: %d", Filedes, Buffer, Count, MyFlags));
+  errors = 0;
+  written = 0L;
 
   for (;;)
   {
-    if ((writenbytes = (uint) write(Filedes, Buffer, Count)) == Count)
+    if ((writenbytes = (uint)write(Filedes, Buffer, Count)) == Count)
       break;
-    if ((int) writenbytes != -1)
-    {						/* Safeguard */
-      written+=writenbytes;
-      Buffer+=writenbytes;
-      Count-=writenbytes;
+    if ((int)writenbytes != -1)
+    { /* Safeguard */
+      written += writenbytes;
+      Buffer += writenbytes;
+      Count -= writenbytes;
     }
-    my_errno=errno;
-    DBUG_PRINT("error",("Write only %d bytes, error: %d",
-			writenbytes,my_errno));
+    my_errno = errno;
+    DBUG_PRINT("error", ("Write only %d bytes, error: %d", writenbytes, my_errno));
 #ifndef NO_BACKGROUND
 #ifdef THREAD
     if (my_thread_var->abort)
-      MyFlags&= ~ MY_WAIT_IF_FULL;		/* End if aborted by user */
+      MyFlags &= ~MY_WAIT_IF_FULL; /* End if aborted by user */
 #endif
-    if ((my_errno == ENOSPC || my_errno == EDQUOT) &&
-        (MyFlags & MY_WAIT_IF_FULL))
+    if ((my_errno == ENOSPC || my_errno == EDQUOT) && (MyFlags & MY_WAIT_IF_FULL))
     {
       if (!(errors++ % MY_WAIT_GIVE_USER_A_MESSAGE))
-	my_error(EE_DISK_FULL,MYF(ME_BELL | ME_NOREFRESH),
-		 my_filename(Filedes),my_errno,MY_WAIT_FOR_USER_TO_FIX_PANIC);
+        my_error(EE_DISK_FULL, MYF(ME_BELL | ME_NOREFRESH), my_filename(Filedes), my_errno,
+                 MY_WAIT_FOR_USER_TO_FIX_PANIC);
       VOID(sleep(MY_WAIT_FOR_USER_TO_FIX_PANIC));
       continue;
     }
@@ -61,29 +58,28 @@ uint my_write(int Filedes, const byte *Buffer, uint Count, myf MyFlags)
     {
       /* We may come here on an interrupt or if the file quote is exeeded */
       if (my_errno == EINTR)
-	continue;
-      if (!errors++)				/* Retry once */
+        continue;
+      if (!errors++) /* Retry once */
       {
-	errno=EFBIG;				/* Assume this is the error */
-	continue;
+        errno = EFBIG; /* Assume this is the error */
+        continue;
       }
     }
-    else if ((uint) writenbytes != (uint) -1)
-      continue;					/* Retry */
+    else if ((uint)writenbytes != (uint)-1)
+      continue; /* Retry */
 #endif
     if (MyFlags & (MY_NABP | MY_FNABP))
     {
       if (MyFlags & (MY_WME | MY_FAE | MY_FNABP))
       {
-	my_error(EE_WRITE, MYF(ME_BELL+ME_WAITTANG),
-		 my_filename(Filedes),my_errno);
+        my_error(EE_WRITE, MYF(ME_BELL + ME_WAITTANG), my_filename(Filedes), my_errno);
       }
-      DBUG_RETURN(MY_FILE_ERROR);		/* Error on read */
+      DBUG_RETURN(MY_FILE_ERROR); /* Error on read */
     }
     else
-      break;					/* Return bytes written */
+      break; /* Return bytes written */
   }
   if (MyFlags & (MY_NABP | MY_FNABP))
-    DBUG_RETURN(0);			/* Want only errors */
-  DBUG_RETURN(writenbytes+written);
+    DBUG_RETURN(0); /* Want only errors */
+  DBUG_RETURN(writenbytes + written);
 } /* my_write */

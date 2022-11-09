@@ -35,61 +35,58 @@ my_bool my_compress(byte *packet, ulong *len, ulong *complen)
   DBUG_ENTER("my_compress");
   if (*len < MIN_COMPRESS_LENGTH)
   {
-    *complen=0;
-    DBUG_PRINT("note",("Packet too short: Not compressed"));
+    *complen = 0;
+    DBUG_PRINT("note", ("Packet too short: Not compressed"));
   }
   else
   {
-    byte *compbuf=my_compress_alloc(packet,len,complen);
+    byte *compbuf = my_compress_alloc(packet, len, complen);
     if (!compbuf)
       DBUG_RETURN(*complen ? 0 : 1);
-    memcpy(packet,compbuf,*len);
-    my_free(compbuf,MYF(MY_WME));						  }
+    memcpy(packet, compbuf, *len);
+    my_free(compbuf, MYF(MY_WME));
+  }
   DBUG_RETURN(0);
 }
-
 
 byte *my_compress_alloc(const byte *packet, ulong *len, ulong *complen)
 {
   byte *compbuf;
-  *complen=  *len * 120 / 100 + 12;
-  if (!(compbuf= (byte *) my_malloc(*complen,MYF(MY_WME))))
-    return 0;					/* Not enough memory */
-  if (compress((Bytef*) compbuf,(ulong *) complen, (Bytef*) packet,
-	       (uLong) *len ) != Z_OK)
+  *complen = *len * 120 / 100 + 12;
+  if (!(compbuf = (byte *)my_malloc(*complen, MYF(MY_WME))))
+    return 0; /* Not enough memory */
+  if (compress((Bytef *)compbuf, (ulong *)complen, (Bytef *)packet, (uLong)*len) != Z_OK)
   {
-    my_free(compbuf,MYF(MY_WME));
+    my_free(compbuf, MYF(MY_WME));
     return 0;
   }
   if (*complen >= *len)
   {
-    *complen= 0;
+    *complen = 0;
     my_free(compbuf, MYF(MY_WME));
-    DBUG_PRINT("note",("Packet got longer on compression; Not compressed"));
+    DBUG_PRINT("note", ("Packet got longer on compression; Not compressed"));
     return 0;
   }
-  swap_variables(ulong, *len, *complen);       /* *len is now packet length */
+  swap_variables(ulong, *len, *complen); /* *len is now packet length */
   return compbuf;
 }
 
-
-my_bool my_uncompress (byte *packet, ulong *len, ulong *complen)
+my_bool my_uncompress(byte *packet, ulong *len, ulong *complen)
 {
   DBUG_ENTER("my_uncompress");
-  if (*complen)					/* If compressed */
+  if (*complen) /* If compressed */
   {
-    byte *compbuf= (byte *) my_malloc(*complen,MYF(MY_WME));
+    byte *compbuf = (byte *)my_malloc(*complen, MYF(MY_WME));
     int error;
     if (!compbuf)
-      DBUG_RETURN(1);				/* Not enough memory */
-    if ((error=uncompress((Bytef*) compbuf, complen, (Bytef*) packet, *len))
-	!= Z_OK)
-    {						/* Probably wrong packet */
-      DBUG_PRINT("error",("Can't uncompress packet, error: %d",error));
+      DBUG_RETURN(1); /* Not enough memory */
+    if ((error = uncompress((Bytef *)compbuf, complen, (Bytef *)packet, *len)) != Z_OK)
+    { /* Probably wrong packet */
+      DBUG_PRINT("error", ("Can't uncompress packet, error: %d", error));
       my_free(compbuf, MYF(MY_WME));
       DBUG_RETURN(1);
     }
-    *len= *complen;
+    *len = *complen;
     memcpy(packet, compbuf, *len);
     my_free(compbuf, MYF(MY_WME));
   }

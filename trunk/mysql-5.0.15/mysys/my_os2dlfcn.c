@@ -24,51 +24,47 @@
  * Compatibility layer for dynamic loading.
  * Only minimal implementation
  *
-*/
+ */
 
 #define RTLD_LAZY 0
 #define RTLD_NOW 0
 
-void* dlopen( char* path, int flag);
-char* dlerror( void);
-void* dlsym( void* hmod, char* fn);
-void  dlclose( void* hmod);
+void *dlopen(char *path, int flag);
+char *dlerror(void);
+void *dlsym(void *hmod, char *fn);
+void dlclose(void *hmod);
 
-char	fail[ 256];
+char fail[256];
 
-void* dlopen( char* path, int flag)
+void *dlopen(char *path, int flag)
 {
-   APIRET  rc;
-   HMODULE hmod;
+  APIRET rc;
+  HMODULE hmod;
 
-   rc = DosLoadModule( fail, sizeof( fail), path, &hmod);
-   if (rc)
-      return NULL;
+  rc = DosLoadModule(fail, sizeof(fail), path, &hmod);
+  if (rc)
+    return NULL;
 
-   return (void*) hmod;
+  return (void *)hmod;
 }
 
-char* dlerror( void)
+char *dlerror(void) { return fail; }
+
+void *dlsym(void *hmod, char *fn)
 {
-   return fail;
+  APIRET rc;
+  PFN addr;
+
+  rc = DosQueryProcAddr((HMODULE)hmod, 0l, fn, &addr);
+  if (rc)
+    return NULL;
+
+  return (void *)addr;
 }
 
-void* dlsym( void* hmod, char* fn)
+void dlclose(void *hmod)
 {
-   APIRET  rc;
-   PFN	   addr;
+  APIRET rc;
 
-   rc = DosQueryProcAddr( (HMODULE) hmod, 0l, fn, &addr);
-   if (rc)
-      return NULL;
-
-   return (void*) addr;
-}
-
-void  dlclose( void* hmod)
-{
-   APIRET  rc;
-
-   rc = DosFreeModule( (HMODULE) hmod);
-
+  rc = DosFreeModule((HMODULE)hmod);
 }

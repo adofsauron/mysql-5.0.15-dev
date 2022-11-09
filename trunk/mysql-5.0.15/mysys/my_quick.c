@@ -19,26 +19,24 @@
 #include "mysys_priv.h"
 #include "my_nosys.h"
 
-
-uint my_quick_read(File Filedes,byte *Buffer,uint Count,myf MyFlags)
+uint my_quick_read(File Filedes, byte *Buffer, uint Count, myf MyFlags)
 {
   uint readbytes;
 
-  if ((readbytes = (uint) read(Filedes, Buffer, Count)) != Count)
+  if ((readbytes = (uint)read(Filedes, Buffer, Count)) != Count)
   {
-    my_errno=errno;
+    my_errno = errno;
     return readbytes;
   }
   return (MyFlags & (MY_NABP | MY_FNABP)) ? 0 : readbytes;
 }
 
-
-uint my_quick_write(File Filedes,const byte *Buffer,uint Count)
+uint my_quick_write(File Filedes, const byte *Buffer, uint Count)
 {
-  if ((uint) write(Filedes,Buffer,Count) != Count)
+  if ((uint)write(Filedes, Buffer, Count) != Count)
   {
-    my_errno=errno;
-    return (uint) -1;
+    my_errno = errno;
+    return (uint)-1;
   }
   return 0;
 }

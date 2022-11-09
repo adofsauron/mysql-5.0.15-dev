@@ -26,39 +26,39 @@
   SYNOPSIS
     my_multi_malloc()
       myFlags              Flags
-	ptr1, length1      Multiple arguments terminated by null ptr
-	ptr2, length2      ...
+        ptr1, length1      Multiple arguments terminated by null ptr
+        ptr2, length2      ...
         ...
-	NULL
+        NULL
 */
 
 gptr my_multi_malloc(myf myFlags, ...)
 {
   va_list args;
-  char **ptr,*start,*res;
-  uint tot_length,length;
+  char **ptr, *start, *res;
+  uint tot_length, length;
   DBUG_ENTER("my_multi_malloc");
 
-  va_start(args,myFlags);
-  tot_length=0;
-  while ((ptr=va_arg(args, char **)))
+  va_start(args, myFlags);
+  tot_length = 0;
+  while ((ptr = va_arg(args, char **)))
   {
-    length=va_arg(args,uint);
-    tot_length+=ALIGN_SIZE(length);
+    length = va_arg(args, uint);
+    tot_length += ALIGN_SIZE(length);
   }
   va_end(args);
 
-  if (!(start=(char *) my_malloc(tot_length,myFlags)))
+  if (!(start = (char *)my_malloc(tot_length, myFlags)))
     DBUG_RETURN(0); /* purecov: inspected */
 
-  va_start(args,myFlags);
-  res=start;
-  while ((ptr=va_arg(args, char **)))
+  va_start(args, myFlags);
+  res = start;
+  while ((ptr = va_arg(args, char **)))
   {
-    *ptr=res;
-    length=va_arg(args,uint);
-    res+=ALIGN_SIZE(length);
+    *ptr = res;
+    length = va_arg(args, uint);
+    res += ALIGN_SIZE(length);
   }
   va_end(args);
-  DBUG_RETURN((gptr) start);
+  DBUG_RETURN((gptr)start);
 }

@@ -28,10 +28,7 @@
     1   otherwise
 */
 
-static my_bool is_nt()
-{
-  return GetVersion() < 0x80000000;
-}
+static my_bool is_nt() { return GetVersion() < 0x80000000; }
 
 /*
   Auxilary structure to store pointers to the data which we need to keep
@@ -43,7 +40,6 @@ typedef struct st_my_security_attr
   PSID everyone_sid;
   PACL dacl;
 } My_security_attr;
-
 
 /*
   Allocate and initialize SECURITY_ATTRIBUTES setting up access
@@ -72,24 +68,23 @@ typedef struct st_my_security_attr
    !0  error, SA is set to 0, error message is stored in perror
 */
 
-int my_security_attr_create(SECURITY_ATTRIBUTES **psa, const char **perror,
-                            DWORD owner_rights, DWORD everyone_rights)
+int my_security_attr_create(SECURITY_ATTRIBUTES **psa, const char **perror, DWORD owner_rights, DWORD everyone_rights)
 {
   /* Top-level SID authority */
-  SID_IDENTIFIER_AUTHORITY world_auth= SECURITY_WORLD_SID_AUTHORITY;
-  PSID everyone_sid= 0;
-  HANDLE htoken= 0;
-  SECURITY_ATTRIBUTES *sa= 0;
-  PACL dacl= 0;
+  SID_IDENTIFIER_AUTHORITY world_auth = SECURITY_WORLD_SID_AUTHORITY;
+  PSID everyone_sid = 0;
+  HANDLE htoken = 0;
+  SECURITY_ATTRIBUTES *sa = 0;
+  PACL dacl = 0;
   DWORD owner_token_length, dacl_length;
   SECURITY_DESCRIPTOR *sd;
   PTOKEN_USER owner_token;
   PSID owner_sid;
   My_security_attr *attr;
 
-  if (! is_nt())
+  if (!is_nt())
   {
-    *psa= 0;
+    *psa = 0;
     return 0;
   }
 
@@ -97,10 +92,9 @@ int my_security_attr_create(SECURITY_ATTRIBUTES **psa, const char **perror,
     Get SID of Everyone group. Easier to retrieve all SIDs each time
     this function is called than worry about thread safety.
   */
-  if (! AllocateAndInitializeSid(&world_auth, 1, SECURITY_WORLD_RID,
-                                 0, 0, 0, 0, 0, 0, 0, &everyone_sid))
+  if (!AllocateAndInitializeSid(&world_auth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &everyone_sid))
   {
-    *perror= "Failed to retrieve the SID of Everyone group";
+    *perror = "Failed to retrieve the SID of Everyone group";
     goto error;
   }
 
@@ -111,82 +105,77 @@ int my_security_attr_create(SECURITY_ATTRIBUTES **psa, const char **perror,
     SIC: OpenThreadToken works only if there is an active impersonation
     token, hence OpenProcessToken is used.
   */
-  if (! OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &htoken))
+  if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &htoken))
   {
-    *perror= "Failed to retrieve thread access token";
+    *perror = "Failed to retrieve thread access token";
     goto error;
   }
   GetTokenInformation(htoken, TokenUser, 0, 0, &owner_token_length);
 
-  if (! my_multi_malloc(MYF(MY_WME),
-                        &sa, ALIGN_SIZE(sizeof(SECURITY_ATTRIBUTES)) +
-                             sizeof(My_security_attr),
-                        &sd, sizeof(SECURITY_DESCRIPTOR),
-                        &owner_token, owner_token_length,
-                        0))
+  if (!my_multi_malloc(MYF(MY_WME), &sa, ALIGN_SIZE(sizeof(SECURITY_ATTRIBUTES)) + sizeof(My_security_attr), &sd,
+                       sizeof(SECURITY_DESCRIPTOR), &owner_token, owner_token_length, 0))
   {
-    *perror= "Failed to allocate memory for SECURITY_ATTRIBUTES";
+    *perror = "Failed to allocate memory for SECURITY_ATTRIBUTES";
     goto error;
   }
   bzero(owner_token, owner_token_length);
-  if (! GetTokenInformation(htoken, TokenUser, owner_token,
-                            owner_token_length, &owner_token_length))
+  if (!GetTokenInformation(htoken, TokenUser, owner_token, owner_token_length, &owner_token_length))
   {
-    *perror= "GetTokenInformation failed";
+    *perror = "GetTokenInformation failed";
     goto error;
   }
-  owner_sid= owner_token->User.Sid;
+  owner_sid = owner_token->User.Sid;
 
-  if (! IsValidSid(owner_sid))
+  if (!IsValidSid(owner_sid))
   {
-    *perror= "IsValidSid failed";
+    *perror = "IsValidSid failed";
     goto error;
   }
 
   /* Calculate the amount of memory that must be allocated for the DACL */
-  dacl_length= sizeof(ACL) + (sizeof(ACCESS_ALLOWED_ACE)-sizeof(DWORD)) * 2 +
-               GetLengthSid(everyone_sid) + GetLengthSid(owner_sid);
+  dacl_length = sizeof(ACL) + (sizeof(ACCESS_ALLOWED_ACE) - sizeof(DWORD)) * 2 + GetLengthSid(everyone_sid) +
+                GetLengthSid(owner_sid);
 
   /* Create an ACL */
-  if (! (dacl= (PACL) my_malloc(dacl_length, MYF(MY_ZEROFILL|MY_WME))))
+  if (!(dacl = (PACL)my_malloc(dacl_length, MYF(MY_ZEROFILL | MY_WME))))
   {
-    *perror= "Failed to allocate memory for DACL";
+    *perror = "Failed to allocate memory for DACL";
     goto error;
   }
-  if (! InitializeAcl(dacl, dacl_length, ACL_REVISION))
+  if (!InitializeAcl(dacl, dacl_length, ACL_REVISION))
   {
-    *perror= "Failed to initialize DACL";
+    *perror = "Failed to initialize DACL";
     goto error;
   }
-  if (! AddAccessAllowedAce(dacl, ACL_REVISION, everyone_rights, everyone_sid))
+  if (!AddAccessAllowedAce(dacl, ACL_REVISION, everyone_rights, everyone_sid))
   {
-    *perror= "Failed to set up DACL";
+    *perror = "Failed to set up DACL";
     goto error;
   }
-  if (! AddAccessAllowedAce(dacl, ACL_REVISION, owner_rights, owner_sid))
+  if (!AddAccessAllowedAce(dacl, ACL_REVISION, owner_rights, owner_sid))
   {
-    *perror= "Failed to set up DACL";
+    *perror = "Failed to set up DACL";
     goto error;
   }
-  if (! InitializeSecurityDescriptor(sd, SECURITY_DESCRIPTOR_REVISION))
+  if (!InitializeSecurityDescriptor(sd, SECURITY_DESCRIPTOR_REVISION))
   {
-    *perror= "Could not initialize security descriptor";
+    *perror = "Could not initialize security descriptor";
     goto error;
   }
-  if (! SetSecurityDescriptorDacl(sd, TRUE, dacl, FALSE))
+  if (!SetSecurityDescriptorDacl(sd, TRUE, dacl, FALSE))
   {
-    *perror= "Failed to install DACL";
+    *perror = "Failed to install DACL";
     goto error;
   }
 
-  sa->nLength= sizeof(*sa);
-  sa->bInheritHandle= TRUE;
-  sa->lpSecurityDescriptor= sd;
+  sa->nLength = sizeof(*sa);
+  sa->bInheritHandle = TRUE;
+  sa->lpSecurityDescriptor = sd;
   /* Save pointers to everyone_sid and dacl to be able to clean them up */
-  attr= (My_security_attr*) (((char*) sa) + ALIGN_SIZE(sizeof(*sa)));
-  attr->everyone_sid= everyone_sid;
-  attr->dacl= dacl;
-  *psa= sa;
+  attr = (My_security_attr *)(((char *)sa) + ALIGN_SIZE(sizeof(*sa)));
+  attr->everyone_sid = everyone_sid;
+  attr->dacl = dacl;
+  *psa = sa;
 
   CloseHandle(htoken);
   return 0;
@@ -195,9 +184,9 @@ error:
     FreeSid(everyone_sid);
   if (htoken)
     CloseHandle(htoken);
-  my_free((gptr) sa, MYF(MY_ALLOW_ZERO_PTR));
-  my_free((gptr) dacl, MYF(MY_ALLOW_ZERO_PTR));
-  *psa= 0;
+  my_free((gptr)sa, MYF(MY_ALLOW_ZERO_PTR));
+  my_free((gptr)dacl, MYF(MY_ALLOW_ZERO_PTR));
+  *psa = 0;
   return 1;
 }
 
@@ -213,11 +202,10 @@ void my_security_attr_free(SECURITY_ATTRIBUTES *sa)
 {
   if (sa)
   {
-    My_security_attr *attr= (My_security_attr*)
-                            (((char*)sa) + ALIGN_SIZE(sizeof(*sa)));
+    My_security_attr *attr = (My_security_attr *)(((char *)sa) + ALIGN_SIZE(sizeof(*sa)));
     FreeSid(attr->everyone_sid);
-    my_free((gptr) attr->dacl, MYF(0));
-    my_free((gptr) sa, MYF(0));
+    my_free((gptr)attr->dacl, MYF(0));
+    my_free((gptr)sa, MYF(0));
   }
 }
 

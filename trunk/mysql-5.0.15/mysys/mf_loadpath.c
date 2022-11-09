@@ -17,39 +17,35 @@
 #include "mysys_priv.h"
 #include <m_string.h>
 
-	/* Returns full load-path for a file. to may be = path */
-	/* if path is a hard-path return path */
-	/* if path starts with home-dir return path */
-	/* if path starts with current dir or parent-dir unpack path */
-	/* if there is no path, prepend with own_path_prefix if given */
-	/* else unpack path according to current dir */
+/* Returns full load-path for a file. to may be = path */
+/* if path is a hard-path return path */
+/* if path starts with home-dir return path */
+/* if path starts with current dir or parent-dir unpack path */
+/* if there is no path, prepend with own_path_prefix if given */
+/* else unpack path according to current dir */
 
-my_string my_load_path(my_string to, const char *path,
-		       const char *own_path_prefix)
+my_string my_load_path(my_string to, const char *path, const char *own_path_prefix)
 {
   char buff[FN_REFLEN];
   int is_cur;
   DBUG_ENTER("my_load_path");
-  DBUG_PRINT("enter",("path: %s  prefix: %s",path,
-		      own_path_prefix ? own_path_prefix : ""));
+  DBUG_PRINT("enter", ("path: %s  prefix: %s", path, own_path_prefix ? own_path_prefix : ""));
 
-  if ((path[0] == FN_HOMELIB && path[1] == FN_LIBCHAR) ||
-      test_if_hard_path(path))
-    VOID(strmov(buff,path));
-  else if ((is_cur=(path[0] == FN_CURLIB && path[1] == FN_LIBCHAR)) ||
-	   (is_prefix((gptr) path,FN_PARENTDIR)) ||
-	   ! own_path_prefix)
+  if ((path[0] == FN_HOMELIB && path[1] == FN_LIBCHAR) || test_if_hard_path(path))
+    VOID(strmov(buff, path));
+  else if ((is_cur = (path[0] == FN_CURLIB && path[1] == FN_LIBCHAR)) || (is_prefix((gptr)path, FN_PARENTDIR)) ||
+           !own_path_prefix)
   {
     if (is_cur)
-      is_cur=2;					/* Remove current dir */
-    if (! my_getwd(buff,(uint) (FN_REFLEN-strlen(path)+is_cur),MYF(0)))
-      VOID(strcat(buff,path+is_cur));
+      is_cur = 2; /* Remove current dir */
+    if (!my_getwd(buff, (uint)(FN_REFLEN - strlen(path) + is_cur), MYF(0)))
+      VOID(strcat(buff, path + is_cur));
     else
-      VOID(strmov(buff,path));			/* Return org file name */
+      VOID(strmov(buff, path)); /* Return org file name */
   }
   else
-    VOID(strxmov(buff,own_path_prefix,path,NullS));
-  strmov(to,buff);
-  DBUG_PRINT("exit",("to: %s",to));
+    VOID(strxmov(buff, own_path_prefix, path, NullS));
+  strmov(to, buff);
+  DBUG_PRINT("exit", ("to: %s", to));
   DBUG_RETURN(to);
 } /* my_load_path */

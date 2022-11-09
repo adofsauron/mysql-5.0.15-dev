@@ -23,11 +23,11 @@
 #ifndef MAIN
 static my_bool memcpy_and_test(uchar *to, uchar *from, uint len)
 {
-  uint i, res=1;
+  uint i, res = 1;
 
-  for (i=0; i < len; i++)
-    if ((*to++= *from++))
-      res=0;
+  for (i = 0; i < len; i++)
+    if ((*to++ = *from++))
+      res = 0;
   return res;
 }
 
@@ -42,10 +42,10 @@ static my_bool memcpy_and_test(uchar *to, uchar *from, uint len)
 my_bool my_gethwaddr(uchar *to)
 {
   size_t len;
-  uchar  *buf, *next, *end, *addr;
+  uchar *buf, *next, *end, *addr;
   struct if_msghdr *ifm;
   struct sockaddr_dl *sdl;
-  int i, res=1, mib[6]={CTL_NET, AF_ROUTE, 0, AF_LINK, NET_RT_IFLIST, 0};
+  int i, res = 1, mib[6] = {CTL_NET, AF_ROUTE, 0, AF_LINK, NET_RT_IFLIST, 0};
 
   if (sysctl(mib, 6, NULL, &len, NULL, 0) == -1)
     goto err;
@@ -56,14 +56,14 @@ my_bool my_gethwaddr(uchar *to)
 
   end = buf + len;
 
-  for (next = buf ; res && next < end ; next += ifm->ifm_msglen)
+  for (next = buf; res && next < end; next += ifm->ifm_msglen)
   {
     ifm = (struct if_msghdr *)next;
     if (ifm->ifm_type == RTM_IFINFO)
     {
       sdl = (struct sockaddr_dl *)(ifm + 1);
-      addr=LLADDR(sdl);
-      res=memcpy_and_test(to, addr, ETHER_ADDR_LEN);
+      addr = LLADDR(sdl);
+      res = memcpy_and_test(to, addr, ETHER_ADDR_LEN);
     }
   }
 
@@ -79,7 +79,7 @@ err:
 
 my_bool my_gethwaddr(uchar *to)
 {
-  int fd, res=1;
+  int fd, res = 1;
   struct ifreq ifr;
 
   fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -89,9 +89,10 @@ my_bool my_gethwaddr(uchar *to)
   bzero(&ifr, sizeof(ifr));
   strnmov(ifr.ifr_name, "eth0", sizeof(ifr.ifr_name) - 1);
 
-  do {
+  do
+  {
     if (ioctl(fd, SIOCGIFHWADDR, &ifr) >= 0)
-      res=memcpy_and_test(to, (uchar *)&ifr.ifr_hwaddr.sa_data, ETHER_ADDR_LEN);
+      res = memcpy_and_test(to, (uchar *)&ifr.ifr_hwaddr.sa_data, ETHER_ADDR_LEN);
   } while (res && (errno == 0 || errno == ENODEV) && ifr.ifr_name[3]++ < '6');
 
   close(fd);
@@ -101,14 +102,11 @@ err:
 
 #else
 /* just fail */
-my_bool my_gethwaddr(uchar *to __attribute__((unused)))
-{
-  return 1;
-}
+my_bool my_gethwaddr(uchar *to __attribute__((unused))) { return 1; }
 #endif
 
 #else /* MAIN */
-int main(int argc __attribute__((unused)),char **argv)
+int main(int argc __attribute__((unused)), char **argv)
 {
   uchar mac[6];
   uint i;
@@ -118,13 +116,13 @@ int main(int argc __attribute__((unused)),char **argv)
     printf("my_gethwaddr failed with errno %d\n", errno);
     exit(1);
   }
-  for (i=0; i < sizeof(mac); i++)
+  for (i = 0; i < sizeof(mac); i++)
   {
-    if (i) printf(":");
+    if (i)
+      printf(":");
     printf("%02x", mac[i]);
   }
   printf("\n");
   return 0;
 }
 #endif
-

@@ -21,12 +21,12 @@
 #include "mysys_priv.h"
 #include "my_static.h"
 
-	/* Set variable that we can't break */
+/* Set variable that we can't break */
 
 #if !defined(THREAD)
 void dont_break(void)
 {
-  my_dont_interrupt=1;
+  my_dont_interrupt = 1;
   return;
 } /* dont_break */
 
@@ -35,38 +35,38 @@ void allow_break(void)
   {
     reg1 int index;
 
-    my_dont_interrupt=0;
+    my_dont_interrupt = 0;
     if (_my_signals)
     {
       if (_my_signals > MAX_SIGNALS)
-	_my_signals=MAX_SIGNALS;
-      for (index=0 ; index < _my_signals ; index++)
+        _my_signals = MAX_SIGNALS;
+      for (index = 0; index < _my_signals; index++)
       {
-	if (_my_sig_remember[index].func)			/* Safequard */
-	{
-	  (*_my_sig_remember[index].func)(_my_sig_remember[index].number);
-	  _my_sig_remember[index].func=0;
-	}
+        if (_my_sig_remember[index].func) /* Safequard */
+        {
+          (*_my_sig_remember[index].func)(_my_sig_remember[index].number);
+          _my_sig_remember[index].func = 0;
+        }
       }
-      _my_signals=0;
+      _my_signals = 0;
     }
   }
 } /* dont_break */
 #endif
 
-	/* Set old status */
+/* Set old status */
 
 #if !defined(THREAD)
-void my_remember_signal(int signal_number, sig_handler (*func) (int))
+void my_remember_signal(int signal_number, sig_handler (*func)(int))
 {
 #ifndef __WIN__
   reg1 int index;
 
-  index=_my_signals++;			/* Nobody can break a ++ ? */
+  index = _my_signals++; /* Nobody can break a ++ ? */
   if (index < MAX_SIGNALS)
   {
-    _my_sig_remember[index].number=signal_number;
-    _my_sig_remember[index].func=func;
+    _my_sig_remember[index].number = signal_number;
+    _my_sig_remember[index].func = func;
   }
 #endif /* __WIN__ */
 } /* my_remember_signal */

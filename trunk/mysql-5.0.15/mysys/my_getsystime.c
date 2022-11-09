@@ -28,10 +28,10 @@ ulonglong my_getsystime()
 #ifdef HAVE_CLOCK_GETTIME
   struct timespec tp;
   clock_gettime(CLOCK_REALTIME, &tp);
-  return (ulonglong)tp.tv_sec*10000000+(ulonglong)tp.tv_nsec/100;
+  return (ulonglong)tp.tv_sec * 10000000 + (ulonglong)tp.tv_nsec / 100;
 #elif defined(__WIN__)
-#define OFFSET_TO_EPOC ((__int64) 134774 * 24 * 60 * 60 * 1000 * 1000 * 10)
-  static __int64 offset=0, freq;
+#define OFFSET_TO_EPOC ((__int64)134774 * 24 * 60 * 60 * 1000 * 1000 * 10)
+  static __int64 offset = 0, freq;
   LARGE_INTEGER t_cnt;
   if (!offset)
   {
@@ -42,24 +42,24 @@ ulonglong my_getsystime()
     LARGE_INTEGER li;
     FILETIME ft;
     GetSystemTimeAsFileTime(&ft);
-    li.LowPart=ft.dwLowDateTime;
-    li.HighPart=ft.dwHighDateTime;
-    offset=li.QuadPart-OFFSET_TO_EPOC;
+    li.LowPart = ft.dwLowDateTime;
+    li.HighPart = ft.dwHighDateTime;
+    offset = li.QuadPart - OFFSET_TO_EPOC;
     QueryPerformanceFrequency(&li);
-    freq=li.QuadPart;
+    freq = li.QuadPart;
     QueryPerformanceCounter(&t_cnt);
-    offset-=t_cnt.QuadPart/freq*10000000+t_cnt.QuadPart%freq*10000000/freq;
+    offset -= t_cnt.QuadPart / freq * 10000000 + t_cnt.QuadPart % freq * 10000000 / freq;
   }
   QueryPerformanceCounter(&t_cnt);
-  return t_cnt.QuadPart/freq*10000000+t_cnt.QuadPart%freq*10000000/freq+offset;
+  return t_cnt.QuadPart / freq * 10000000 + t_cnt.QuadPart % freq * 10000000 / freq + offset;
 #elif defined(__NETWARE__)
   NXTime_t tm;
   NXGetTime(NX_SINCE_1970, NX_NSECONDS, &tm);
-  return (ulonglong)tm/100;
+  return (ulonglong)tm / 100;
 #else
   /* TODO: check for other possibilities for hi-res timestamping */
   struct timeval tv;
-  gettimeofday(&tv,NULL);
-  return (ulonglong)tv.tv_sec*10000000+(ulonglong)tv.tv_usec*10;
+  gettimeofday(&tv, NULL);
+  return (ulonglong)tv.tv_sec * 10000000 + (ulonglong)tv.tv_usec * 10;
 #endif
 }

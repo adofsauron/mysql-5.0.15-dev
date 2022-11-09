@@ -24,61 +24,61 @@
 #define __MY_OS2DIRSRCH2_H__
 
 #ifdef __cplusplus_00
-extern "C" {
-#endif
-
-struct _finddata_t
+extern "C"
 {
-  unsigned	attrib;
-#ifdef NOT_USED
-  unsigned long time_create;			/* -1 for FAT file systems */
-  unsigned long time_access;			/* -1 for FAT file systems */
-  unsigned long time_write;
 #endif
-  unsigned long	size;
-  char		name[260];
+
+  struct _finddata_t
+  {
+    unsigned attrib;
 #ifdef NOT_USED
-  uint16		wr_date;
-  uint16		wr_time;
+    unsigned long time_create; /* -1 for FAT file systems */
+    unsigned long time_access; /* -1 for FAT file systems */
+    unsigned long time_write;
 #endif
-};
-
-
-struct dirent
-{
+    unsigned long size;
+    char name[260];
 #ifdef NOT_USED
-  unsigned	attrib;
-  unsigned long time_create;			/* -1 for FAT file systems */
-  unsigned long time_access;			/* -1 for FAT file systems */
-  unsigned long time_write;
-  unsigned long size;
+    uint16 wr_date;
+    uint16 wr_time;
 #endif
-  char		d_name[260];
+  };
+
+  struct dirent
+  {
 #ifdef NOT_USED
-  uint16		wr_date;
-  uint16		wr_time;
+    unsigned attrib;
+    unsigned long time_create; /* -1 for FAT file systems */
+    unsigned long time_access; /* -1 for FAT file systems */
+    unsigned long time_write;
+    unsigned long size;
 #endif
-};
+    char d_name[260];
+#ifdef NOT_USED
+    uint16 wr_date;
+    uint16 wr_time;
+#endif
+  };
 
-struct DIR
-{
-   HDIR  hdir;
-   FILEFINDBUF3   buf3;
-   struct dirent  ent;
-};
+  struct DIR
+  {
+    HDIR hdir;
+    FILEFINDBUF3 buf3;
+    struct dirent ent;
+  };
 
-DIR *opendir ( char *);
-struct dirent *readdir (DIR *);
-int closedir (DIR *);
+  DIR *opendir(char *);
+  struct dirent *readdir(DIR *);
+  int closedir(DIR *);
 
 #ifdef NOT_USED
-#define _A_NORMAL	FILE_NORMAL
-#define _A_SUBDIR	FILE_DIRECTORY
-#define _A_RDONLY	FILE_READONLY
+#define _A_NORMAL FILE_NORMAL
+#define _A_SUBDIR FILE_DIRECTORY
+#define _A_RDONLY FILE_READONLY
 
-long	_findfirst( char*, struct _finddata_t*);
-long	_findnext( long, struct _finddata_t*);
-void	_findclose( long);
+  long _findfirst(char *, struct _finddata_t *);
+  long _findnext(long, struct _finddata_t *);
+  void _findclose(long);
 #endif
 
 #ifdef __cplusplus_00

@@ -18,7 +18,7 @@
 #include "mysys_err.h"
 #include <errno.h>
 #undef MY_HOW_OFTEN_TO_ALARM
-#define MY_HOW_OFTEN_TO_ALARM ((int) my_time_to_wait_for_lock)
+#define MY_HOW_OFTEN_TO_ALARM ((int)my_time_to_wait_for_lock)
 #ifdef NO_ALARM_LOOP
 #undef NO_ALARM_LOOP
 #endif
@@ -35,10 +35,9 @@
 #include <nks/fsio.h>
 #endif
 
-	/* Lock a part of a file */
+/* Lock a part of a file */
 
-int my_lock(File fd, int locktype, my_off_t start, my_off_t length,
-	    myf MyFlags)
+int my_lock(File fd, int locktype, my_off_t start, my_off_t length, myf MyFlags)
 {
 #ifdef HAVE_FCNTL
   int value;
@@ -48,8 +47,8 @@ int my_lock(File fd, int locktype, my_off_t start, my_off_t length,
   int nxErrno;
 #endif
   DBUG_ENTER("my_lock");
-  DBUG_PRINT("my",("Fd: %d  Op: %d  start: %ld  Length: %ld  MyFlags: %d",
-		   fd,locktype,(long) start,(long) length,MyFlags));
+  DBUG_PRINT(
+      "my", ("Fd: %d  Op: %d  start: %ld  Length: %ld  MyFlags: %d", fd, locktype, (long)start, (long)length, MyFlags));
 #ifdef VMS
   DBUG_RETURN(0);
 #else
@@ -70,7 +69,7 @@ int my_lock(File fd, int locktype, my_off_t start, my_off_t length,
     if (locktype == F_UNLCK)
     {
       /* The lock flags are currently ignored by NKS. */
-      if (!(nxErrno= NXFileRangeUnlock(fd, 0L, start, nxLength)))
+      if (!(nxErrno = NXFileRangeUnlock(fd, 0L, start, nxLength)))
         DBUG_RETURN(0);
     }
     else
@@ -92,13 +91,13 @@ int my_lock(File fd, int locktype, my_off_t start, my_off_t length,
         nxLockFlags |= NX_RANGE_LOCK_TRYLOCK;
       }
 
-      if (!(nxErrno= NXFileRangeLock(fd, nxLockFlags, start, nxLength)))
+      if (!(nxErrno = NXFileRangeLock(fd, nxLockFlags, start, nxLength)))
         DBUG_RETURN(0);
     }
   }
 #elif defined(__EMX__) || defined(OS2)
 
-   if (!_lock64( fd, locktype, start, length, MyFlags))
+  if (!_lock64(fd, locktype, start, length, MyFlags))
     DBUG_RETURN(0);
 
 #elif defined(HAVE_LOCKING)
@@ -107,8 +106,8 @@ int my_lock(File fd, int locktype, my_off_t start, my_off_t length,
     my_bool error;
     pthread_mutex_lock(&my_file_info[fd].mutex);
     if (MyFlags & MY_SEEK_NOT_DONE)
-      VOID(my_seek(fd,start,MY_SEEK_SET,MYF(MyFlags & ~MY_SEEK_NOT_DONE)));
-    error= locking(fd,locktype,(ulong) length) && errno != EINVAL;
+      VOID(my_seek(fd, start, MY_SEEK_SET, MYF(MyFlags & ~MY_SEEK_NOT_DONE)));
+    error = locking(fd, locktype, (ulong)length) && errno != EINVAL;
     pthread_mutex_unlock(&my_file_info[fd].mutex);
     if (!error)
       DBUG_RETURN(0);
@@ -118,35 +117,34 @@ int my_lock(File fd, int locktype, my_off_t start, my_off_t length,
   {
     struct flock lock;
 
-    lock.l_type=   (short) locktype;
-    lock.l_whence= SEEK_SET;
-    lock.l_start=  (off_t) start;
-    lock.l_len=    (off_t) length;
+    lock.l_type = (short)locktype;
+    lock.l_whence = SEEK_SET;
+    lock.l_start = (off_t)start;
+    lock.l_len = (off_t)length;
 
     if (MyFlags & MY_DONT_WAIT)
     {
-      if (fcntl(fd,F_SETLK,&lock) != -1)	/* Check if we can lock */
-	DBUG_RETURN(0);			/* Ok, file locked */
-      DBUG_PRINT("info",("Was locked, trying with alarm"));
+      if (fcntl(fd, F_SETLK, &lock) != -1) /* Check if we can lock */
+        DBUG_RETURN(0);                    /* Ok, file locked */
+      DBUG_PRINT("info", ("Was locked, trying with alarm"));
       ALARM_INIT;
-      while ((value=fcntl(fd,F_SETLKW,&lock)) && ! ALARM_TEST &&
-	     errno == EINTR)
-      {			/* Setup again so we don`t miss it */
-	ALARM_REINIT;
+      while ((value = fcntl(fd, F_SETLKW, &lock)) && !ALARM_TEST && errno == EINTR)
+      { /* Setup again so we don`t miss it */
+        ALARM_REINIT;
       }
       ALARM_END;
       if (value != -1)
-	DBUG_RETURN(0);
+        DBUG_RETURN(0);
       if (errno == EINTR)
-	errno=EAGAIN;
+        errno = EAGAIN;
     }
-    else if (fcntl(fd,F_SETLKW,&lock) != -1) /* Wait until a lock */
+    else if (fcntl(fd, F_SETLKW, &lock) != -1) /* Wait until a lock */
       DBUG_RETURN(0);
   }
 #else
   if (MyFlags & MY_SEEK_NOT_DONE)
-    VOID(my_seek(fd,start,MY_SEEK_SET,MYF(MyFlags & ~MY_SEEK_NOT_DONE)));
-  if (lockf(fd,locktype,length) != -1)
+    VOID(my_seek(fd, start, MY_SEEK_SET, MYF(MyFlags & ~MY_SEEK_NOT_DONE)));
+  if (lockf(fd, locktype, length) != -1)
     DBUG_RETURN(0);
 #endif /* HAVE_FCNTL */
 #endif /* HAVE_LOCKING */
@@ -154,17 +152,17 @@ int my_lock(File fd, int locktype, my_off_t start, my_off_t length,
 #ifdef __NETWARE__
   my_errno = nxErrno;
 #else
-	/* We got an error. We don't want EACCES errors */
-  my_errno=(errno == EACCES) ? EAGAIN : errno ? errno : -1;
+  /* We got an error. We don't want EACCES errors */
+  my_errno = (errno == EACCES) ? EAGAIN : errno ? errno : -1;
 #endif
   if (MyFlags & MY_WME)
   {
     if (locktype == F_UNLCK)
-      my_error(EE_CANTUNLOCK,MYF(ME_BELL+ME_WAITTANG),my_errno);
+      my_error(EE_CANTUNLOCK, MYF(ME_BELL + ME_WAITTANG), my_errno);
     else
-      my_error(EE_CANTLOCK,MYF(ME_BELL+ME_WAITTANG),my_errno);
+      my_error(EE_CANTLOCK, MYF(ME_BELL + ME_WAITTANG), my_errno);
   }
-  DBUG_PRINT("error",("my_errno: %d (%d)",my_errno,errno));
+  DBUG_PRINT("error", ("my_errno: %d (%d)", my_errno, errno));
   DBUG_RETURN(-1);
-#endif	/* ! VMS */
+#endif /* ! VMS */
 } /* my_lock */

@@ -25,8 +25,7 @@
 #include "mysys_err.h"
 #include <m_string.h>
 
-File my_create_with_symlink(const char *linkname, const char *filename,
-			    int createflags, int access_flags, myf MyFlags)
+File my_create_with_symlink(const char *linkname, const char *filename, int createflags, int access_flags, myf MyFlags)
 {
   File file;
   int tmp_errno;
@@ -38,47 +37,47 @@ File my_create_with_symlink(const char *linkname, const char *filename,
   if (my_disable_symlinks)
   {
     /* Create only the file, not the link and file */
-    create_link= 0;
+    create_link = 0;
     if (linkname)
-      filename= linkname;
+      filename = linkname;
   }
   else
   {
     if (linkname)
       my_realpath(abs_linkname, linkname, MYF(0));
-    create_link= (linkname && strcmp(abs_linkname,filename));
+    create_link = (linkname && strcmp(abs_linkname, filename));
   }
 
   if (!(MyFlags & MY_DELETE_OLD))
   {
-    if (!access(filename,F_OK))
+    if (!access(filename, F_OK))
     {
       my_error(EE_CANTCREATEFILE, MYF(0), filename, EEXIST);
       DBUG_RETURN(-1);
     }
-    if (create_link && !access(linkname,F_OK))
+    if (create_link && !access(linkname, F_OK))
     {
       my_error(EE_CANTCREATEFILE, MYF(0), linkname, EEXIST);
       DBUG_RETURN(-1);
     }
   }
 
-  if ((file=my_create(filename, createflags, access_flags, MyFlags)) >= 0)
+  if ((file = my_create(filename, createflags, access_flags, MyFlags)) >= 0)
   {
     if (create_link)
     {
       /* Delete old link/file */
       if (MyFlags & MY_DELETE_OLD)
-	my_delete(linkname, MYF(0));
+        my_delete(linkname, MYF(0));
       /* Create link */
       if (my_symlink(filename, linkname, MyFlags))
       {
-	/* Fail, remove everything we have done */
-	tmp_errno=my_errno;
-	my_close(file,MYF(0));
-	my_delete(filename, MYF(0));
-	file= -1;
-	my_errno=tmp_errno;
+        /* Fail, remove everything we have done */
+        tmp_errno = my_errno;
+        my_close(file, MYF(0));
+        my_delete(filename, MYF(0));
+        file = -1;
+        my_errno = tmp_errno;
       }
     }
   }
@@ -93,15 +92,14 @@ File my_create_with_symlink(const char *linkname, const char *filename,
 int my_delete_with_symlink(const char *name, myf MyFlags)
 {
   char link_name[FN_REFLEN];
-  int was_symlink= (!my_disable_symlinks &&
-		    !my_readlink(link_name, name, MYF(0)));
+  int was_symlink = (!my_disable_symlinks && !my_readlink(link_name, name, MYF(0)));
   int result;
   DBUG_ENTER("my_delete_with_symlink");
 
-  if (!(result=my_delete(name, MyFlags)))
+  if (!(result = my_delete(name, MyFlags)))
   {
     if (was_symlink)
-      result=my_delete(link_name, MyFlags);
+      result = my_delete(link_name, MyFlags);
   }
   DBUG_RETURN(result);
 }
@@ -122,9 +120,8 @@ int my_rename_with_symlink(const char *from, const char *to, myf MyFlags)
   return my_rename(from, to, MyFlags);
 #else
   char link_name[FN_REFLEN], tmp_name[FN_REFLEN];
-  int was_symlink= (!my_disable_symlinks &&
-		    !my_readlink(link_name, from, MYF(0)));
-  int result=0;
+  int was_symlink = (!my_disable_symlinks && !my_readlink(link_name, from, MYF(0)));
+  int result = 0;
   DBUG_ENTER("my_rename_with_symlink");
 
   if (!was_symlink)
@@ -132,7 +129,7 @@ int my_rename_with_symlink(const char *from, const char *to, myf MyFlags)
 
   /* Change filename that symlink pointed to */
   strmov(tmp_name, to);
-  fn_same(tmp_name,link_name,1);		/* Copy dir */
+  fn_same(tmp_name, link_name, 1); /* Copy dir */
 
   /* Create new symlink */
   if (my_symlink(tmp_name, to, MyFlags))
@@ -146,23 +143,23 @@ int my_rename_with_symlink(const char *from, const char *to, myf MyFlags)
 
   if (strcmp(link_name, tmp_name) && my_rename(link_name, tmp_name, MyFlags))
   {
-    int save_errno=my_errno;
-    my_delete(to, MyFlags);			/* Remove created symlink */
-    my_errno=save_errno;
+    int save_errno = my_errno;
+    my_delete(to, MyFlags); /* Remove created symlink */
+    my_errno = save_errno;
     DBUG_RETURN(1);
   }
 
   /* Remove original symlink */
   if (my_delete(from, MyFlags))
   {
-    int save_errno=my_errno;
+    int save_errno = my_errno;
     /* Remove created link */
     my_delete(to, MyFlags);
     /* Rename file back */
     if (strcmp(link_name, tmp_name))
-      (void) my_rename(tmp_name, link_name, MyFlags);
-    my_errno=save_errno;
-    result= 1;
+      (void)my_rename(tmp_name, link_name, MyFlags);
+    my_errno = save_errno;
+    result = 1;
   }
   DBUG_RETURN(result);
 #endif /* HAVE_READLINK */

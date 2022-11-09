@@ -19,8 +19,8 @@
 #include "mysys_priv.h"
 
 /*
-	strip_sp(my_string str)
-	Strips end-space from string and returns new length.
+        strip_sp(my_string str)
+        Strips end-space from string and returns new length.
 */
 
 size_s strip_sp(register my_string str)
@@ -28,19 +28,23 @@ size_s strip_sp(register my_string str)
   reg2 my_string found;
   reg3 my_string start;
 
-  start=found=str;
+  start = found = str;
 
   while (*str)
   {
     if (*str != ' ')
     {
-      while (*++str && *str != ' ') {};
+      while (*++str && *str != ' ')
+      {
+      };
       if (!*str)
-	return (size_s) (str-start);	/* Return stringlength */
+        return (size_s)(str - start); /* Return stringlength */
     }
-    found=str;
-    while (*++str == ' ') {};
+    found = str;
+    while (*++str == ' ')
+    {
+    };
   }
-  *found= '\0';				/* Stripp at first space */
-  return (size_s) (found-start);
+  *found = '\0'; /* Stripp at first space */
+  return (size_s)(found - start);
 } /* strip_sp */

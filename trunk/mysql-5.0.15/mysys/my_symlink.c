@@ -36,35 +36,34 @@
 int my_readlink(char *to, const char *filename, myf MyFlags)
 {
 #ifndef HAVE_READLINK
-  strmov(to,filename);
+  strmov(to, filename);
   return 1;
 #else
-  int result=0;
+  int result = 0;
   int length;
   DBUG_ENTER("my_readlink");
 
-  if ((length=readlink(filename, to, FN_REFLEN-1)) < 0)
+  if ((length = readlink(filename, to, FN_REFLEN - 1)) < 0)
   {
     /* Don't give an error if this wasn't a symlink */
-    if ((my_errno=errno) == EINVAL)
+    if ((my_errno = errno) == EINVAL)
     {
-      result= 1;
-      strmov(to,filename);
+      result = 1;
+      strmov(to, filename);
     }
     else
     {
       if (MyFlags & MY_WME)
-	my_error(EE_CANT_READLINK, MYF(0), filename, errno);
-      result= -1;
+        my_error(EE_CANT_READLINK, MYF(0), filename, errno);
+      result = -1;
     }
   }
   else
-    to[length]=0;
-  DBUG_PRINT("exit" ,("result: %d", result));
+    to[length] = 0;
+  DBUG_PRINT("exit", ("result: %d", result));
   DBUG_RETURN(result);
 #endif /* HAVE_READLINK */
 }
-
 
 /* Create a symbolic link */
 
@@ -75,13 +74,13 @@ int my_symlink(const char *content, const char *linkname, myf MyFlags)
 #else
   int result;
   DBUG_ENTER("my_symlink");
-  DBUG_PRINT("enter",("content: %s  linkname: %s", content, linkname));
+  DBUG_PRINT("enter", ("content: %s  linkname: %s", content, linkname));
 
-  result= 0;
+  result = 0;
   if (symlink(content, linkname))
   {
-    result= -1;
-    my_errno=errno;
+    result = -1;
+    my_errno = errno;
     if (MyFlags & MY_WME)
       my_error(EE_CANT_SYMLINK, MYF(0), linkname, content, errno);
   }
@@ -107,37 +106,35 @@ int my_symlink(const char *content, const char *linkname, myf MyFlags)
 #define BUFF_LEN FN_LEN
 #endif
 
-int my_realpath(char *to, const char *filename,
-		myf MyFlags __attribute__((unused)))
+int my_realpath(char *to, const char *filename, myf MyFlags __attribute__((unused)))
 {
 #if defined(HAVE_REALPATH) && !defined(HAVE_purify) && !defined(HAVE_BROKEN_REALPATH)
-  int result=0;
+  int result = 0;
   char buff[BUFF_LEN];
   struct stat stat_buff;
   DBUG_ENTER("my_realpath");
 
-  if (!(MyFlags & MY_RESOLVE_LINK) ||
-      (!lstat(filename,&stat_buff) && S_ISLNK(stat_buff.st_mode)))
+  if (!(MyFlags & MY_RESOLVE_LINK) || (!lstat(filename, &stat_buff) && S_ISLNK(stat_buff.st_mode)))
   {
     char *ptr;
-    DBUG_PRINT("info",("executing realpath"));
-    if ((ptr=realpath(filename,buff)))
+    DBUG_PRINT("info", ("executing realpath"));
+    if ((ptr = realpath(filename, buff)))
     {
-      strmake(to,ptr,FN_REFLEN-1);
+      strmake(to, ptr, FN_REFLEN - 1);
     }
     else
     {
       /*
-	Realpath didn't work;  Use my_load_path() which is a poor substitute
-	original name but will at least be able to resolve paths that starts
-	with '.'.
+        Realpath didn't work;  Use my_load_path() which is a poor substitute
+        original name but will at least be able to resolve paths that starts
+        with '.'.
       */
-      DBUG_PRINT("error",("realpath failed with errno: %d", errno));
-      my_errno=errno;
+      DBUG_PRINT("error", ("realpath failed with errno: %d", errno));
+      my_errno = errno;
       if (MyFlags & MY_WME)
-	my_error(EE_REALPATH, MYF(0), filename, my_errno);
+        my_error(EE_REALPATH, MYF(0), filename, my_errno);
       my_load_path(to, filename, NullS);
-      result= -1;
+      result = -1;
     }
   }
   DBUG_RETURN(result);

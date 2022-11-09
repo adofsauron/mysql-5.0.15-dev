@@ -24,13 +24,13 @@
 #include <stdarg.h>
 #include <m_ctype.h>
 
-my_off_t my_b_append_tell(IO_CACHE* info)
+my_off_t my_b_append_tell(IO_CACHE *info)
 {
   /*
     Prevent optimizer from putting res in a register when debugging
     we need this to be able to see the value of res when the assert fails
   */
-  dbug_volatile my_off_t res; 
+  dbug_volatile my_off_t res;
 
   /*
     We need to lock the append buffer mutex to keep flush_io_cache()
@@ -48,17 +48,17 @@ my_off_t my_b_append_tell(IO_CACHE* info)
   */
   {
     volatile my_off_t save_pos;
-    save_pos = my_tell(info->file,MYF(0));
-    my_seek(info->file,(my_off_t)0,MY_SEEK_END,MYF(0));
+    save_pos = my_tell(info->file, MYF(0));
+    my_seek(info->file, (my_off_t)0, MY_SEEK_END, MYF(0));
     /*
       Save the value of my_tell in res so we can see it when studying coredump
     */
-    DBUG_ASSERT(info->end_of_file - (info->append_read_pos-info->write_buffer)
-		== (res=my_tell(info->file,MYF(0))));
-    my_seek(info->file,save_pos,MY_SEEK_SET,MYF(0));
+    DBUG_ASSERT(info->end_of_file - (info->append_read_pos - info->write_buffer) ==
+                (res = my_tell(info->file, MYF(0))));
+    my_seek(info->file, save_pos, MY_SEEK_SET, MYF(0));
   }
-#endif  
-  res = info->end_of_file + (info->write_pos-info->append_read_pos);
+#endif
+  res = info->end_of_file + (info->write_pos - info->append_read_pos);
 #ifdef THREAD
   pthread_mutex_unlock(&info->append_buffer_lock);
 #endif
@@ -77,11 +77,11 @@ my_off_t my_b_safe_tell(IO_CACHE *info)
   For write cache, make next write happen at the given position
 */
 
-void my_b_seek(IO_CACHE *info,my_off_t pos)
+void my_b_seek(IO_CACHE *info, my_off_t pos)
 {
-  my_off_t offset;  
+  my_off_t offset;
   DBUG_ENTER("my_b_seek");
-  DBUG_PRINT("enter",("pos: %lu", (ulong) pos));
+  DBUG_PRINT("enter", ("pos: %lu", (ulong)pos));
 
   /*
     TODO:
@@ -92,13 +92,13 @@ void my_b_seek(IO_CACHE *info,my_off_t pos)
   */
   if (info->type == SEQ_READ_APPEND)
     flush_io_cache(info);
-  
-  offset=(pos - info->pos_in_file);
-  
+
+  offset = (pos - info->pos_in_file);
+
   if (info->type == READ_CACHE || info->type == SEQ_READ_APPEND)
   {
     /* TODO: explain why this works if pos < info->pos_in_file */
-    if ((ulonglong) offset < (ulonglong) (info->read_end - info->buffer))
+    if ((ulonglong)offset < (ulonglong)(info->read_end - info->buffer))
     {
       /* The read is in the current buffer; Reuse it */
       info->read_pos = info->buffer + offset;
@@ -107,28 +107,25 @@ void my_b_seek(IO_CACHE *info,my_off_t pos)
     else
     {
       /* Force a new read on next my_b_read */
-      info->read_pos=info->read_end=info->buffer;
+      info->read_pos = info->read_end = info->buffer;
     }
   }
   else if (info->type == WRITE_CACHE)
   {
     /* If write is in current buffer, reuse it */
-    if ((ulonglong) offset <
-	(ulonglong) (info->write_end - info->write_buffer))
+    if ((ulonglong)offset < (ulonglong)(info->write_end - info->write_buffer))
     {
       info->write_pos = info->write_buffer + offset;
       DBUG_VOID_RETURN;
     }
     flush_io_cache(info);
     /* Correct buffer end so that we write in increments of IO_SIZE */
-    info->write_end=(info->write_buffer+info->buffer_length-
-		     (pos & (IO_SIZE-1)));
+    info->write_end = (info->write_buffer + info->buffer_length - (pos & (IO_SIZE - 1)));
   }
-  info->pos_in_file=pos;
-  info->seek_not_done=1;
+  info->pos_in_file = pos;
+  info->seek_not_done = 1;
   DBUG_VOID_RETURN;
 }
-
 
 /*
   Fill buffer.  Note that this assumes that you have already used
@@ -139,41 +136,37 @@ void my_b_seek(IO_CACHE *info,my_off_t pos)
 
 uint my_b_fill(IO_CACHE *info)
 {
-  my_off_t pos_in_file=(info->pos_in_file+
-			(uint) (info->read_end - info->buffer));
+  my_off_t pos_in_file = (info->pos_in_file + (uint)(info->read_end - info->buffer));
   my_off_t max_length;
-  uint diff_length,length;
+  uint diff_length, length;
   if (info->seek_not_done)
-  {					/* File touched, do seek */
-    if (my_seek(info->file,pos_in_file,MY_SEEK_SET,MYF(0)) ==
-	MY_FILEPOS_ERROR)
+  { /* File touched, do seek */
+    if (my_seek(info->file, pos_in_file, MY_SEEK_SET, MYF(0)) == MY_FILEPOS_ERROR)
     {
-      info->error= 0;
+      info->error = 0;
       return 0;
     }
-    info->seek_not_done=0;
+    info->seek_not_done = 0;
   }
-  diff_length=(uint) (pos_in_file & (IO_SIZE-1));
-  max_length= (my_off_t) (info->end_of_file - pos_in_file);
-  if (max_length > (my_off_t) (info->read_length-diff_length))
-    max_length=(my_off_t) (info->read_length-diff_length);
+  diff_length = (uint)(pos_in_file & (IO_SIZE - 1));
+  max_length = (my_off_t)(info->end_of_file - pos_in_file);
+  if (max_length > (my_off_t)(info->read_length - diff_length))
+    max_length = (my_off_t)(info->read_length - diff_length);
   if (!max_length)
   {
-    info->error= 0;
-    return 0;					/* EOF */
+    info->error = 0;
+    return 0; /* EOF */
   }
-   else if ((length=my_read(info->file,info->buffer,(uint) max_length,
-			   info->myflags)) == (uint) -1)
+  else if ((length = my_read(info->file, info->buffer, (uint)max_length, info->myflags)) == (uint)-1)
   {
-    info->error= -1;
+    info->error = -1;
     return 0;
   }
-  info->read_pos=info->buffer;
-  info->read_end=info->buffer+length;
-  info->pos_in_file=pos_in_file;
+  info->read_pos = info->buffer;
+  info->read_end = info->buffer + length;
+  info->pos_in_file = pos_in_file;
   return length;
 }
-
 
 /*
   Read a string ended by '\n' into a buffer of 'max_length' size.
@@ -186,37 +179,35 @@ uint my_b_gets(IO_CACHE *info, char *to, uint max_length)
 {
   char *start = to;
   uint length;
-  max_length--;					/* Save place for end \0 */
+  max_length--; /* Save place for end \0 */
   /* Calculate number of characters in buffer */
-  if (!(length= my_b_bytes_in_cache(info)) &&
-      !(length= my_b_fill(info)))
+  if (!(length = my_b_bytes_in_cache(info)) && !(length = my_b_fill(info)))
     return 0;
   for (;;)
   {
-    char *pos,*end;
+    char *pos, *end;
     if (length > max_length)
-      length=max_length;
-    for (pos=info->read_pos,end=pos+length ; pos < end ;)
+      length = max_length;
+    for (pos = info->read_pos, end = pos + length; pos < end;)
     {
       if ((*to++ = *pos++) == '\n')
       {
-	info->read_pos=pos;
-	*to='\0';
-	return (uint) (to-start);
+        info->read_pos = pos;
+        *to = '\0';
+        return (uint)(to - start);
       }
     }
-    if (!(max_length-=length))
+    if (!(max_length -= length))
     {
-     /* Found enough charcters;  Return found string */
-      info->read_pos=pos;
-      *to='\0';
-      return (uint) (to-start);
+      /* Found enough charcters;  Return found string */
+      info->read_pos = pos;
+      *to = '\0';
+      return (uint)(to - start);
     }
-    if (!(length=my_b_fill(info)))
+    if (!(length = my_b_fill(info)))
       return 0;
   }
 }
-
 
 my_off_t my_b_filelength(IO_CACHE *info)
 {
@@ -226,11 +217,10 @@ my_off_t my_b_filelength(IO_CACHE *info)
   }
   else
   {
-    info->seek_not_done=1;
-    return my_seek(info->file,0L,MY_SEEK_END,MYF(0));
+    info->seek_not_done = 1;
+    return my_seek(info->file, 0L, MY_SEEK_END, MYF(0));
   }
 }
-
 
 /*
   Simple printf version.  Supports '%s', '%d', '%u', "%ld" and "%lu"
@@ -238,52 +228,51 @@ my_off_t my_b_filelength(IO_CACHE *info)
   returns number of written character, or (uint) -1 on error
 */
 
-uint my_b_printf(IO_CACHE *info, const char* fmt, ...)
+uint my_b_printf(IO_CACHE *info, const char *fmt, ...)
 {
   int result;
   va_list args;
-  va_start(args,fmt);
-  result=my_b_vprintf(info, fmt, args);
+  va_start(args, fmt);
+  result = my_b_vprintf(info, fmt, args);
   va_end(args);
   return result;
 }
 
-
-uint my_b_vprintf(IO_CACHE *info, const char* fmt, va_list args)
+uint my_b_vprintf(IO_CACHE *info, const char *fmt, va_list args)
 {
-  uint out_length=0;
+  uint out_length = 0;
 
-  for (; *fmt ; fmt++)
+  for (; *fmt; fmt++)
   {
     if (*fmt++ != '%')
     {
       /* Copy everything until '%' or end of string */
-      const char *start=fmt-1;
+      const char *start = fmt - 1;
       uint length;
-      for (; *fmt && *fmt != '%' ; fmt++ ) ;
-      length= (uint) (fmt - start);
-      out_length+=length;
+      for (; *fmt && *fmt != '%'; fmt++)
+        ;
+      length = (uint)(fmt - start);
+      out_length += length;
       if (my_b_write(info, start, length))
-	goto err;
-      if (!*fmt)				/* End of format */
+        goto err;
+      if (!*fmt) /* End of format */
       {
-	return out_length;
+        return out_length;
       }
       fmt++;
       /* Found one '%' */
     }
     /* Skip if max size is used (to be compatible with printf) */
-    while (my_isdigit(&my_charset_latin1, *fmt) || *fmt == '.' || *fmt == '-')
-      fmt++;
-    if (*fmt == 's')				/* String parameter */
+    while (my_isdigit(&my_charset_latin1, *fmt) || *fmt == '.' || *fmt == '-') fmt++;
+    if (*fmt == 's') /* String parameter */
     {
       reg2 char *par = va_arg(args, char *);
-      uint length = (uint) strlen(par);
-      out_length+=length;
+      uint length = (uint)strlen(par);
+      out_length += length;
       if (my_b_write(info, par, length))
-	goto err;
+        goto err;
     }
-    else if (*fmt == 'd' || *fmt == 'u')	/* Integer parameter */
+    else if (*fmt == 'd' || *fmt == 'u') /* Integer parameter */
     {
       register int iarg;
       uint length;
@@ -291,15 +280,15 @@ uint my_b_vprintf(IO_CACHE *info, const char* fmt, va_list args)
 
       iarg = va_arg(args, int);
       if (*fmt == 'd')
-	length= (uint) (int10_to_str((long) iarg,buff, -10) - buff);
+        length = (uint)(int10_to_str((long)iarg, buff, -10) - buff);
       else
-	length= (uint) (int10_to_str((long) (uint) iarg,buff,10)- buff);
-      out_length+=length;
+        length = (uint)(int10_to_str((long)(uint)iarg, buff, 10) - buff);
+      out_length += length;
       if (my_b_write(info, buff, length))
-	goto err;
+        goto err;
     }
     else if ((*fmt == 'l' && fmt[1] == 'd') || fmt[1] == 'u')
-      /* long parameter */
+    /* long parameter */
     {
       register long iarg;
       uint length;
@@ -307,23 +296,23 @@ uint my_b_vprintf(IO_CACHE *info, const char* fmt, va_list args)
 
       iarg = va_arg(args, long);
       if (*++fmt == 'd')
-	length= (uint) (int10_to_str(iarg,buff, -10) - buff);
+        length = (uint)(int10_to_str(iarg, buff, -10) - buff);
       else
-	length= (uint) (int10_to_str(iarg,buff,10)- buff);
-      out_length+=length;
+        length = (uint)(int10_to_str(iarg, buff, 10) - buff);
+      out_length += length;
       if (my_b_write(info, buff, length))
-	goto err;
+        goto err;
     }
     else
     {
       /* %% or unknown code */
       if (my_b_write(info, "%", 1))
-	goto err;
+        goto err;
       out_length++;
     }
   }
   return out_length;
 
 err:
-  return (uint) -1;
+  return (uint)-1;
 }

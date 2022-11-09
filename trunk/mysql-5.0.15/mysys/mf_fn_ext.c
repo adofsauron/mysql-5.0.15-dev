@@ -14,7 +14,6 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-
 #include "mysys_priv.h"
 #include <m_string.h>
 
@@ -36,19 +35,19 @@
 
 my_string fn_ext(const char *name)
 {
-  register my_string pos,gpos;
+  register my_string pos, gpos;
   DBUG_ENTER("fn_ext");
-  DBUG_PRINT("mfunkt",("name: '%s'",name));
+  DBUG_PRINT("mfunkt", ("name: '%s'", name));
 
 #if defined(FN_DEVCHAR) || defined(FN_C_AFTER_DIR)
   {
     char buff[FN_REFLEN];
-    gpos=(my_string) name+dirname_part(buff,(char*) name);
+    gpos = (my_string)name + dirname_part(buff, (char *)name);
   }
 #else
-  if (!(gpos=strrchr(name,FNLIBCHAR)))
-    gpos=name;
+  if (!(gpos = strrchr(name, FNLIBCHAR)))
+    gpos = name;
 #endif
-  pos=strchr(gpos,FN_EXTCHAR);
-  DBUG_RETURN (pos ? pos : strend(gpos));
+  pos = strchr(gpos, FN_EXTCHAR);
+  DBUG_RETURN(pos ? pos : strend(gpos));
 } /* fn_ext */

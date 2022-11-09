@@ -20,4 +20,3 @@
 #undef DYNAMIC_CRC_TABLE
 #include "../zlib/crc32.c"
 #endif
-

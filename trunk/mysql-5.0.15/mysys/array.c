@@ -17,7 +17,7 @@
 /* Handling of arrays that can grow dynamicly. */
 
 #if defined(WIN32) || defined(__WIN__)
-#undef SAFEMALLOC				/* Problems with threads */
+#undef SAFEMALLOC /* Problems with threads */
 #endif
 
 #include "mysys_priv.h"
@@ -34,8 +34,8 @@
       alloc_increment	Increment for adding new elements
 
   DESCRIPTION
-    init_dynamic_array() initiates array and allocate space for 
-    init_alloc eilements. 
+    init_dynamic_array() initiates array and allocate space for
+    init_alloc eilements.
     Array is usable even if space allocation failed.
 
   RETURN VALUE
@@ -43,31 +43,30 @@
     FALSE	Ok
 */
 
-my_bool init_dynamic_array(DYNAMIC_ARRAY *array, uint element_size,
-			    uint init_alloc,
-			    uint alloc_increment CALLER_INFO_PROTO)
+my_bool init_dynamic_array(DYNAMIC_ARRAY *array, uint element_size, uint init_alloc,
+                           uint alloc_increment CALLER_INFO_PROTO)
 {
   DBUG_ENTER("init_dynamic_array");
   if (!alloc_increment)
   {
-    alloc_increment=max((8192-MALLOC_OVERHEAD)/element_size,16);
+    alloc_increment = max((8192 - MALLOC_OVERHEAD) / element_size, 16);
     if (init_alloc > 8 && alloc_increment > init_alloc * 2)
-      alloc_increment=init_alloc*2;
+      alloc_increment = init_alloc * 2;
   }
 
   if (!init_alloc)
-    init_alloc=alloc_increment;
-  array->elements=0;
-  array->max_element=init_alloc;
-  array->alloc_increment=alloc_increment;
-  array->size_of_element=element_size;
-  if (!(array->buffer=(char*) my_malloc_ci(element_size*init_alloc,MYF(MY_WME))))
+    init_alloc = alloc_increment;
+  array->elements = 0;
+  array->max_element = init_alloc;
+  array->alloc_increment = alloc_increment;
+  array->size_of_element = element_size;
+  if (!(array->buffer = (char *)my_malloc_ci(element_size * init_alloc, MYF(MY_WME))))
   {
-    array->max_element=0;
+    array->max_element = 0;
     DBUG_RETURN(TRUE);
   }
   DBUG_RETURN(FALSE);
-} 
+}
 
 /*
   Insert element at the end of array. Allocate memory if needed.
@@ -86,22 +85,21 @@ my_bool insert_dynamic(DYNAMIC_ARRAY *array, gptr element)
 {
   gptr buffer;
   if (array->elements == array->max_element)
-  {						/* Call only when nessesary */
-    if (!(buffer=alloc_dynamic(array)))
+  { /* Call only when nessesary */
+    if (!(buffer = alloc_dynamic(array)))
       return TRUE;
   }
   else
   {
-    buffer=array->buffer+(array->elements * array->size_of_element);
+    buffer = array->buffer + (array->elements * array->size_of_element);
     array->elements++;
   }
-  memcpy(buffer,element,(size_t) array->size_of_element);
+  memcpy(buffer, element, (size_t)array->size_of_element);
   return FALSE;
 }
 
-
 /*
-  Alloc space for next element(s) 
+  Alloc space for next element(s)
 
   SYNOPSIS
     alloc_dynamic()
@@ -122,17 +120,15 @@ byte *alloc_dynamic(DYNAMIC_ARRAY *array)
   if (array->elements == array->max_element)
   {
     char *new_ptr;
-    if (!(new_ptr=(char*) my_realloc(array->buffer,(array->max_element+
-				     array->alloc_increment)*
-				     array->size_of_element,
-				     MYF(MY_WME | MY_ALLOW_ZERO_PTR))))
+    if (!(new_ptr =
+              (char *)my_realloc(array->buffer, (array->max_element + array->alloc_increment) * array->size_of_element,
+                                 MYF(MY_WME | MY_ALLOW_ZERO_PTR))))
       return 0;
-    array->buffer=new_ptr;
-    array->max_element+=array->alloc_increment;
+    array->buffer = new_ptr;
+    array->max_element += array->alloc_increment;
   }
-  return array->buffer+(array->elements++ * array->size_of_element);
+  return array->buffer + (array->elements++ * array->size_of_element);
 }
-
 
 /*
   Pop last element from array.
@@ -140,8 +136,8 @@ byte *alloc_dynamic(DYNAMIC_ARRAY *array)
   SYNOPSIS
     pop_dynamic()
       array
-  
-  RETURN VALUE    
+
+  RETURN VALUE
     pointer	Ok
     0		Array is empty
 */
@@ -149,7 +145,7 @@ byte *alloc_dynamic(DYNAMIC_ARRAY *array)
 byte *pop_dynamic(DYNAMIC_ARRAY *array)
 {
   if (array->elements)
-    return array->buffer+(--array->elements * array->size_of_element);
+    return array->buffer + (--array->elements * array->size_of_element);
   return 0;
 }
 
@@ -163,9 +159,9 @@ byte *pop_dynamic(DYNAMIC_ARRAY *array)
       idx	Index where element is to be inserted
 
   DESCRIPTION
-    set_dynamic() replaces element in array. 
-    If idx > max_element insert new element. Allocate memory if needed. 
- 
+    set_dynamic() replaces element in array.
+    If idx > max_element insert new element. Allocate memory if needed.
+
   RETURN VALUE
     TRUE	Idx was out of range and allocation of new memory failed
     FALSE	Ok
@@ -179,21 +175,19 @@ my_bool set_dynamic(DYNAMIC_ARRAY *array, gptr element, uint idx)
     {
       uint size;
       char *new_ptr;
-      size=(idx+array->alloc_increment)/array->alloc_increment;
-      size*= array->alloc_increment;
-      if (!(new_ptr=(char*) my_realloc(array->buffer,size*
-				       array->size_of_element,
-				       MYF(MY_WME | MY_ALLOW_ZERO_PTR))))
-	return TRUE;
-      array->buffer=new_ptr;
-      array->max_element=size;
+      size = (idx + array->alloc_increment) / array->alloc_increment;
+      size *= array->alloc_increment;
+      if (!(new_ptr =
+                (char *)my_realloc(array->buffer, size * array->size_of_element, MYF(MY_WME | MY_ALLOW_ZERO_PTR))))
+        return TRUE;
+      array->buffer = new_ptr;
+      array->max_element = size;
     }
-    bzero((gptr) (array->buffer+array->elements*array->size_of_element),
-	  (idx - array->elements)*array->size_of_element);
-    array->elements=idx+1;
+    bzero((gptr)(array->buffer + array->elements * array->size_of_element),
+          (idx - array->elements) * array->size_of_element);
+    array->elements = idx + 1;
   }
-  memcpy(array->buffer+(idx * array->size_of_element),element,
-	 (size_t) array->size_of_element);
+  memcpy(array->buffer + (idx * array->size_of_element), element, (size_t)array->size_of_element);
   return FALSE;
 }
 
@@ -202,24 +196,21 @@ my_bool set_dynamic(DYNAMIC_ARRAY *array, gptr element, uint idx)
 
   SYNOPSIS
     get_dynamic()
-      array	
+      array
       gptr	Element to be returned. If idx > elements contain zeroes.
-      idx	Index of element wanted. 
+      idx	Index of element wanted.
 */
 
 void get_dynamic(DYNAMIC_ARRAY *array, gptr element, uint idx)
 {
   if (idx >= array->elements)
   {
-    DBUG_PRINT("warning",("To big array idx: %d, array size is %d",
-			  idx,array->elements));
-    bzero(element,array->size_of_element);
+    DBUG_PRINT("warning", ("To big array idx: %d, array size is %d", idx, array->elements));
+    bzero(element, array->size_of_element);
     return;
   }
-  memcpy(element,array->buffer+idx*array->size_of_element,
-	 (size_t) array->size_of_element);
+  memcpy(element, array->buffer + idx * array->size_of_element, (size_t)array->size_of_element);
 }
-
 
 /*
   Empty array by freeing all memory
@@ -233,9 +224,9 @@ void delete_dynamic(DYNAMIC_ARRAY *array)
 {
   if (array->buffer)
   {
-    my_free(array->buffer,MYF(MY_WME));
-    array->buffer=0;
-    array->elements=array->max_element=0;
+    my_free(array->buffer, MYF(MY_WME));
+    array->buffer = 0;
+    array->elements = array->max_element = 0;
   }
 }
 
@@ -250,12 +241,10 @@ void delete_dynamic(DYNAMIC_ARRAY *array)
 
 void delete_dynamic_element(DYNAMIC_ARRAY *array, uint idx)
 {
-  char *ptr=array->buffer+array->size_of_element*idx;
+  char *ptr = array->buffer + array->size_of_element * idx;
   array->elements--;
-  memmove(ptr,ptr+array->size_of_element,
-	  (array->elements-idx)*array->size_of_element);
+  memmove(ptr, ptr + array->size_of_element, (array->elements - idx) * array->size_of_element);
 }
-
 
 /*
   Free unused memory
@@ -268,13 +257,11 @@ void delete_dynamic_element(DYNAMIC_ARRAY *array, uint idx)
 
 void freeze_size(DYNAMIC_ARRAY *array)
 {
-  uint elements=max(array->elements,1);
+  uint elements = max(array->elements, 1);
 
   if (array->buffer && array->max_element != elements)
   {
-    array->buffer=(char*) my_realloc(array->buffer,
-				     elements*array->size_of_element,
-				     MYF(MY_WME));
-    array->max_element=elements;
+    array->buffer = (char *)my_realloc(array->buffer, elements * array->size_of_element, MYF(MY_WME));
+    array->max_element = elements;
   }
 }

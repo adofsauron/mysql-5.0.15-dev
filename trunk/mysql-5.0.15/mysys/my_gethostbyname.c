@@ -1,15 +1,15 @@
 /* Copyright (C) 2000 MySQL AB & MySQL Finland AB & TCX DataKonsult AB
-   
+
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
    License as published by the Free Software Foundation; either
    version 2 of the License, or (at your option) any later version.
-   
+
    This library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Library General Public License for more details.
-   
+
    You should have received a copy of the GNU Library General Public
    License along with this library; if not, write to the Free
    Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
@@ -35,26 +35,22 @@
 
 #if defined(HAVE_GETHOSTBYNAME_R_GLIBC2_STYLE)
 
-struct hostent *my_gethostbyname_r(const char *name,
-				   struct hostent *result, char *buffer,
-				   int buflen, int *h_errnop)
+struct hostent *my_gethostbyname_r(const char *name, struct hostent *result, char *buffer, int buflen, int *h_errnop)
 {
   struct hostent *hp;
-  DBUG_ASSERT((size_t) buflen >= sizeof(*result));
-  if (gethostbyname_r(name,result, buffer, (size_t) buflen, &hp, h_errnop))
+  DBUG_ASSERT((size_t)buflen >= sizeof(*result));
+  if (gethostbyname_r(name, result, buffer, (size_t)buflen, &hp, h_errnop))
     return 0;
   return hp;
 }
 
 #elif defined(HAVE_GETHOSTBYNAME_R_RETURN_INT)
 
-struct hostent *my_gethostbyname_r(const char *name,
-				   struct hostent *result, char *buffer,
-				   int buflen, int *h_errnop)
+struct hostent *my_gethostbyname_r(const char *name, struct hostent *result, char *buffer, int buflen, int *h_errnop)
 {
-  if (gethostbyname_r(name,result,(struct hostent_data *) buffer) == -1)
+  if (gethostbyname_r(name, result, (struct hostent_data *)buffer) == -1)
   {
-    *h_errnop= errno;
+    *h_errnop = errno;
     return 0;
   }
   return result;
@@ -64,14 +60,12 @@ struct hostent *my_gethostbyname_r(const char *name,
 
 /* gethostbyname_r with similar interface as gethostbyname() */
 
-struct hostent *my_gethostbyname_r(const char *name,
-				   struct hostent *result, char *buffer,
-				   int buflen, int *h_errnop)
+struct hostent *my_gethostbyname_r(const char *name, struct hostent *result, char *buffer, int buflen, int *h_errnop)
 {
   struct hostent *hp;
   DBUG_ASSERT(buflen >= sizeof(struct hostent_data));
-  hp= gethostbyname_r(name,result,(struct hostent_data *) buffer);
-  *h_errnop= errno;
+  hp = gethostbyname_r(name, result, (struct hostent_data *)buffer);
+  *h_errnop = errno;
   return hp;
 }
 #endif /* GLIBC2_STYLE_GETHOSTBYNAME_R */
@@ -91,21 +85,16 @@ extern pthread_mutex_t LOCK_gethostbyname_r;
   is finished with the structure.
 */
 
-struct hostent *my_gethostbyname_r(const char *name,
-				   struct hostent *result, char *buffer,
-				   int buflen, int *h_errnop)
+struct hostent *my_gethostbyname_r(const char *name, struct hostent *result, char *buffer, int buflen, int *h_errnop)
 {
   struct hostent *hp;
   pthread_mutex_lock(&LOCK_gethostbyname_r);
-  hp= gethostbyname(name);
-  *h_errnop= h_errno;
+  hp = gethostbyname(name);
+  *h_errnop = h_errno;
   return hp;
 }
 
-void my_gethostbyname_r_free()
-{
-  pthread_mutex_unlock(&LOCK_gethostbyname_r);  
-}
+void my_gethostbyname_r_free() { pthread_mutex_unlock(&LOCK_gethostbyname_r); }
 
 #endif /* !HAVE_GETHOSTBYNAME_R */
 #endif /* !my_gethostbyname_r */

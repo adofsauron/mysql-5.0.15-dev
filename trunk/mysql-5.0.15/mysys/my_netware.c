@@ -20,8 +20,8 @@
 
 #include <mysys_priv.h>
 #ifdef __NETWARE__
-  #include <string.h>
-  #include <library.h>
+#include <string.h>
+#include <library.h>
 
 /*
   PMUserLicenseRequest is an API exported by the polimgr.nlm
@@ -34,42 +34,37 @@
   record usage information about your product/service.
 */
 
-long PMMeteredUsageRequest
-(
- /*
-   NDS distinguished name or IP address or ??.  asciiz string, e.g.
-   ".CN=Admin.O=this.T=MYTREE."
- */
- char *userInfo,
- long infoType,                /* see defined values */
- /*
-   string used to identify the calling service, used to index the
-   metered info e.g. "iPrint"
- */
- char *serviceID,
- char tranAddrType,            /* type of address that follows */
- char *tranAddr,               /* ptr to a 10-byte array */
- long flags,                   /* see defined values */
- /* NLS error code, if any.  NULL input is okay */
- long *licRequestErrCode,
- /*  meter service error code, if any.  NULL input is okay */
- long *storeMeterInfoErrCode,
- /*
-   error code from NLSMeter if
-   storeMeterInfoErrCode == PM_LICREQ_NLSMETERERROR.
-   NULL input is okay
- */
- long *NLSMeterErrCode
-);
+long PMMeteredUsageRequest(
+    /*
+      NDS distinguished name or IP address or ??.  asciiz string, e.g.
+      ".CN=Admin.O=this.T=MYTREE."
+    */
+    char *userInfo, long infoType, /* see defined values */
+    /*
+      string used to identify the calling service, used to index the
+      metered info e.g. "iPrint"
+    */
+    char *serviceID, char tranAddrType, /* type of address that follows */
+    char *tranAddr,                     /* ptr to a 10-byte array */
+    long flags,                         /* see defined values */
+    /* NLS error code, if any.  NULL input is okay */
+    long *licRequestErrCode,
+    /*  meter service error code, if any.  NULL input is okay */
+    long *storeMeterInfoErrCode,
+    /*
+      error code from NLSMeter if
+      storeMeterInfoErrCode == PM_LICREQ_NLSMETERERROR.
+      NULL input is okay
+    */
+    long *NLSMeterErrCode);
 
-typedef long(*PMUR)(const char*, long, const char*, char,
-        const char*, long, long*, long*, long*);
+typedef long (*PMUR)(const char *, long, const char *, char, const char *, long, long *, long *, long *);
 
 /* infoType */
 /* indicates that the info in the userInfo param is an NDS user */
-#define PM_USERINFO_TYPE_NDS      1
+#define PM_USERINFO_TYPE_NDS 1
 /* indicates that the info in the userInfo param is NOT an NDS user */
-#define PM_USERINFO_TYPE_ADDRESS  2
+#define PM_USERINFO_TYPE_ADDRESS 2
 
 /* Flags */
 
@@ -80,50 +75,46 @@ typedef long(*PMUR)(const char*, long, const char*, char,
   PM_USERINFO_TYPE_NDS
 */
 
-#define PM_FLAGS_METER_ONLY         0x0000001
+#define PM_FLAGS_METER_ONLY 0x0000001
 
 /*
   Indicates that the values in the userInfo and serviceID parameters
   are unicode strings, so that the metering service bypasses
   converting these to unicode (again)
 */
-#define PM_LICREQ_ALREADY_UNICODE   0x0000002
+#define PM_LICREQ_ALREADY_UNICODE 0x0000002
 /*
   Useful only if infoType is PM_USERINFO_TYPE_NDS - indicates a "no
   stop" policy of the calling service
 */
-#define PM_LICREQ_ALWAYS_METER      0x0000004
-
+#define PM_LICREQ_ALWAYS_METER 0x0000004
 
 /*
   net Address Types - system-defined types of net addresses that can
   be used in the tranAddrType field
 */
 
-#define NLS_TRAN_TYPE_IPX     0x00000001    /* An IPX address */
-#define NLS_TRAN_TYPE_IP      0x00000008    /* An IP address */
-#define NLS_ADDR_TYPE_MAC     0x000000F1    /* a MAC address */
+#define NLS_TRAN_TYPE_IPX 0x00000001 /* An IPX address */
+#define NLS_TRAN_TYPE_IP 0x00000008  /* An IP address */
+#define NLS_ADDR_TYPE_MAC 0x000000F1 /* a MAC address */
 
 /*
   Net Address Sizes - lengths that correspond to the tranAddrType
   field (just fyi)
 */
-#define NLS_IPX_ADDR_SIZE   10    /* the size of an IPX address */
-#define NLS_IP_ADDR_SIZE    4     /* the size of an IP address */
-#define NLS_MAC_ADDR_SIZE   6     /* the size of a MAC address */
+#define NLS_IPX_ADDR_SIZE 10 /* the size of an IPX address */
+#define NLS_IP_ADDR_SIZE 4   /* the size of an IP address */
+#define NLS_MAC_ADDR_SIZE 6  /* the size of a MAC address */
 
-
-void netware_reg_user(const char *ip, const char *user,
-		      const char *application)
+void netware_reg_user(const char *ip, const char *user, const char *application)
 {
   PMUR usage_request;
-  long licRequestErrCode      = 0;
-  long storeMeterInfoErrCode  = 0;
-  long nlsMeterErrCode        = 0;
+  long licRequestErrCode = 0;
+  long storeMeterInfoErrCode = 0;
+  long nlsMeterErrCode = 0;
 
   /* import the symbol */
-  usage_request= ((PMUR)ImportPublicObject(getnlmhandle(),
-					   "PMMeteredUsageRequest"));
+  usage_request = ((PMUR)ImportPublicObject(getnlmhandle(), "PMMeteredUsageRequest"));
   if (usage_request != NULL)
   {
     unsigned long iaddr;
@@ -135,15 +126,8 @@ void netware_reg_user(const char *ip, const char *user,
     memcpy(addr, &iaddr, NLS_IP_ADDR_SIZE);
 
     /* call to NLS */
-    usage_request(user,
-		  PM_USERINFO_TYPE_ADDRESS,
-		  application,
-		  NLS_TRAN_TYPE_IP,
-		  addr,
-		  PM_FLAGS_METER_ONLY,
-		  &licRequestErrCode,
-		  &storeMeterInfoErrCode,
-		  &nlsMeterErrCode);
+    usage_request(user, PM_USERINFO_TYPE_ADDRESS, application, NLS_TRAN_TYPE_IP, addr, PM_FLAGS_METER_ONLY,
+                  &licRequestErrCode, &storeMeterInfoErrCode, &nlsMeterErrCode);
     /* release symbol */
     UnImportPublicObject(getnlmhandle(), "PMMeteredUsageRequest");
   }

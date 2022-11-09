@@ -20,7 +20,6 @@
 #include <m_string.h>
 #include <m_ctype.h>
 
-
 /*
   Search after a string in a list of strings. Endspace in x is not compared.
 
@@ -29,9 +28,9 @@
    x			String to find
    lib			TYPELIB (struct of pointer to values + count)
    full_name		bitmap of what to do
-			If & 1 accept only whole names
-			If & 2 don't expand if half field
-			If & 4 allow #number# as type
+                        If & 1 accept only whole names
+                        If & 2 don't expand if half field
+                        If & 4 allow #number# as type
 
   NOTES
     If part, uniq field is found and full_name == 0 then x is expanded
@@ -45,77 +44,72 @@
 
 int find_type(my_string x, TYPELIB *typelib, uint full_name)
 {
-  int find,pos,findpos;
+  int find, pos, findpos;
   reg1 my_string i;
   reg2 const char *j;
   DBUG_ENTER("find_type");
-  DBUG_PRINT("enter",("x: '%s'  lib: 0x%lx",x,typelib));
+  DBUG_PRINT("enter", ("x: '%s'  lib: 0x%lx", x, typelib));
 
   if (!typelib->count)
   {
-    DBUG_PRINT("exit",("no count"));
+    DBUG_PRINT("exit", ("no count"));
     DBUG_RETURN(0);
   }
   LINT_INIT(findpos);
-  find=0;
-  for (pos=0 ; (j=typelib->type_names[pos]) ; pos++)
+  find = 0;
+  for (pos = 0; (j = typelib->type_names[pos]); pos++)
   {
-    for (i=x ; 
-    	*i && my_toupper(&my_charset_latin1,*i) == 
-    		my_toupper(&my_charset_latin1,*j) ; i++, j++) ;
-    if (! *j)
+    for (i = x; *i && my_toupper(&my_charset_latin1, *i) == my_toupper(&my_charset_latin1, *j); i++, j++)
+      ;
+    if (!*j)
     {
-      while (*i == ' ')
-	i++;					/* skip_end_space */
-      if (! *i)
-	DBUG_RETURN(pos+1);
+      while (*i == ' ') i++; /* skip_end_space */
+      if (!*i)
+        DBUG_RETURN(pos + 1);
     }
-    if (! *i && (!*j || !(full_name & 1)))
+    if (!*i && (!*j || !(full_name & 1)))
     {
       find++;
-      findpos=pos;
+      findpos = pos;
     }
   }
-  if (find == 0 && (full_name & 4) && x[0] == '#' && strend(x)[-1] == '#' &&
-      (findpos=atoi(x+1)-1) >= 0 && (uint) findpos < typelib->count)
-    find=1;
-  else if (find == 0 || ! x[0])
+  if (find == 0 && (full_name & 4) && x[0] == '#' && strend(x)[-1] == '#' && (findpos = atoi(x + 1) - 1) >= 0 &&
+      (uint)findpos < typelib->count)
+    find = 1;
+  else if (find == 0 || !x[0])
   {
-    DBUG_PRINT("exit",("Couldn't find type"));
+    DBUG_PRINT("exit", ("Couldn't find type"));
     DBUG_RETURN(0);
   }
   else if (find != 1 || (full_name & 1))
   {
-    DBUG_PRINT("exit",("Too many possybilities"));
+    DBUG_PRINT("exit", ("Too many possybilities"));
     DBUG_RETURN(-1);
   }
   if (!(full_name & 2))
-    (void) strmov(x,typelib->type_names[findpos]);
-  DBUG_RETURN(findpos+1);
+    (void)strmov(x, typelib->type_names[findpos]);
+  DBUG_RETURN(findpos + 1);
 } /* find_type */
 
+/* Get name of type nr 'nr' */
+/* Warning first type is 1, 0 = empty field */
 
-	/* Get name of type nr 'nr' */
-	/* Warning first type is 1, 0 = empty field */
-
-void make_type(register my_string to, register uint nr,
-	       register TYPELIB *typelib)
+void make_type(register my_string to, register uint nr, register TYPELIB *typelib)
 {
   DBUG_ENTER("make_type");
   if (!nr)
-    to[0]=0;
+    to[0] = 0;
   else
-    (void) strmov(to,get_type(typelib,nr-1));
+    (void)strmov(to, get_type(typelib, nr - 1));
   DBUG_VOID_RETURN;
 } /* make_type */
 
-
-	/* Get type */
-	/* Warning first type is 0 */
+/* Get type */
+/* Warning first type is 0 */
 
 const char *get_type(TYPELIB *typelib, uint nr)
 {
-  if (nr < (uint) typelib->count && typelib->type_names)
-    return(typelib->type_names[nr]);
+  if (nr < (uint)typelib->count && typelib->type_names)
+    return (typelib->type_names[nr]);
   return "?";
 }

@@ -14,7 +14,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-#define USES_TYPES				/* sys/types is included */
+#define USES_TYPES /* sys/types is included */
 #include "mysys_priv.h"
 #include <my_dir.h> /* for stat */
 #include <m_string.h>
@@ -24,12 +24,12 @@
 #include <sys/utime.h>
 #elif !defined(HPUX10)
 #include <time.h>
-struct utimbuf {
+struct utimbuf
+{
   time_t actime;
   time_t modtime;
 };
 #endif
-
 
 /*
   int my_copy(const char *from, const char *to, myf MyFlags)
@@ -55,64 +55,63 @@ int my_copy(const char *from, const char *to, myf MyFlags)
   uint Count;
   my_bool new_file_stat; /* 1 if we could stat "to" */
   int create_flag;
-  File from_file,to_file;
+  File from_file, to_file;
   char buff[IO_SIZE];
-  MY_STAT stat_buff,new_stat_buff;
+  MY_STAT stat_buff, new_stat_buff;
   DBUG_ENTER("my_copy");
-  DBUG_PRINT("my",("from %s to %s MyFlags %d", from, to, MyFlags));
+  DBUG_PRINT("my", ("from %s to %s MyFlags %d", from, to, MyFlags));
 
-  from_file=to_file= -1;
+  from_file = to_file = -1;
   LINT_INIT(new_file_stat);
   DBUG_ASSERT(!(MyFlags & (MY_FNABP | MY_NABP))); /* for my_read/my_write */
-  if (MyFlags & MY_HOLD_ORIGINAL_MODES)		/* Copy stat if possible */
-    new_file_stat= test(my_stat((char*) to, &new_stat_buff, MYF(0)));
+  if (MyFlags & MY_HOLD_ORIGINAL_MODES)           /* Copy stat if possible */
+    new_file_stat = test(my_stat((char *)to, &new_stat_buff, MYF(0)));
 
-  if ((from_file=my_open(from,O_RDONLY | O_SHARE,MyFlags)) >= 0)
+  if ((from_file = my_open(from, O_RDONLY | O_SHARE, MyFlags)) >= 0)
   {
     if (!my_stat(from, &stat_buff, MyFlags))
     {
-      my_errno=errno;
+      my_errno = errno;
       goto err;
     }
     if (MyFlags & MY_HOLD_ORIGINAL_MODES && new_file_stat)
-      stat_buff=new_stat_buff;
-    create_flag= (MyFlags & MY_DONT_OVERWRITE_FILE) ? O_EXCL : O_TRUNC;
+      stat_buff = new_stat_buff;
+    create_flag = (MyFlags & MY_DONT_OVERWRITE_FILE) ? O_EXCL : O_TRUNC;
 
-    if ((to_file=  my_create(to,(int) stat_buff.st_mode,
-			     O_WRONLY | create_flag | O_BINARY | O_SHARE,
-			     MyFlags)) < 0)
+    if ((to_file = my_create(to, (int)stat_buff.st_mode, O_WRONLY | create_flag | O_BINARY | O_SHARE, MyFlags)) < 0)
       goto err;
 
-    while ((Count=my_read(from_file,buff,IO_SIZE,MyFlags)) != 0)
-	if (Count == (uint) -1 ||
-	    my_write(to_file,buff,Count,MYF(MyFlags | MY_NABP)))
-	goto err;
+    while ((Count = my_read(from_file, buff, IO_SIZE, MyFlags)) != 0)
+      if (Count == (uint)-1 || my_write(to_file, buff, Count, MYF(MyFlags | MY_NABP)))
+        goto err;
 
-    if (my_close(from_file,MyFlags) | my_close(to_file,MyFlags))
-      DBUG_RETURN(-1);				/* Error on close */
+    if (my_close(from_file, MyFlags) | my_close(to_file, MyFlags))
+      DBUG_RETURN(-1); /* Error on close */
 
     /* Copy modes if possible */
 
     if (MyFlags & MY_HOLD_ORIGINAL_MODES && !new_file_stat)
-	DBUG_RETURN(0);			/* File copyed but not stat */
+      DBUG_RETURN(0);                           /* File copyed but not stat */
     VOID(chmod(to, stat_buff.st_mode & 07777)); /* Copy modes */
 #if !defined(MSDOS) && !defined(__WIN__) && !defined(__EMX__) && !defined(OS2) && !defined(__NETWARE__)
-    VOID(chown(to, stat_buff.st_uid,stat_buff.st_gid)); /* Copy ownership */
+    VOID(chown(to, stat_buff.st_uid, stat_buff.st_gid)); /* Copy ownership */
 #endif
 #if !defined(VMS) && !defined(__ZTC__)
     if (MyFlags & MY_COPYTIME)
     {
       struct utimbuf timep;
-      timep.actime  = stat_buff.st_atime;
+      timep.actime = stat_buff.st_atime;
       timep.modtime = stat_buff.st_mtime;
-      VOID(utime((char*) to, &timep)); /* last accessed and modified times */
+      VOID(utime((char *)to, &timep)); /* last accessed and modified times */
     }
 #endif
     DBUG_RETURN(0);
   }
 
 err:
-  if (from_file >= 0) VOID(my_close(from_file,MyFlags));
-  if (to_file >= 0)   VOID(my_close(to_file,MyFlags));
+  if (from_file >= 0)
+    VOID(my_close(from_file, MyFlags));
+  if (to_file >= 0)
+    VOID(my_close(to_file, MyFlags));
   DBUG_RETURN(-1);
 } /* my_copy */

@@ -30,8 +30,7 @@ int my_msync(int fd, void *addr, size_t len, int flags)
 
 #elif defined(__WIN__)
 
-static SECURITY_ATTRIBUTES mmap_security_attributes=
-  {sizeof(SECURITY_ATTRIBUTES), 0, TRUE};
+static SECURITY_ATTRIBUTES mmap_security_attributes = {sizeof(SECURITY_ATTRIBUTES), 0, TRUE};
 
 int my_getpagesize(void)
 {
@@ -40,26 +39,23 @@ int my_getpagesize(void)
   return si.dwPageSize;
 }
 
-void *my_mmap(void *addr, size_t len, int prot,
-               int flags, int fd, my_off_t offset)
+void *my_mmap(void *addr, size_t len, int prot, int flags, int fd, my_off_t offset)
 {
-  DWORD flProtect=0;
+  DWORD flProtect = 0;
   HANDLE hFileMap;
   LPVOID ptr;
-  HANDLE hFile= (HANDLE)_get_osfhandle(fd);
+  HANDLE hFile = (HANDLE)_get_osfhandle(fd);
   if (hFile == INVALID_HANDLE_VALUE)
     return MAP_FAILED;
 
-  flProtect|=SEC_COMMIT;
+  flProtect |= SEC_COMMIT;
 
-  hFileMap=CreateFileMapping(hFile, &mmap_security_attributes,
-                             PAGE_READWRITE, 0, (DWORD) len, NULL);
+  hFileMap = CreateFileMapping(hFile, &mmap_security_attributes, PAGE_READWRITE, 0, (DWORD)len, NULL);
   if (hFileMap == 0)
     return MAP_FAILED;
 
-  ptr=MapViewOfFile(hFileMap,
-                    flags & PROT_WRITE ? FILE_MAP_WRITE : FILE_MAP_READ,
-                    (DWORD)(offset >> 32), (DWORD)offset, len);
+  ptr = MapViewOfFile(hFileMap, flags & PROT_WRITE ? FILE_MAP_WRITE : FILE_MAP_READ, (DWORD)(offset >> 32),
+                      (DWORD)offset, len);
 
   /*
     MSDN explicitly states that it's possible to close File Mapping Object
@@ -75,17 +71,10 @@ void *my_mmap(void *addr, size_t len, int prot,
   return MAP_FAILED;
 }
 
-int my_munmap(void *addr, size_t len)
-{
-  return UnmapViewOfFile(addr) ? 0 : -1;
-}
+int my_munmap(void *addr, size_t len) { return UnmapViewOfFile(addr) ? 0 : -1; }
 
-int my_msync(int fd, void *addr, size_t len, int flags)
-{
-  return FlushViewOfFile(addr, len) ? 0 : -1;
-}
+int my_msync(int fd, void *addr, size_t len, int flags) { return FlushViewOfFile(addr, len) ? 0 : -1; }
 
 #else
 #warning "no mmap!"
 #endif
-

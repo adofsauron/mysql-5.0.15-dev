@@ -48,12 +48,12 @@ char NEAR errbuff[NRERRBUFFS][ERRMSGSIZE];
 */
 static struct my_err_head
 {
-  struct my_err_head    *meh_next;      /* chain link */
-  const char            **meh_errmsgs;  /* error messages array */
-  int                   meh_first;      /* error number matching array slot 0 */
-  int                   meh_last;       /* error number matching last slot */
+  struct my_err_head *meh_next; /* chain link */
+  const char **meh_errmsgs;     /* error messages array */
+  int meh_first;                /* error number matching array slot 0 */
+  int meh_last;                 /* error number matching last slot */
 } my_errmsgs_globerrs = {NULL, globerrs, EE_ERROR_FIRST, EE_ERROR_LAST};
-static struct my_err_head *my_errmsgs_list= &my_errmsgs_globerrs;
+static struct my_err_head *my_errmsgs_list = &my_errmsgs_globerrs;
 
 /*
    Error message to user
@@ -80,23 +80,22 @@ int my_error(int nr, myf MyFlags, ...)
   DBUG_PRINT("my", ("nr: %d  MyFlags: %d  errno: %d", nr, MyFlags, errno));
 
   /* Search for the error messages array, which could contain the message. */
-  for (meh_p= my_errmsgs_list; meh_p; meh_p= meh_p->meh_next)
+  for (meh_p = my_errmsgs_list; meh_p; meh_p = meh_p->meh_next)
     if (nr <= meh_p->meh_last)
       break;
 
 #ifdef SHARED_LIBRARY
-  if ((meh_p == &my_errmsgs_globerrs) && ! globerrs[0])
+  if ((meh_p == &my_errmsgs_globerrs) && !globerrs[0])
     init_glob_errs();
 #endif
 
   /* get the error message string. Default, if NULL or empty string (""). */
-  if (! (format= (meh_p && (nr >= meh_p->meh_first)) ?
-         meh_p->meh_errmsgs[nr - meh_p->meh_first] : NULL) || ! *format)
-    (void) my_snprintf (ebuff, sizeof(ebuff), "Unknown error %d", nr);
+  if (!(format = (meh_p && (nr >= meh_p->meh_first)) ? meh_p->meh_errmsgs[nr - meh_p->meh_first] : NULL) || !*format)
+    (void)my_snprintf(ebuff, sizeof(ebuff), "Unknown error %d", nr);
   else
   {
-    va_start(args,MyFlags);
-    (void) my_vsnprintf (ebuff, sizeof(ebuff), format, args);
+    va_start(args, MyFlags);
+    (void)my_vsnprintf(ebuff, sizeof(ebuff), format, args);
     va_end(args);
   }
   DBUG_RETURN((*error_handler_hook)(nr, ebuff, MyFlags));
@@ -116,13 +115,12 @@ int my_error(int nr, myf MyFlags, ...)
 int my_printf_error(uint error, const char *format, myf MyFlags, ...)
 {
   va_list args;
-  char ebuff[ERRMSGSIZE+20];
+  char ebuff[ERRMSGSIZE + 20];
   DBUG_ENTER("my_printf_error");
-  DBUG_PRINT("my", ("nr: %d  MyFlags: %d  errno: %d  Format: %s",
-		    error, MyFlags, errno, format));
+  DBUG_PRINT("my", ("nr: %d  MyFlags: %d  errno: %d  Format: %s", error, MyFlags, errno, format));
 
-  va_start(args,MyFlags);
-  (void) my_vsnprintf (ebuff, sizeof(ebuff), format, args);
+  va_start(args, MyFlags);
+  (void)my_vsnprintf(ebuff, sizeof(ebuff), format, args);
   va_end(args);
   DBUG_RETURN((*error_handler_hook)(error, ebuff, MyFlags));
 }
@@ -137,11 +135,7 @@ int my_printf_error(uint error, const char *format, myf MyFlags, ...)
       MyFlags	Flags
 */
 
-int my_message(uint error, const char *str, register myf MyFlags)
-{
-  return (*error_handler_hook)(error, str, MyFlags);
-}
-
+int my_message(uint error, const char *str, register myf MyFlags) { return (*error_handler_hook)(error, str, MyFlags); }
 
 /*
   Register error messages for use with my_error().
@@ -171,17 +165,14 @@ int my_error_register(const char **errmsgs, int first, int last)
   struct my_err_head **search_meh_pp;
 
   /* Allocate a new header structure. */
-  if (! (meh_p= (struct my_err_head*) my_malloc(sizeof(struct my_err_head),
-                                                MYF(MY_WME))))
+  if (!(meh_p = (struct my_err_head *)my_malloc(sizeof(struct my_err_head), MYF(MY_WME))))
     return 1;
-  meh_p->meh_errmsgs= errmsgs;
-  meh_p->meh_first= first;
-  meh_p->meh_last= last;
+  meh_p->meh_errmsgs = errmsgs;
+  meh_p->meh_first = first;
+  meh_p->meh_last = last;
 
   /* Search for the right position in the list. */
-  for (search_meh_pp= &my_errmsgs_list;
-       *search_meh_pp;
-       search_meh_pp= &(*search_meh_pp)->meh_next)
+  for (search_meh_pp = &my_errmsgs_list; *search_meh_pp; search_meh_pp = &(*search_meh_pp)->meh_next)
   {
     if ((*search_meh_pp)->meh_last > first)
       break;
@@ -192,11 +183,10 @@ int my_error_register(const char **errmsgs, int first, int last)
     return 1;
 
   /* Insert header into the chain. */
-  meh_p->meh_next= *search_meh_pp;
-  *search_meh_pp= meh_p;
+  meh_p->meh_next = *search_meh_pp;
+  *search_meh_pp = meh_p;
   return 0;
 }
-
 
 /*
   Unregister formerly registered error messages.
@@ -221,29 +211,26 @@ int my_error_register(const char **errmsgs, int first, int last)
 
 const char **my_error_unregister(int first, int last)
 {
-  struct my_err_head    *meh_p;
-  struct my_err_head    **search_meh_pp;
-  const char            **errmsgs;
+  struct my_err_head *meh_p;
+  struct my_err_head **search_meh_pp;
+  const char **errmsgs;
 
   /* Search for the registration in the list. */
-  for (search_meh_pp= &my_errmsgs_list;
-       *search_meh_pp;
-       search_meh_pp= &(*search_meh_pp)->meh_next)
+  for (search_meh_pp = &my_errmsgs_list; *search_meh_pp; search_meh_pp = &(*search_meh_pp)->meh_next)
   {
-    if (((*search_meh_pp)->meh_first == first) &&
-        ((*search_meh_pp)->meh_last == last))
+    if (((*search_meh_pp)->meh_first == first) && ((*search_meh_pp)->meh_last == last))
       break;
   }
-  if (! *search_meh_pp)
+  if (!*search_meh_pp)
     return NULL;
 
   /* Remove header from the chain. */
-  meh_p= *search_meh_pp;
-  *search_meh_pp= meh_p->meh_next;
+  meh_p = *search_meh_pp;
+  *search_meh_pp = meh_p->meh_next;
 
   /* Save the return value and free the header. */
-  errmsgs= meh_p->meh_errmsgs;
-  my_free((gptr) meh_p, MYF(0));
-  
+  errmsgs = meh_p->meh_errmsgs;
+  my_free((gptr)meh_p, MYF(0));
+
   return errmsgs;
 }

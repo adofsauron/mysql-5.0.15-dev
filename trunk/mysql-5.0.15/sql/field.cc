@@ -1500,7 +1500,7 @@ bool Field::needs_quotes(void)
 
   switch (type())
   {
-      // FIX this when kernel is fixed
+    // FIX this when kernel is fixed
     case MYSQL_TYPE_VARCHAR:
     case FIELD_TYPE_STRING:
     case FIELD_TYPE_VAR_STRING:
@@ -1617,10 +1617,10 @@ int Field_decimal::store(const char *from, uint len, CHARSET_INFO *cs)
   /* The sign of the exponent : will be 0 (means no exponent), '+' or '-' */
   char expo_sign_char = 0;
   uint exponent = 0;  // value of the exponent
-  /*
-    Pointers used when digits move from the left of the '.' to the
-    right of the '.' (explained below)
-  */
+                      /*
+     Pointers used when digits move from the left of the '.' to the
+     right of the '.' (explained below)
+   */
   const char *int_digits_tail_from;
   /* Number of 0 that need to be added at the left of the '.' (1E3: 3 zeros) */
   uint int_digits_added_zeros;
@@ -1679,10 +1679,10 @@ int Field_decimal::store(const char *from, uint len, CHARSET_INFO *cs)
         Field_decimal::overflow(1);
         return 1;
       }
-      /*
-         Defining this will not store "+" for unsigned decimal type even if
-         it is passed in numeric string. This will make some tests to fail
-      */
+/*
+   Defining this will not store "+" for unsigned decimal type even if
+   it is passed in numeric string. This will make some tests to fail
+*/
 #ifdef DONT_ALLOW_UNSIGNED_PLUS
       else
         sign_char = 0;
@@ -4172,7 +4172,7 @@ timestamp_auto_set_type Field_timestamp::get_auto_set_type() const
         having auto-set property).
       */
       DBUG_ASSERT(table->timestamp_field == this);
-      /* Fall-through */
+    /* Fall-through */
     case TIMESTAMP_DNUN_FIELD:
       return TIMESTAMP_AUTO_SET_ON_BOTH;
     default:
@@ -5473,7 +5473,8 @@ int Field_str::store(double nr)
   double anr = fabs(nr);
   int neg = (nr < 0.0) ? 1 : 0;
   if (char_length > 4 && char_length < 32 &&
-      (anr < 1.0 ? anr > 1 / (log_10[max(0, (int)char_length - neg - 2)]) /* -2 for "0." */
+      (anr < 1.0 ? anr > 1 / (log_10[max(0, (int)char_length - neg - 2)]) /* -2 for
+                                                                             "0." */
                  : anr < log_10[char_length - neg] - 1))
     use_scientific_notation = FALSE;
 

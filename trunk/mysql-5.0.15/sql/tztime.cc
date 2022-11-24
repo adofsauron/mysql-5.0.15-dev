@@ -322,8 +322,7 @@ static my_bool prepare_tz_info(TIME_ZONE_INFO *sp, MEM_ROOT *storage)
     We will find first non-DST local time type and use it (or use first
     local time type if all of them are DST types).
   */
-  for (i = 0; i < sp->typecnt && sp->ttis[i].tt_isdst; i++) /* no-op */
-    ;
+  for (i = 0; i < sp->typecnt && sp->ttis[i].tt_isdst; i++) /* no-op */;
   if (i == sp->typecnt)
     i = 0;
   sp->fallback_tti = &(sp->ttis[i]);

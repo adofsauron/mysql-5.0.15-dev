@@ -1101,9 +1101,9 @@ String *Item_func_substr_index::val_str(String *str)
         if ((int)(offset = res->strrstr(*delimeter, offset)) < 0)
           return res;  // Didn't find, return org string
                        /*
-                         At this point, we've searched for the substring
-                         the number of times as supplied by the index value
-                       */
+           At this point, we've searched for the substring
+           the number of times as supplied by the index value
+         */
         if (!++count)
         {
           offset += delimeter_length;
@@ -2453,7 +2453,7 @@ String *Item_func_export_set::val_str(String *str)
         null_value = 1;
         return 0;
       }
-      /* Fall through */
+    /* Fall through */
     case 4:
       if (!(sep = args[3]->val_str(&sep_buf)))  // Only true if NULL
       {

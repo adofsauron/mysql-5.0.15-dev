@@ -48,12 +48,12 @@ class Field
   static void *operator new(size_t size) { return (void *)sql_alloc((uint)size); }
   static void operator delete(void *ptr_arg, size_t size) { TRASH(ptr_arg, size); }
 
-  char *ptr;        // Position to field in record
-  uchar *null_ptr;  // Byte where null_bit is
-  /*
-    Note that you can use table->in_use as replacement for current_thd member
-    only inside of val_*() and store() members (e.g. you can't use it in cons)
-  */
+  char *ptr;                    // Position to field in record
+  uchar *null_ptr;              // Byte where null_bit is
+                                /*
+                 Note that you can use table->in_use as replacement for current_thd member
+                 only inside of val_*() and store() members (e.g. you can't use it in cons)
+               */
   struct st_table *table;       // Pointer for table
   struct st_table *orig_table;  // Pointer to original table
   const char **table_name, *field_name;

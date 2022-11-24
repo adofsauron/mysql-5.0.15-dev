@@ -829,11 +829,11 @@ class Statement : public ilink, public Query_arena
 
   LEX_STRING name; /* name for named prepared statements */
   LEX *lex;        // parse tree descriptor
-  /*
+                   /*
     Points to the query associated with this statement. It's const, but
     we need to declare it char * because all table handlers are written
     in C and need to point to it.
-
+                 
     Note that (A) if we set query = NULL, we must at the same time set
     query_length = 0, and protect the whole operation with the
     LOCK_thread_count mutex. And (B) we are ONLY allowed to set query to a
@@ -1214,11 +1214,11 @@ class THD : public Statement, public Open_tables_state
   enum enum_server_command command;
   uint32 server_id;
   uint32 file_id;  // for LOAD DATA INFILE
-  /*
-    Used in error messages to tell user in what part of MySQL we found an
-    error. E. g. when where= "having clause", if fix_fields() fails, user
-    will know that the error was in having clause.
-  */
+                   /*
+     Used in error messages to tell user in what part of MySQL we found an
+     error. E. g. when where= "having clause", if fix_fields() fails, user
+     will know that the error was in having clause.
+   */
   const char *where;
   time_t start_time, time_after_lock, user_time;
   time_t connect_time, thr_create_time;  // track down slow pthread_create

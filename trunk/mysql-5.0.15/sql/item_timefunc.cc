@@ -176,7 +176,7 @@ static bool extract_date_time(DATE_TIME_FORMAT *format, const char *val, uint le
       val_len = (uint)(val_end - val);
       switch (*++ptr)
       {
-          /* Year */
+        /* Year */
         case 'Y':
           tmp = (char *)val + min(4, val_len);
           l_time->year = (int)my_strtoll10(val, &tmp, &error);
@@ -189,7 +189,7 @@ static bool extract_date_time(DATE_TIME_FORMAT *format, const char *val, uint le
           l_time->year += (l_time->year < YY_PART_YEAR ? 2000 : 1900);
           break;
 
-          /* Month */
+        /* Month */
         case 'm':
         case 'c':
           tmp = (char *)val + min(2, val_len);
@@ -201,7 +201,7 @@ static bool extract_date_time(DATE_TIME_FORMAT *format, const char *val, uint le
           if ((l_time->month = check_word(&month_names_typelib, val, val_end, &val)) <= 0)
             goto err;
           break;
-          /* Day */
+        /* Day */
         case 'd':
         case 'e':
           tmp = (char *)val + min(2, val_len);
@@ -215,12 +215,12 @@ static bool extract_date_time(DATE_TIME_FORMAT *format, const char *val, uint le
           val = tmp + min((int)(end - tmp), 2);
           break;
 
-          /* Hour */
+        /* Hour */
         case 'h':
         case 'I':
         case 'l':
           usa_time = 1;
-          /* fall through */
+        /* fall through */
         case 'k':
         case 'H':
           tmp = (char *)val + min(2, val_len);
@@ -228,14 +228,14 @@ static bool extract_date_time(DATE_TIME_FORMAT *format, const char *val, uint le
           val = tmp;
           break;
 
-          /* Minute */
+        /* Minute */
         case 'i':
           tmp = (char *)val + min(2, val_len);
           l_time->minute = (int)my_strtoll10(val, &tmp, &error);
           val = tmp;
           break;
 
-          /* Second */
+        /* Second */
         case 's':
         case 'S':
           tmp = (char *)val + min(2, val_len);
@@ -243,7 +243,7 @@ static bool extract_date_time(DATE_TIME_FORMAT *format, const char *val, uint le
           val = tmp;
           break;
 
-          /* Second part */
+        /* Second part */
         case 'f':
           tmp = (char *)val_end;
           if (tmp - val > 6)
@@ -255,7 +255,7 @@ static bool extract_date_time(DATE_TIME_FORMAT *format, const char *val, uint le
           val = tmp;
           break;
 
-          /* AM / PM */
+        /* AM / PM */
         case 'p':
           if (val_len < 2 || !usa_time)
             goto err;
@@ -266,7 +266,7 @@ static bool extract_date_time(DATE_TIME_FORMAT *format, const char *val, uint le
           val += 2;
           break;
 
-          /* Exotic things */
+        /* Exotic things */
         case 'W':
         case 'a':
           if ((weekday = check_word(&day_names_typelib, val, val_end, &val)) <= 0)
@@ -287,7 +287,7 @@ static bool extract_date_time(DATE_TIME_FORMAT *format, const char *val, uint le
           val = tmp;
           break;
 
-          /* Week numbers */
+        /* Week numbers */
         case 'V':
         case 'U':
         case 'v':
@@ -301,7 +301,7 @@ static bool extract_date_time(DATE_TIME_FORMAT *format, const char *val, uint le
           val = tmp;
           break;
 
-          /* Year used with 'strict' %V and %v week numbers */
+        /* Year used with 'strict' %V and %v week numbers */
         case 'X':
         case 'x':
           strict_week_number_year_type = (*ptr == 'X');
@@ -310,7 +310,7 @@ static bool extract_date_time(DATE_TIME_FORMAT *format, const char *val, uint le
           val = tmp;
           break;
 
-          /* Time in AM/PM notation */
+        /* Time in AM/PM notation */
         case 'r':
           /*
             We can't just set error here, as we don't want to generate two
@@ -321,14 +321,14 @@ static bool extract_date_time(DATE_TIME_FORMAT *format, const char *val, uint le
             DBUG_RETURN(1);
           break;
 
-          /* Time in 24-hour notation */
+        /* Time in 24-hour notation */
         case 'T':
           if (extract_date_time(&time_24hrs_format, val, (uint)(val_end - val), l_time, cached_timestamp_type, &val,
                                 "time"))
             DBUG_RETURN(1);
           break;
 
-          /* Conversion specifiers that match classes of characters */
+        /* Conversion specifiers that match classes of characters */
         case '.':
           while (my_ispunct(cs, *val) && val != val_end) val++;
           break;

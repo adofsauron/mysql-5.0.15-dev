@@ -237,7 +237,8 @@ my_string ip_to_hostname(struct in_addr *in, uint *errors)
       ;
     if (*pos == '.')
     {
-      DBUG_PRINT("error", ("mysqld doesn't accept hostnames that starts with a number followed by a '.'"));
+      DBUG_PRINT("error", ("mysqld doesn't accept hostnames that starts with a "
+                           "number followed by a '.'"));
       my_free(name, MYF(0));
       goto add_wrong_ip_and_return;
     }

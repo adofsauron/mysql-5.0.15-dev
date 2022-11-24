@@ -263,7 +263,8 @@ static SYMBOL symbols[] = {{"&&", SYM(AND_AND_SYM)},
                            {"KEYS", SYM(KEYS)},
                            {"KILL", SYM(KILL_SYM)},
 #ifdef SP_GOTO
-                           /* QQ This will go away when the GOTO label syntax is fixed */
+                           /* QQ This will go away when the GOTO label syntax
+                              is fixed */
                            {"LABEL", SYM(LABEL_SYM)},
 #endif
                            {"LANGUAGE", SYM(LANGUAGE_SYM)},

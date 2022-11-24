@@ -3397,7 +3397,7 @@ Field *Item::tmp_table_field_from_field_type(TABLE *table)
     default:
       /* This case should never be chosen */
       DBUG_ASSERT(0);
-      /* If something goes awfully wrong, it's better to get a string than die */
+    /* If something goes awfully wrong, it's better to get a string than die */
     case MYSQL_TYPE_ENUM:
     case MYSQL_TYPE_SET:
     case MYSQL_TYPE_STRING:

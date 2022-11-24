@@ -221,7 +221,9 @@ int check_binlog_magic(IO_CACHE *log, const char **errmsg)
   }
   if (memcmp(magic, BINLOG_MAGIC, sizeof(magic)))
   {
-    *errmsg = "Binlog has bad magic number;  It's not a binary log file that can be used by this version of MySQL";
+    *errmsg =
+        "Binlog has bad magic number;  It's not a binary log file that "
+        "can be used by this version of MySQL";
     return 1;
   }
   return 0;
@@ -530,10 +532,12 @@ bool MYSQL_LOG::open(const char *log_name, enum_log_type log_type_arg, const cha
                             "embedded library\n",
                             my_progname, server_version
 #elif __NT__
-                            "started with:\nTCP Port: %d, Named Pipe: %s\n",
+                            "started with:\nTCP Port: %d, "
+                            "Named Pipe: %s\n",
                             my_progname, server_version, mysqld_port, mysqld_unix_port
 #else
-                            "started with:\nTcp port: %d  Unix socket: %s\n",
+                            "started with:\nTcp port: %d  "
+                            "Unix socket: %s\n",
                             my_progname, server_version, mysqld_port, mysqld_unix_port
 #endif
       );
@@ -1300,7 +1304,8 @@ void MYSQL_LOG::new_file(bool need_lock)
   /*
      new_file() is only used for rotation (in FLUSH LOGS or because size >
      max_binlog_size or max_relay_log_size).
-     If this is a binary log, the Format_description_log_event at the beginning of
+     If this is a binary log, the Format_description_log_event at the beginning
+     of
      the new file should have created=0 (to distinguish with the
      Format_description_log_event written at server startup, which should
      trigger temp tables deletion on slaves.
@@ -1834,7 +1839,9 @@ bool MYSQL_LOG::write(THD *thd, const char *query, uint query_length, time_t que
     if (query_start_arg)
     {
       /* For slow query log */
-      if (my_b_printf(&log_file, "# Query_time: %lu  Lock_time: %lu  Rows_sent: %lu  Rows_examined: %lu\n",
+      if (my_b_printf(&log_file,
+                      "# Query_time: %lu  Lock_time: %lu  "
+                      "Rows_sent: %lu  Rows_examined: %lu\n",
                       (ulong)(current_time - query_start_arg), (ulong)(thd->time_after_lock - query_start_arg),
                       (ulong)thd->sent_row_count, (ulong)thd->examined_row_count) == (uint)-1)
         tmp_errno = errno;

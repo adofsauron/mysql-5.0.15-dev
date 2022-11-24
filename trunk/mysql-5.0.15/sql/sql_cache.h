@@ -86,13 +86,13 @@ struct Query_cache_block
     INCOMPLETE
   };
 
-  ulong length;  // length of all block
-  ulong used;    // length of data
-  /*
-    Not used **pprev, **prev because really needed access to pervious block:
-    *pprev to join free blocks
-    *prev to access to opposite side of list in cyclic sorted list
-  */
+  ulong length;                      // length of all block
+  ulong used;                        // length of data
+                                     /*
+                         Not used **pprev, **prev because really needed access to pervious block:
+                         *pprev to join free blocks
+                         *prev to access to opposite side of list in cyclic sorted list
+                       */
   Query_cache_block *pnext, *pprev,  // physical next/previous block
       *next, *prev;                  // logical next/previous block
   block_type type;

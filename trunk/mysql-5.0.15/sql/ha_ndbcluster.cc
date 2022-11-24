@@ -158,7 +158,7 @@ struct show_var_st ndb_status_variables[] = {
     {"cluster_node_id", (char *)&ndb_cluster_node_id, SHOW_LONG},
     {"connected_host", (char *)&ndb_connected_host, SHOW_CHAR_PTR},
     {"connected_port", (char *)&ndb_connected_port, SHOW_LONG},
-    //  {"number_of_replicas",     (char*) &ndb_number_of_replicas,      SHOW_LONG},
+    //  {"number_of_replicas",     (char*) &ndb_number_of_replicas, SHOW_LONG},
     {"number_of_storage_nodes", (char *)&ndb_number_of_storage_nodes, SHOW_LONG},
     {NullS, NullS, SHOW_LONG}};
 
@@ -178,26 +178,20 @@ static const err_code_mapping err_map[] = {{626, HA_ERR_KEY_NOT_FOUND, 0},
                                            {893, HA_ERR_FOUND_DUPP_KEY, 0},
                                            {721, HA_ERR_TABLE_EXIST, 1},
                                            {4244, HA_ERR_TABLE_EXIST, 1},
-
                                            {709, HA_ERR_NO_SUCH_TABLE, 0},
-
                                            {266, HA_ERR_LOCK_WAIT_TIMEOUT, 1},
                                            {274, HA_ERR_LOCK_WAIT_TIMEOUT, 1},
                                            {296, HA_ERR_LOCK_WAIT_TIMEOUT, 1},
                                            {297, HA_ERR_LOCK_WAIT_TIMEOUT, 1},
                                            {237, HA_ERR_LOCK_WAIT_TIMEOUT, 1},
-
                                            {623, HA_ERR_RECORD_FILE_FULL, 1},
                                            {624, HA_ERR_RECORD_FILE_FULL, 1},
                                            {625, HA_ERR_RECORD_FILE_FULL, 1},
                                            {826, HA_ERR_RECORD_FILE_FULL, 1},
                                            {827, HA_ERR_RECORD_FILE_FULL, 1},
                                            {832, HA_ERR_RECORD_FILE_FULL, 1},
-
                                            {284, HA_ERR_TABLE_DEF_CHANGED, 0},
-
                                            {0, 1, 0},
-
                                            {-1, -1, 1}};
 
 static int ndb_to_mysql_error(const NdbError *err)
@@ -2249,7 +2243,7 @@ void ha_ndbcluster::unpack_record(byte *buf)
     DBUG_ASSERT(rec);
     DBUG_PRINT("hidden", ("%d: %s \"%llu\"", hidden_no, hidden_col->getName(), rec->u_64_value()));
   }
-  // print_results();
+// print_results();
 #endif
   DBUG_VOID_RETURN;
 }
@@ -5294,7 +5288,7 @@ int ha_ndbcluster::read_multi_range_first(KEY_MULTI_RANGE **found_range_p, KEY_M
         if (!(multi_range_curr->start_key.length == key_info->key_length &&
               multi_range_curr->start_key.flag == HA_READ_KEY_EXACT))
           goto range;
-        /* fall through */
+      /* fall through */
       case PRIMARY_KEY_INDEX:
       {
         multi_range_curr->range_flag |= UNIQUE_RANGE;
@@ -5312,7 +5306,7 @@ int ha_ndbcluster::read_multi_range_first(KEY_MULTI_RANGE **found_range_p, KEY_M
               multi_range_curr->start_key.flag == HA_READ_KEY_EXACT &&
               !check_null_in_key(key_info, multi_range_curr->start_key.key, multi_range_curr->start_key.length)))
           goto range;
-        /* fall through */
+      /* fall through */
       case UNIQUE_INDEX:
       {
         multi_range_curr->range_flag |= UNIQUE_RANGE;
@@ -5849,15 +5843,15 @@ void ndb_serialize_cond(const Item *item, void *arg)
       switch (func_item->functype())
       {
         case Item_func::BETWEEN:
-          /*
-            Rewrite
-            <field>|<const> BETWEEN <const1>|<field1> AND <const2>|<field2>
-            to <field>|<const> > <const1>|<field1> AND
-            <field>|<const> < <const2>|<field2>
-            or actually in prefix format
-            BEGIN(AND) GT(<field>|<const>, <const1>|<field1>),
-            LT(<field>|<const>, <const2>|<field2>), END()
-          */
+        /*
+          Rewrite
+          <field>|<const> BETWEEN <const1>|<field1> AND <const2>|<field2>
+          to <field>|<const> > <const1>|<field1> AND
+          <field>|<const> < <const2>|<field2>
+          or actually in prefix format
+          BEGIN(AND) GT(<field>|<const>, <const1>|<field1>),
+          LT(<field>|<const>, <const2>|<field2>), END()
+        */
         case Item_func::IN_FUNC:
         {
           /*
@@ -6914,7 +6908,7 @@ int ha_ndbcluster::build_scan_filter_group(Ndb_cond *&cond, NdbScanFilter *filte
           DBUG_RETURN(1);
         if (!negated)
           break;
-        // else fall through (NOT END is an illegal condition)
+      // else fall through (NOT END is an illegal condition)
       default:
       {
         DBUG_PRINT("info", ("Illegal scan filter"));

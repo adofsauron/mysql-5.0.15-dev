@@ -274,14 +274,14 @@ class sp_head : private Query_arena
     sp_instr *instr;
   } bp_t;
   List<bp_t> m_backpatch;  // Instructions needing backpatching
-  /*
-    Multi-set representing optimized list of tables to be locked by this
-    routine. Does not include tables which are used by invoked routines.
-
-    Note: for prelocking-free SPs this multiset is constructed too.
-    We do so because the same instance of sp_head may be called both
-    in prelocked mode and in non-prelocked mode.
-  */
+                           /*
+     Multi-set representing optimized list of tables to be locked by this
+     routine. Does not include tables which are used by invoked routines.
+                         
+     Note: for prelocking-free SPs this multiset is constructed too.
+     We do so because the same instance of sp_head may be called both
+     in prelocked mode and in non-prelocked mode.
+   */
   HASH m_sptabs;
 
   int execute(THD *thd);

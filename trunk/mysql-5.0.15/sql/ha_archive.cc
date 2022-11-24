@@ -85,13 +85,16 @@
    Add truncate table command.
    Implement versioning, should be easy.
    Allow for errors, find a way to mark bad rows.
-   Talk to the gzip guys, come up with a writable format so that updates are doable
+   Talk to the gzip guys, come up with a writable format so that updates are
+  doable
      without switching to a block method.
-   Add optional feature so that rows can be flushed at interval (which will cause less
+   Add optional feature so that rows can be flushed at interval (which will
+  cause less
      compression but may speed up ordered searches).
    Checkpoint the meta file to allow for faster rebuilds.
    Dirty open (right now the meta file is repaired if a crash occured).
-   Option to allow for dirty reads, this would lower the sync calls, which would make
+   Option to allow for dirty reads, this would lower the sync calls, which would
+  make
      inserts a lot faster, but would mean highly arbitrary reads.
 
     -Brian
@@ -122,16 +125,16 @@ pthread_mutex_t archive_mutex;
 static HASH archive_open_tables;
 
 /* The file extension */
-#define ARZ ".ARZ"  // The data file
-#define ARN ".ARN"  // Files used during an optimize call
-#define ARM ".ARM"  // Meta file
-/*
-  uchar + uchar + ulonglong + ulonglong + uchar
-*/
-#define META_BUFFER_SIZE 19  // Size of the data used in the meta file
-/*
-  uchar + uchar
-*/
+#define ARZ ".ARZ"                // The data file
+#define ARN ".ARN"                // Files used during an optimize call
+#define ARM ".ARM"                // Meta file
+                                  /*
+                 uchar + uchar + ulonglong + ulonglong + uchar
+               */
+#define META_BUFFER_SIZE 19       // Size of the data used in the meta file
+                                  /*
+        uchar + uchar
+      */
 #define DATA_BUFFER_SIZE 2        // Size of the data used in the data file
 #define ARCHIVE_CHECK_HEADER 254  // The number we use to determine corruption
 
@@ -230,7 +233,8 @@ ha_archive::ha_archive(TABLE *table_arg) : handler(&archive_hton, table_arg), de
 }
 
 /*
-  This method reads the header of a datafile and returns whether or not it was successful.
+  This method reads the header of a datafile and returns whether or not it was
+  successful.
 */
 int ha_archive::read_data_header(gzFile file_to_read)
 {
@@ -253,7 +257,8 @@ int ha_archive::read_data_header(gzFile file_to_read)
 }
 
 /*
-  This method writes out the header of a datafile and returns whether or not it was successful.
+  This method writes out the header of a datafile and returns whether or not it
+  was successful.
 */
 int ha_archive::write_data_header(gzFile file_to_write)
 {
@@ -274,7 +279,8 @@ error:
 }
 
 /*
-  This method reads the header of a meta file and returns whether or not it was successful.
+  This method reads the header of a meta file and returns whether or not it was
+  successful.
   *rows will contain the current number of rows in the data file upon success.
 */
 int ha_archive::read_meta_file(File meta_file, ha_rows *rows)
@@ -309,8 +315,10 @@ int ha_archive::read_meta_file(File meta_file, ha_rows *rows)
 }
 
 /*
-  This method writes out the header of a meta file and returns whether or not it was successful.
-  By setting dirty you say whether or not the file represents the actual state of the data file.
+  This method writes out the header of a meta file and returns whether or not it
+  was successful.
+  By setting dirty you say whether or not the file represents the actual state
+  of the data file.
   Upon ::open() we set to dirty, and upon ::close() we set to clean.
 */
 int ha_archive::write_meta_file(File meta_file, ha_rows rows, bool dirty)
@@ -812,7 +820,8 @@ int ha_archive::optimize(THD *thd, HA_CHECK_OPT *check_opt)
     DBUG_RETURN(HA_ERR_CRASHED_ON_USAGE);
 
   /*
-    An extended rebuild is a lot more effort. We open up each row and re-record it.
+    An extended rebuild is a lot more effort. We open up each row and re-record
+    it.
     Any dead rows are removed (aka rows that may have been partially recorded).
   */
 
@@ -864,7 +873,8 @@ int ha_archive::optimize(THD *thd, HA_CHECK_OPT *check_opt)
   else
   {
     /*
-      The quick method is to just read the data raw, and then compress it directly.
+      The quick method is to just read the data raw, and then compress it
+      directly.
     */
     int read;  // Bytes read, gzread() returns int
     char block[IO_SIZE];
@@ -978,7 +988,8 @@ void ha_archive::start_bulk_insert(ha_rows rows)
 }
 
 /*
-  Other side of start_bulk_insert, is end_bulk_insert. Here we turn off the bulk insert
+  Other side of start_bulk_insert, is end_bulk_insert. Here we turn off the bulk
+  insert
   flag, and set the share dirty so that the next select will call sync for us.
 */
 int ha_archive::end_bulk_insert()
@@ -990,7 +1001,8 @@ int ha_archive::end_bulk_insert()
 }
 
 /*
-  We cancel a truncate command. The only way to delete an archive table is to drop it.
+  We cancel a truncate command. The only way to delete an archive table is to
+  drop it.
   This is done for security reasons. In a later version we will enable this by
   allowing the user to select a different row format.
 */

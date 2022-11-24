@@ -47,7 +47,7 @@ have disables the InnoDB inlining in this file. */
 
 pthread_mutex_t innobase_share_mutex, /* to protect innobase_open_files */
     prepare_commit_mutex;             /* to force correct commit order in
-                                      binlog */
+                          binlog */
 ulong commit_threads = 0;
 pthread_mutex_t commit_threads_m;
 pthread_cond_t commit_cond;
@@ -1002,11 +1002,11 @@ extern "C" void innobase_invalidate_query_cache(
     ulint full_name_len) /* in: full name length where also the null
                          chars count */
 {
-  /* Note that the sync0sync.h rank of the query cache mutex is just
-  above the InnoDB kernel mutex. The caller of this function must not
-  have latches of a lower rank. */
+/* Note that the sync0sync.h rank of the query cache mutex is just
+above the InnoDB kernel mutex. The caller of this function must not
+have latches of a lower rank. */
 
-  /* Argument TRUE below means we are using transactions */
+/* Argument TRUE below means we are using transactions */
 #ifdef HAVE_QUERY_CACHE
   query_cache.invalidate((THD *)(trx->mysql_thd), (const char *)full_name, (uint32)full_name_len, TRUE);
 #endif
@@ -1341,7 +1341,8 @@ bool innobase_init(void)
   glob_mi also after innobase_init. */
 
   /*	if (trx_sys_mysql_master_log_pos != -1) {
-                  ut_memcpy(glob_mi.log_file_name, trx_sys_mysql_master_log_name,
+                  ut_memcpy(glob_mi.log_file_name,
+     trx_sys_mysql_master_log_name,
                                   1 + ut_strlen(trx_sys_mysql_master_log_name));
                   glob_mi.pos = trx_sys_mysql_master_log_pos;
           }
@@ -1532,11 +1533,11 @@ static int innobase_commit(
   }
   if (all || (!(thd->options & (OPTION_NOT_AUTOCOMMIT | OPTION_BEGIN))))
   {
-    /* We were instructed to commit the whole transaction, or
-    this is an SQL statement end and autocommit is on */
+  /* We were instructed to commit the whole transaction, or
+  this is an SQL statement end and autocommit is on */
 
-    /* We need current binlog position for ibbackup to work.
-    Note, the position is current because of prepare_commit_mutex */
+  /* We need current binlog position for ibbackup to work.
+  Note, the position is current because of prepare_commit_mutex */
   retry:
     if (srv_commit_concurrency > 0)
     {
@@ -2892,8 +2893,8 @@ static void build_template(
     /*===========*/
     row_prebuilt_t *prebuilt, /* in: prebuilt struct */
     THD *thd,                 /* in: current user thread, used
-                              only if templ_type is
-                              ROW_MYSQL_REC_FIELDS */
+              only if templ_type is
+              ROW_MYSQL_REC_FIELDS */
     TABLE *table,             /* in: MySQL table */
     ulint templ_type)         /* in: ROW_MYSQL_WHOLE_ROW or
                               ROW_MYSQL_REC_FIELDS */
@@ -3329,8 +3330,8 @@ int ha_innobase::write_row(
 
   error = convert_error_code_to_mysql(error, user_thd);
 
-  /* Tell InnoDB server that there might be work for
-  utility threads: */
+/* Tell InnoDB server that there might be work for
+utility threads: */
 func_exit:
   innobase_active_small();
 
@@ -3666,7 +3667,7 @@ inline ulint convert_search_mode_to_innobase(
   {
     case HA_READ_KEY_EXACT:
       return (PAGE_CUR_GE);
-      /* the above does not require the index to be UNIQUE */
+    /* the above does not require the index to be UNIQUE */
     case HA_READ_KEY_OR_NEXT:
       return (PAGE_CUR_GE);
     case HA_READ_KEY_OR_PREV:
@@ -4547,7 +4548,7 @@ int ha_innobase::create(
     /* out: error number */
     const char *name,            /* in: table name */
     TABLE *form,                 /* in: information on table
-                                 columns and indexes */
+                            columns and indexes */
     HA_CREATE_INFO *create_info) /* in: more information of the
                                  created table, contains also the
                                  create statement string */
@@ -6241,7 +6242,8 @@ int ha_innobase::transactional_table_lock(
     ut_print_timestamp(stderr);
     fprintf(stderr,
             "  InnoDB error:\n"
-            "MySQL is trying to set transactional table lock with corrupted lock type\n"
+            "MySQL is trying to set transactional table lock with "
+            "corrupted lock type\n"
             "to table %s, lock type %d does not exist.\n",
             prebuilt->table->name, lock_type);
     DBUG_RETURN(HA_ERR_CRASHED);

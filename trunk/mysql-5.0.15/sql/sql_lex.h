@@ -58,7 +58,6 @@ enum enum_sql_command
   SQLCOM_TRUNCATE,
   SQLCOM_DROP_TABLE,
   SQLCOM_DROP_INDEX,
-
   SQLCOM_SHOW_DATABASES,
   SQLCOM_SHOW_TABLES,
   SQLCOM_SHOW_FIELDS,
@@ -79,7 +78,6 @@ enum enum_sql_command
   SQLCOM_SHOW_CREATE_DB,
   SQLCOM_SHOW_TABLE_STATUS,
   SQLCOM_SHOW_TRIGGERS,
-
   SQLCOM_LOAD,
   SQLCOM_SET_OPTION,
   SQLCOM_LOCK_TABLES,
@@ -166,7 +164,6 @@ enum enum_sql_command
   SQLCOM_XA_ROLLBACK,
   SQLCOM_XA_RECOVER,
   /* This should be the last !!! */
-
   SQLCOM_END
 };
 
@@ -549,7 +546,8 @@ class st_select_lex : public st_select_lex_node
   /* point on lex in which it was created, used in view subquery detection */
   st_lex *parent_lex;
   enum olap_type olap;
-  /* FROM clause - points to the beginning of the TABLE_LIST::next_local list. */
+  /* FROM clause - points to the beginning of the TABLE_LIST::next_local list.
+   */
   SQL_LIST table_list;
   SQL_LIST group_list;  /* GROUP BY clause. */
   List<Item> item_list; /* list of fields & expressions */
@@ -565,7 +563,7 @@ class st_select_lex : public st_select_lex_node
   List<TABLE_LIST> top_join_list; /* join list of the top level          */
   List<TABLE_LIST> *join_list;    /* list for the currently parsed join  */
   TABLE_LIST *embedding;          /* table embedding to the above list   */
-  /*
+                                  /*
     Beginning of the list of leaves in a FROM clause, where the leaves
     inlcude all base tables including view tables. The tables are connected
     by TABLE_LIST::next_leaf, so leaf_tables points to the left-most leaf.
@@ -590,7 +588,7 @@ class st_select_lex : public st_select_lex_node
   uint cond_count;                  /* number of arguments of and/or/xor in where/having */
   enum_parsing_place parsing_place; /* where we are parsing expression */
   bool with_sum_func;               /* sum function indicator */
-  /*
+                                    /*
     PS or SP cond natural joins was alredy processed with permanent
     arena and all additional items which we need alredy stored in it
   */
@@ -799,7 +797,7 @@ typedef struct st_lex
   THD *thd;
   CHARSET_INFO *charset;
   TABLE_LIST *query_tables; /* global list of all tables in this query */
-  /*
+                            /*
     last element next_global of previous list (used only for list building
     during parsing and VIEW processing. This pointer could be invalid during
     processing of information schema tables(see get_schema_tables_result
@@ -823,19 +821,19 @@ typedef struct st_lex
   List<set_var_base> var_list;
   List<Item_param> param_list;
   List<LEX_STRING> view_list;  // view list (list of field names in view)
-  /*
-    A stack of name resolution contexts for the query. This stack is used
-    at parse time to set local name resolution contexts for various parts
-    of a query. For example, in a JOIN ... ON (some_condition) clause the
-    Items in 'some_condition' must be resolved only against the operands
-    of the the join, and not against the whole clause. Similarly, Items in
-    subqueries should be resolved against the subqueries (and outer queries).
-    The stack is used in the following way: when the parser detects that
-    all Items in some clause need a local context, it creates a new context
-    and pushes it on the stack. All newly created Items always store the
-    top-most context in the stack. Once the parser leaves the clause that
-    required a local context, the parser pops the top-most context.
-  */
+                               /*
+     A stack of name resolution contexts for the query. This stack is used
+     at parse time to set local name resolution contexts for various parts
+     of a query. For example, in a JOIN ... ON (some_condition) clause the
+     Items in 'some_condition' must be resolved only against the operands
+     of the the join, and not against the whole clause. Similarly, Items in
+     subqueries should be resolved against the subqueries (and outer queries).
+     The stack is used in the following way: when the parser detects that
+     all Items in some clause need a local context, it creates a new context
+     and pushes it on the stack. All newly created Items always store the
+     top-most context in the stack. Once the parser leaves the clause that
+     required a local context, the parser pops the top-most context.
+   */
   List<Name_resolution_context> context_stack;
 
   SQL_LIST proc_list, auxilliary_table_list, save_list;
@@ -897,7 +895,7 @@ typedef struct st_lex
   ALTER_INFO alter_info;
   /* Prepared statements SQL syntax:*/
   LEX_STRING prepared_stmt_name; /* Statement name (in all queries) */
-  /*
+                                 /*
     Prepared statement query text or name of variable that holds the
     prepared statement (in PREPARE ... queries)
   */
@@ -933,7 +931,7 @@ typedef struct st_lex
 
   st_sp_chistics sp_chistics;
   bool only_view; /* used for SHOW CREATE TABLE/VIEW */
-  /*
+                  /*
     field_list was created for view and should be removed before PS/SP
     rexecuton
   */

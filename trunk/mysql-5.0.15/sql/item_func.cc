@@ -959,9 +959,7 @@ longlong Item_func_minus::int_op()
 my_decimal *Item_func_minus::decimal_op(my_decimal *decimal_value)
 {
   my_decimal value1, *val1;
-  my_decimal value2, *val2 =
-
-                         val1 = args[0]->val_decimal(&value1);
+  my_decimal value2, *val2 = val1 = args[0]->val_decimal(&value1);
   if ((null_value = args[0]->null_value))
     return 0;
   val2 = args[1]->val_decimal(&value2);
@@ -1628,7 +1626,7 @@ void Item_func_round::fix_length_and_dec()
         decimals = 0;
         break;
       }
-      /* fall through */
+    /* fall through */
     case DECIMAL_RESULT:
     {
       hybrid_type = DECIMAL_RESULT;
@@ -2324,7 +2322,6 @@ bool udf_handler::fix_fields(THD *thd, Item_result_field *func, uint arg_count, 
   if ((f_args.arg_count = arg_count))
   {
     if (!(f_args.arg_type = (Item_result *)sql_alloc(f_args.arg_count * sizeof(Item_result))))
-
     {
       free_udf(u_d);
       DBUG_RETURN(TRUE);

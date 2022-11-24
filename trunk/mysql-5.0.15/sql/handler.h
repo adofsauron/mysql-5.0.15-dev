@@ -66,8 +66,10 @@
 #define HA_DUPP_POS (1 << 8)    /* ha_position() gives dup row */
 #define HA_NO_BLOBS (1 << 9)    /* Doesn't support blobs */
 #define HA_CAN_INDEX_BLOBS (1 << 10)
-#define HA_AUTO_PART_KEY (1 << 11)       /* auto-increment in multi-part key */
-#define HA_REQUIRE_PRIMARY_KEY (1 << 12) /* .. and can't create a hidden one */
+#define HA_AUTO_PART_KEY (1 << 11) /* auto-increment in multi-part key */
+#define HA_REQUIRE_PRIMARY_KEY                  \
+  (1 << 12) /* .. and can't create a hidden one \
+             */
 #define HA_NOT_EXACT_COUNT (1 << 13)
 /*
   INSERT_DELAYED only works with handlers that uses MySQL internal table

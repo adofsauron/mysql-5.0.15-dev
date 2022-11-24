@@ -50,10 +50,10 @@ typedef struct st_table_ref
   byte *key_buff2;       // key_buff+key_length
   store_key **key_copy;  //
   Item **items;          // val()'s for each keypart
-  /*
-    (null_rejecting & (1<<i)) means the condition is '=' and no matching
-    rows will be produced if items[i] IS NULL (see add_not_null_conds())
-  */
+                         /*
+     (null_rejecting & (1<<i)) means the condition is '=' and no matching
+     rows will be produced if items[i] IS NULL (see add_not_null_conds())
+   */
   key_part_map null_rejecting;
   table_map depend_map;  // Table depends on these tables.
   byte *null_ref_key;    // null byte position in the key_buf.

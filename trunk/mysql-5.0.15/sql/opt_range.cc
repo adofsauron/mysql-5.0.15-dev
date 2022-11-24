@@ -1412,7 +1412,7 @@ class TRP_GROUP_MIN_MAX : public TABLE_READ_PLAN
   SEL_TREE *range_tree; /* Represents all range predicates in the query. */
   SEL_ARG *index_tree;  /* The SEL_ARG sub-tree corresponding to index_info. */
   uint param_idx;       /* Index of used key in param->key. */
-                        /* Number of records selected by the ranges in index_tree. */
+  /* Number of records selected by the ranges in index_tree. */
  public:
   ha_rows quick_prefix_records;
 

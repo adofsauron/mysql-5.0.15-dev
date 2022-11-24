@@ -190,7 +190,8 @@ class QUICK_SELECT_I
     function is called.
     SYNOPSIS
       init_ror_merged_scan()
-        reuse_handler If true, the quick select may use table->handler, otherwise
+        reuse_handler If true, the quick select may use table->handler,
+    otherwise
                       it must create and use a separate handler object.
     RETURN
       0     Ok
@@ -608,7 +609,8 @@ class QUICK_GROUP_MIN_MAX_SELECT : public QUICK_SELECT_I
     TRP_GROUP_MIN_MAX::make_quick()
   */
   MEM_ROOT alloc;                          /* Memory pool for this and quick_prefix_select data. */
-  QUICK_RANGE_SELECT *quick_prefix_select; /* For retrieval of group prefixes. */
+  QUICK_RANGE_SELECT *quick_prefix_select; /* For retrieval of group prefixes.
+                                            */
  private:
   int next_prefix();
   int next_min_in_range();

@@ -912,7 +912,7 @@ int ha_rollback_trans(THD *thd, bool all)
     }
   }
 #endif /* USING_TRANSACTIONS */
-  /*
+       /*
     If a non-transactional table was updated, warn; don't warn if this is a
     slave thread (because when a slave thread executes a ROLLBACK, it has
     been read from the binary log, so it's 100% sure and normal to produce

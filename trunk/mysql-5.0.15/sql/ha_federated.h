@@ -220,7 +220,8 @@ class ha_federated : public handler
     on the network side (?)
     Talk to Kostja about this - how to get the
     number of rows * ...
-    disk scan time on other side (block size, size of the row) + network time ...
+    disk scan time on other side (block size, size of the row) + network time
+    ...
     The reason for "records * 1000" is that such a large number forces
     this to use indexes "
   */

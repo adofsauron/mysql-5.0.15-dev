@@ -97,7 +97,8 @@ struct st_master_info;
   3 possible values for MASTER_INFO::slave_running and
   RELAY_LOG_INFO::slave_running.
   The values 0,1,2 are very important: to keep the diff small, I didn't
-  substitute places where we use 0/1 with the newly defined symbols. So don't change
+  substitute places where we use 0/1 with the newly defined symbols. So don't
+  change
   these values.
   The same way, code is assuming that in RELAY_LOG_INFO we use only values
   0/1.
@@ -230,12 +231,12 @@ typedef struct st_relay_log_info
   ulonglong log_space_limit, log_space_total;
   bool ignore_log_space_limit;
 
-  /*
-    When it commits, InnoDB internally stores the master log position it has
-    processed so far; the position to store is the one of the end of the
-    committing event (the COMMIT query event, or the event if in autocommit
-    mode).
-  */
+/*
+  When it commits, InnoDB internally stores the master log position it has
+  processed so far; the position to store is the one of the end of the
+  committing event (the COMMIT query event, or the event if in autocommit
+  mode).
+*/
 #if MYSQL_VERSION_ID < 40100
   ulonglong future_master_log_pos;
 #else
@@ -437,7 +438,8 @@ typedef struct st_master_info
      clock_diff_with_master is computed when the I/O thread starts; for this the
      I/O thread does a SELECT UNIX_TIMESTAMP() on the master.
      "how late the slave is compared to the master" is computed like this:
-     clock_of_slave - last_timestamp_executed_by_SQL_thread - clock_diff_with_master
+     clock_of_slave - last_timestamp_executed_by_SQL_thread -
+     clock_diff_with_master
 
   */
   long clock_diff_with_master;

@@ -773,9 +773,7 @@ select_result::select_result() { thd = current_thd; }
 
 void select_result::send_error(uint errcode, const char *err) { my_message(errcode, err, MYF(0)); }
 
-void select_result::cleanup()
-{ /* do nothing */
-}
+void select_result::cleanup() { /* do nothing */ }
 
 static String default_line_term("\n", default_charset_info);
 static String default_escaped("\\", default_charset_info);

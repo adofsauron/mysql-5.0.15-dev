@@ -62,10 +62,10 @@ handlerton myisam_hton = {"MyISAM", SHOW_OPTION_YES, "Default engine as of MySQL
                           NULL,                    /* create_cursor_read_view */
                           NULL,                    /* set_cursor_read_view */
                           NULL,                    /* close_cursor_read_view */
-                          /*
-                            MyISAM doesn't support transactions and doesn't have
-                            transaction-dependent context: cursors can survive a commit.
-                          */
+                                                   /*
+                                               MyISAM doesn't support transactions and doesn't have
+                                               transaction-dependent context: cursors can survive a commit.
+                                             */
                           HTON_CAN_RECREATE};
 
 // collect errors printed by mi_check routines

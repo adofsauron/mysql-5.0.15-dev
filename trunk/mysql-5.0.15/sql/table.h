@@ -31,7 +31,7 @@ typedef struct st_order
   Item *item_ptr;     /* Storage for initial item */
   Item **item_copy;   /* For SPs; the original item ptr */
   int counter;        /* position in SELECT list, correct
-                         only if counter_used is true*/
+                    only if counter_used is true*/
   bool asc;           /* true if ascending */
   bool free_me;       /* true if item isn't shared  */
   bool in_field_list; /* true if in select field list */
@@ -383,7 +383,7 @@ class Natural_join_column : public Sql_alloc
   Field_translator *view_field; /* Column reference of merge view. */
   Field *table_field;           /* Column reference of table or temp view. */
   st_table_list *table_ref;     /* Original base table/view reference. */
-  /*
+                                /*
     True if a common join column of two NATURAL/USING join operands. Notice
     that when we have a hierarchy of nested NATURAL/USING joins, a column can
     be common at some level of nesting but it may not be common at higher
@@ -451,7 +451,7 @@ typedef struct st_table_list
   char *db, *alias, *table_name, *schema_table_name;
   char *option;  /* Used by cache index  */
   Item *on_expr; /* Used with outer join */
-  /*
+                 /*
     The structure of ON expression presented in the member above
     can be changed during certain optimizations. This member
     contains a snapshot of AND-OR structure of the ON expression
@@ -461,7 +461,7 @@ typedef struct st_table_list
   */
   Item *prep_on_expr;
   COND_EQUAL *cond_equal; /* Used with outer join */
-  /*
+                          /*
     During parsing - left operand of NATURAL/USING join where 'this' is
     the right operand. After parsing (this->natural_join == this) iff
     'this' represents a NATURAL or USING join operation. Thus after
@@ -495,7 +495,7 @@ typedef struct st_table_list
   /* Index names in a "... JOIN ... USE/IGNORE INDEX ..." clause. */
   List<String> *use_index, *ignore_index;
   TABLE *table; /* opened table */
-  /*
+                /*
     select_result for derived table to pass it from table creation to table
     filling procedure
   */
@@ -548,7 +548,7 @@ typedef struct st_table_list
   ulonglong algorithm;      /* 0 any, 1 tmp tables , 2 merging */
   ulonglong view_suid;      /* view is suid (TRUE dy default) */
   ulonglong with_check;     /* WITH CHECK OPTION */
-  /*
+                            /*
     effective value of WITH CHECK OPTION (differ for temporary table
     algorithm)
   */
@@ -586,7 +586,7 @@ typedef struct st_table_list
   /* FRMTYPE_ERROR if any type is acceptable */
   enum frm_type_enum required_type;
   char timestamp_buffer[20]; /* buffer for timestamp (19+1) */
-  /*
+                             /*
     This TABLE_LIST object is just placeholder for prelocking, it will be
     used for implicit LOCK TABLES only and won't be used in real statement.
   */

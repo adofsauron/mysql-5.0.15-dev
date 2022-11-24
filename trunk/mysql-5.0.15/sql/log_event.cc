@@ -1464,7 +1464,9 @@ void Query_log_event::print_query_header(FILE *file, bool short_form, LAST_EVENT
   if (last_event_info->auto_increment_increment != auto_increment_increment ||
       last_event_info->auto_increment_offset != auto_increment_offset)
   {
-    fprintf(file, "SET @@session.auto_increment_increment=%lu, @@session.auto_increment_offset=%lu;\n",
+    fprintf(file,
+            "SET @@session.auto_increment_increment=%lu, "
+            "@@session.auto_increment_offset=%lu;\n",
             auto_increment_increment, auto_increment_offset);
     last_event_info->auto_increment_increment = auto_increment_increment;
     last_event_info->auto_increment_offset = auto_increment_offset;
@@ -1571,20 +1573,23 @@ int Query_log_event::exec_event(struct st_relay_log_info *rli, const char *query
     {
       if (flags2_inited)
         /*
-          all bits of thd->options which are 1 in OPTIONS_WRITTEN_TO_BIN_LOG must
+          all bits of thd->options which are 1 in OPTIONS_WRITTEN_TO_BIN_LOG
+          must
           take their value from flags2.
         */
         thd->options = flags2 | (thd->options & ~(ulong)OPTIONS_WRITTEN_TO_BIN_LOG);
       /*
         else, we are in a 3.23/4.0 binlog; we previously received a
-        Rotate_log_event which reset thd->options and sql_mode etc, so nothing to do.
+        Rotate_log_event which reset thd->options and sql_mode etc, so nothing
+        to do.
       */
       /*
         We do not replicate IGNORE_DIR_IN_CREATE. That is, if the master is a
         slave which runs with SQL_MODE=IGNORE_DIR_IN_CREATE, this should not
         force us to ignore the dir too. Imagine you are a ring of machines, and
         one has a disk problem so that you temporarily need IGNORE_DIR_IN_CREATE
-        on this machine; you don't want it to propagate elsewhere (you don't want
+        on this machine; you don't want it to propagate elsewhere (you don't
+        want
         all slaves to start ignoring the dirs).
       */
       if (sql_mode_inited)
@@ -1881,10 +1886,10 @@ int Start_log_event_v3::exec_event(struct st_relay_log_info *rli)
       }
       break;
 
-      /*
-         Now the older formats; in that case load_tmpdir is cleaned up by the I/O
-         thread.
-      */
+    /*
+       Now the older formats; in that case load_tmpdir is cleaned up by the I/O
+       thread.
+    */
     case 1:
       if (strncmp(rli->relay_log.description_event_for_exec->server_version, "3.23.57", 7) >= 0 && created)
       {
@@ -1968,7 +1973,7 @@ Format_description_log_event::Format_description_log_event(uint8 binlog_ver, con
 
     case 1: /* 3.23 */
     case 3: /* 4.0.x x>=2 */
-      /*
+            /*
         We build an artificial (i.e. not sent by the master) event, which
         describes what those old master versions send.
       */
@@ -2696,7 +2701,8 @@ int Load_log_event::exec_event(NET *net, struct st_relay_log_info *rli, bool use
       if (!(load_data_query = (char *)thd->alloc(get_query_buffer_length() + 1)))
       {
         /*
-          This will set thd->fatal_error in case of OOM. So we surely will notice
+          This will set thd->fatal_error in case of OOM. So we surely will
+          notice
           that something is wrong.
         */
         goto error;
@@ -3749,7 +3755,8 @@ void Stop_log_event::print(FILE *file, bool short_form, LAST_EVENT_INFO *last_ev
   We used to clean up slave_load_tmpdir, but this is useless as it has been
   cleared at the end of LOAD DATA INFILE.
   So we have nothing to do here.
-  The place were we must do this cleaning is in Start_log_event_v3::exec_event(),
+  The place were we must do this cleaning is in
+  Start_log_event_v3::exec_event(),
   not here. Because if we come here, the master was sane.
 */
 

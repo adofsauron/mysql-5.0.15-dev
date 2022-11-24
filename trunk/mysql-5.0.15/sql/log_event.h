@@ -18,7 +18,8 @@
 #define _log_event_h
 
 #ifdef __EMX__
-#undef write  // remove pthread.h macro definition, conflict with write() class member
+#undef write  // remove pthread.h macro definition, conflict with write() class
+              // member
 #endif
 
 #if defined(USE_PRAGMA_INTERFACE) && !defined(MYSQL_CLIENT)
@@ -170,7 +171,7 @@ struct sql_ex_info
 
 #define LOG_EVENT_HEADER_LEN 19 /* the fixed header length */
 #define OLD_HEADER_LEN 13       /* the fixed header length in 3.23 */
-/*
+                                /*
    Fixed header length, where 4.x and 5.0 agree. That is, 5.0 may have a longer
    header (it will for sure when we have the unique event's ID), but at least
    the first 19 bytes are the same in 4.x and 5.0. So when we have the unique
@@ -427,7 +428,6 @@ enum Log_event_type
     add new events here - right above this comment!
     existing events should never change their numbers
   */
-
   ENUM_END_EVENT /* end marker */
 };
 
@@ -1472,12 +1472,12 @@ class Execute_load_query_log_event : public Query_log_event
   uint fn_pos_start;  // pointer to the part of the query that should
                       // be substituted
   uint fn_pos_end;    // pointer to the end of this part of query
-  /*
-    We have to store type of duplicate handling explicitly, because
-    for LOAD DATA it also depends on LOCAL option. And this part
-    of query will be rewritten during replication so this information
-    may be lost...
-  */
+                      /*
+     We have to store type of duplicate handling explicitly, because
+     for LOAD DATA it also depends on LOCAL option. And this part
+     of query will be rewritten during replication so this information
+     may be lost...
+   */
   enum_load_dup_handling dup_handling;
 
 #ifndef MYSQL_CLIENT

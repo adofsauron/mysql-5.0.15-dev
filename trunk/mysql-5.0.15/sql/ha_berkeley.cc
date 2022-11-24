@@ -24,7 +24,8 @@
     We will need an updated Berkeley DB version for this.
   - Killing threads that has got a 'deadlock'
   - SHOW TABLE STATUS should give more information about the table.
-  - Get a more accurate count of the number of rows (estimate_rows_upper_bound()).
+  - Get a more accurate count of the number of rows
+  (estimate_rows_upper_bound()).
     We could store the found number of rows when the table is scanned and
     then increment the counter for each attempted write.
   - We will need to extend the manager thread to makes checkpoints at

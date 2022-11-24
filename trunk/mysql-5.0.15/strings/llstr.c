@@ -24,12 +24,11 @@
   variables with printf() as there is no usable printf() standard one can use.
 */
 
-
 #include <my_global.h>
 #include "m_string.h"
 
-char *llstr(longlong value,char *buff)
+char *llstr(longlong value, char *buff)
 {
-  longlong10_to_str(value,buff,-10);
+  longlong10_to_str(value, buff, -10);
   return buff;
 }

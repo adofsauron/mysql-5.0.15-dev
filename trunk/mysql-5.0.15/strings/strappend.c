@@ -27,14 +27,14 @@
 #include <my_global.h>
 #include "m_string.h"
 
-
 void strappend(register char *s, uint len, pchar fill)
 {
   register char *endpos;
 
-  endpos = s+len;
-  while (*s++);
+  endpos = s + len;
+  while (*s++)
+    ;
   s--;
-  while (s<endpos) *(s++) = fill;
+  while (s < endpos) *(s++) = fill;
   *(endpos) = '\0';
 } /* strappend */

@@ -16,13 +16,12 @@
 
 /* This implements strtoll() if needed */
 
-
 /*
    These includes are mandatory because they check for type sizes and
    functions, especially they handle tricks for Tru64 where 'long' is
    64 bit already and our 'longlong' is just a 'long'.
    This solves a problem on Tru64 where the C99 compiler has a prototype
-   for 'strtoll()' but no implementation, see "6.1 New C99 library functions" 
+   for 'strtoll()' but no implementation, see "6.1 New C99 library functions"
    in file '/usr/share/doclib/cc.dtk/release_notes.txt'.
  */
 #include <my_global.h>

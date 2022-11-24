@@ -17,35 +17,35 @@
 #include <my_global.h>
 #include <m_ctype.h>
 
-CHARSET_INFO compiled_charsets[] = {
-  {
-    0,0,0,		/* end-of-list marker */
-    0,			/* state      */
-    NullS,		/* cs name    */
-    NullS,		/* name       */
-    NullS,		/* comment    */
-    NULL,		/* tailoring  */
-    NULL,		/* ctype      */
-    NULL,		/* to_lower   */
-    NULL,		/* to_upper   */
-    NULL,		/* sort_order */
-    NULL,		/* contractions */
-    NULL,		/* sort_order_big*/
-    NULL,		/* tab_to_uni   */
-    NULL,		/* tab_from_uni */
+CHARSET_INFO compiled_charsets[] = {{
+    0,
+    0,
+    0,                  /* end-of-list marker */
+    0,                  /* state      */
+    NullS,              /* cs name    */
+    NullS,              /* name       */
+    NullS,              /* comment    */
+    NULL,               /* tailoring  */
+    NULL,               /* ctype      */
+    NULL,               /* to_lower   */
+    NULL,               /* to_upper   */
+    NULL,               /* sort_order */
+    NULL,               /* contractions */
+    NULL,               /* sort_order_big*/
+    NULL,               /* tab_to_uni   */
+    NULL,               /* tab_from_uni */
     my_unicase_default, /* caseinfo     */
-    NULL,		/* state_map    */
-    NULL,		/* ident_map    */
-    0,			/* strxfrm_mul  */
-    0,			/* caseup_mul   */
-    0,			/* casedn_mul   */
-    0,			/* mbminlen     */
-    0,			/* mbmaxlen     */
-    0,			/* min_sort_ord */
-    0,			/* max_sort_ord */
+    NULL,               /* state_map    */
+    NULL,               /* ident_map    */
+    0,                  /* strxfrm_mul  */
+    0,                  /* caseup_mul   */
+    0,                  /* casedn_mul   */
+    0,                  /* mbminlen     */
+    0,                  /* mbmaxlen     */
+    0,                  /* min_sort_ord */
+    0,                  /* max_sort_ord */
     ' ',                /* pad char     */
     0,                  /* escape_with_backslash_is_dangerous */
-    NULL,		/* cset handler */
-    NULL		/* coll handler */
-  }
-};
+    NULL,               /* cset handler */
+    NULL                /* coll handler */
+}};

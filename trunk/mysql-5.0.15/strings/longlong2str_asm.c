@@ -24,10 +24,9 @@
 #include <my_global.h>
 #include "m_string.h"
 
-extern char *longlong2str_with_dig_vector(longlong val,char *dst,int radix,
-                                          const char *dig_vector);
+extern char *longlong2str_with_dig_vector(longlong val, char *dst, int radix, const char *dig_vector);
 
-char *longlong2str(longlong val,char *dst,int radix)
+char *longlong2str(longlong val, char *dst, int radix)
 {
   return longlong2str_with_dig_vector(val, dst, radix, _dig_vec_upper);
 }

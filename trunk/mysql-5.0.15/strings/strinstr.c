@@ -29,20 +29,22 @@
 #include <my_global.h>
 #include "m_string.h"
 
-uint strinstr(reg1 const char *str,reg4 const char *search)
+uint strinstr(reg1 const char *str, reg4 const char *search)
 {
-  reg2 my_string i,j;
-  my_string start = (my_string) str;
+  reg2 my_string i, j;
+  my_string start = (my_string)str;
 
- skip:
+skip:
   while (*str != '\0')
   {
     if (*str++ == *search)
     {
-      i=(my_string) str; j= (my_string) search+1;
+      i = (my_string)str;
+      j = (my_string)search + 1;
       while (*j)
-	if (*i++ != *j++) goto skip;
-      return ((uint) (str - start));
+        if (*i++ != *j++)
+          goto skip;
+      return ((uint)(str - start));
     }
   }
   return (0);

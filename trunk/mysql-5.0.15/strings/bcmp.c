@@ -34,10 +34,9 @@
 
 #if defined(MC68000) && defined(DS90)
 
-int bcmp(s1,s2, len)
-const char *s1;
+int bcmp(s1, s2, len) const char *s1;
 const char *s2;
-uint len;					/* 0 <= len <= 65535 */
+uint len; /* 0 <= len <= 65535 */
 {
   asm("		movl	12(a7),d0	");
   asm("		subqw	#1,d0		");
@@ -52,13 +51,14 @@ uint len;					/* 0 <= len <= 65535 */
 #else
 
 #ifndef HAVE_purify
-int bcmp(register const char *s1,register const char *s2, register uint len)
+int bcmp(register const char *s1, register const char *s2, register uint len)
 #else
-int my_bcmp(register const char *s1,register const char *s2, register uint len)
+int my_bcmp(register const char *s1, register const char *s2, register uint len)
 #endif
 {
-  while (len-- != 0 && *s1++ == *s2++) ;
-  return len+1;
+  while (len-- != 0 && *s1++ == *s2++)
+    ;
+  return len + 1;
 }
 
 #endif

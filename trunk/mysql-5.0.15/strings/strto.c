@@ -28,21 +28,20 @@
 
   If an error is detected, the result will be LONG_MIN, 0 or LONG_MAX,
   (or LONGLONG..)  and errno will be set to
-	EDOM	if there are no digits
-	ERANGE	if the result would overflow.
+        EDOM	if there are no digits
+        ERANGE	if the result would overflow.
   the ptr will be set to src.
   This file is based on the strtol from the the GNU C Library.
   it can be compiled with the UNSIGNED and/or LONGLONG flag set
 */
 
-
 #if !defined(_global_h) || !defined(_m_string_h)
-#  error  Calling file must include 'my_global.h' and 'm_string.h'
-   /* see 'strtoll.c' and 'strtoull.c' for the reasons */
+#error Calling file must include 'my_global.h' and 'm_string.h'
+/* see 'strtoll.c' and 'strtoull.c' for the reasons */
 #endif
 
 #include "m_ctype.h"
-#include "my_sys.h"			/* defines errno */
+#include "my_sys.h" /* defines errno */
 #include <errno.h>
 
 #undef strtoull
@@ -50,7 +49,7 @@
 #undef strtoul
 #undef strtol
 #ifdef USE_LONGLONG
-#define UTYPE_MAX (~(ulonglong) 0)
+#define UTYPE_MAX (~(ulonglong)0)
 #define TYPE_MIN LONGLONG_MIN
 #define TYPE_MAX LONGLONG_MAX
 #define longtype longlong
@@ -73,7 +72,6 @@
 #endif
 #endif
 
-
 /* Convert NPTR to an `unsigned long int' or `long int' in base BASE.
    If BASE is 0 the base is determined by the presence of a leading
    zero, indicating octal or a leading "0x" or "0X", indicating hexadecimal.
@@ -81,8 +79,7 @@
    If ENDPTR is not NULL, a pointer to the character after the last
    one converted is stored in *ENDPTR.	*/
 
-
-function (const char *nptr,char **endptr,int base)
+function(const char *nptr, char **endptr, int base)
 {
   int negative;
   register ulongtype cutoff;
@@ -99,15 +96,14 @@ function (const char *nptr,char **endptr,int base)
   s = nptr;
 
   /* Skip white space.	*/
-  while (my_isspace(&my_charset_latin1, *s))
-    ++s;
+  while (my_isspace(&my_charset_latin1, *s)) ++s;
   if (*s == '\0')
   {
     goto noconv;
   }
 
   /* Check for a sign.	*/
-  negative= 0;
+  negative = 0;
   if (*s == '-')
   {
     negative = 1;
@@ -117,9 +113,8 @@ function (const char *nptr,char **endptr,int base)
   {
     ++s;
   }
-    
 
-  if (base == 16 && s[0] == '0' && my_toupper (&my_charset_latin1, s[1]) == 'X')
+  if (base == 16 && s[0] == '0' && my_toupper(&my_charset_latin1, s[1]) == 'X')
     s += 2;
 
   /* If BASE is zero, figure it out ourselves.	*/
@@ -127,13 +122,13 @@ function (const char *nptr,char **endptr,int base)
   {
     if (*s == '0')
     {
-      if (my_toupper (&my_charset_latin1, s[1]) == 'X')
+      if (my_toupper(&my_charset_latin1, s[1]) == 'X')
       {
-	s += 2;
-	base = 16;
+        s += 2;
+        base = 16;
       }
       else
-	base = 8;
+        base = 8;
     }
     else
       base = 10;
@@ -142,17 +137,17 @@ function (const char *nptr,char **endptr,int base)
   /* Save the pointer so we can check later if anything happened.  */
   save = s;
 
-  cutoff = UTYPE_MAX / (unsigned long int) base;
-  cutlim = (uint) (UTYPE_MAX % (unsigned long int) base);
+  cutoff = UTYPE_MAX / (unsigned long int)base;
+  cutlim = (uint)(UTYPE_MAX % (unsigned long int)base);
 
   overflow = 0;
   i = 0;
   for (c = *s; c != '\0'; c = *++s)
   {
-    if (my_isdigit (&my_charset_latin1, c))
+    if (my_isdigit(&my_charset_latin1, c))
       c -= '0';
-    else if (my_isalpha (&my_charset_latin1, c))
-      c = my_toupper (&my_charset_latin1, c) - 'A' + 10;
+    else if (my_isalpha(&my_charset_latin1, c))
+      c = my_toupper(&my_charset_latin1, c) - 'A' + 10;
     else
       break;
     if (c >= base)
@@ -162,7 +157,7 @@ function (const char *nptr,char **endptr,int base)
       overflow = 1;
     else
     {
-      i *= (ulongtype) base;
+      i *= (ulongtype)base;
       i += c;
     }
   }
@@ -174,23 +169,23 @@ function (const char *nptr,char **endptr,int base)
   /* Store in ENDPTR the address of one character
      past the last character we converted.  */
   if (endptr != NULL)
-    *endptr = (char *) s;
+    *endptr = (char *)s;
 
 #ifndef USE_UNSIGNED
   /* Check for a value that is within the range of
      `unsigned long int', but outside the range of `long int'.	*/
   if (negative)
   {
-    if (i  > (ulongtype) TYPE_MIN)
+    if (i > (ulongtype)TYPE_MIN)
       overflow = 1;
   }
-  else if (i > (ulongtype) TYPE_MAX)
+  else if (i > (ulongtype)TYPE_MAX)
     overflow = 1;
 #endif
 
   if (overflow)
   {
-    my_errno=ERANGE;
+    my_errno = ERANGE;
 #ifdef USE_UNSIGNED
     return UTYPE_MAX;
 #else
@@ -199,12 +194,12 @@ function (const char *nptr,char **endptr,int base)
   }
 
   /* Return the result of the appropriate sign.  */
-  return (negative ? -((longtype) i) : (longtype) i);
+  return (negative ? -((longtype)i) : (longtype)i);
 
 noconv:
   /* There was no number to convert.  */
-  my_errno=EDOM;
+  my_errno = EDOM;
   if (endptr != NULL)
-    *endptr = (char *) nptr;
+    *endptr = (char *)nptr;
   return 0L;
 }

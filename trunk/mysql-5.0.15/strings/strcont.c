@@ -28,18 +28,19 @@
 #include <my_global.h>
 #include "m_string.h"
 
-my_string strcont(reg1 const char *str,reg2 const char *set)
+my_string strcont(reg1 const char *str, reg2 const char *set)
 {
-  reg3 my_string start = (my_string) set;
+  reg3 my_string start = (my_string)set;
 
   while (*str)
   {
     while (*set)
     {
       if (*set++ == *str)
-	return ((char*) str);
+        return ((char *)str);
     }
-    set=start; str++;
+    set = start;
+    str++;
   }
   return (NullS);
 } /* strcont */

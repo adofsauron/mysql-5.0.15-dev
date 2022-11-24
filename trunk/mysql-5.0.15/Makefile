@@ -39,7 +39,7 @@ pkglibdir = $(libdir)/mysql
 pkgincludedir = $(includedir)/mysql
 top_builddir = .
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
-INSTALL = /bin/install -c
+INSTALL = /usr/bin/install -c
 install_sh_DATA = $(install_sh) -c -m 644
 install_sh_PROGRAM = $(install_sh) -c
 install_sh_SCRIPT = $(install_sh) -c
@@ -108,11 +108,11 @@ DIST_ARCHIVES = $(distdir).tar.gz
 GZIP_ENV = --best
 distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /run/media/kevin/Data/work/code/mysql-5.0.15-dev/trunk/mysql-5.0.15/missing --run aclocal-1.8
+ACLOCAL = ${SHELL} /root/work/mysql-5.0.15-dev/trunk/mysql-5.0.15/missing --run aclocal-1.8
 ALLOCA = 
 AMDEP_FALSE = #
 AMDEP_TRUE = 
-AMTAR = ${SHELL} /run/media/kevin/Data/work/code/mysql-5.0.15-dev/trunk/mysql-5.0.15/missing --run tar
+AMTAR = ${SHELL} /root/work/mysql-5.0.15-dev/trunk/mysql-5.0.15/missing --run tar
 AR = ar
 ARFLAGS = cru
 AS = gcc -c
@@ -124,9 +124,9 @@ ASSEMBLER_sparc64_FALSE =
 ASSEMBLER_sparc64_TRUE = #
 ASSEMBLER_x86_FALSE = 
 ASSEMBLER_x86_TRUE = #
-AUTOCONF = ${SHELL} /run/media/kevin/Data/work/code/mysql-5.0.15-dev/trunk/mysql-5.0.15/missing --run autoconf
-AUTOHEADER = ${SHELL} /run/media/kevin/Data/work/code/mysql-5.0.15-dev/trunk/mysql-5.0.15/missing --run autoheader
-AUTOMAKE = ${SHELL} /run/media/kevin/Data/work/code/mysql-5.0.15-dev/trunk/mysql-5.0.15/missing --run automake-1.8
+AUTOCONF = ${SHELL} /root/work/mysql-5.0.15-dev/trunk/mysql-5.0.15/missing --run autoconf
+AUTOHEADER = ${SHELL} /root/work/mysql-5.0.15-dev/trunk/mysql-5.0.15/missing --run autoheader
+AUTOMAKE = ${SHELL} /root/work/mysql-5.0.15-dev/trunk/mysql-5.0.15/missing --run automake-1.8
 AVAILABLE_LANGUAGES = czech danish dutch english estonian french german greek hungarian italian japanese korean norwegian norwegian-ny polish portuguese romanian russian serbian slovak spanish swedish ukrainian
 AVAILABLE_LANGUAGES_ERRORS = 
 AWK = gawk
@@ -134,18 +134,18 @@ CC = gcc
 CCAS = gcc
 CCASFLAGS =   
 CCDEPMODE = depmode=gcc3
-CC_VERSION = gcc (SUSE Linux) 12.2.1 20221020 [revision 0aaef83351473e8f4eb774f8f999bbe87a4866d7]
-CFLAGS = -g -O0 -DDBUG_ON -DSAFE_MUTEX   
-CHECK_PID = /bin/kill -0 $$PID > /dev/null 2> /dev/null
-CHMOD = /bin/chmod
+CC_VERSION = gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-44)
+CFLAGS = -g -O -DDBUG_ON -DSAFE_MUTEX   
+CHECK_PID = /usr/bin/kill -0 $$PID > /dev/null 2> /dev/null
+CHMOD = /usr/bin/chmod
 CLIENT_EXTRA_LDFLAGS = 
-CLIENT_LIBS = -lcrypt -lm   -lz 
-CMP = /bin/cmp
+CLIENT_LIBS = -lcrypt -lnsl -lm   $(top_builddir)/zlib/libz.la 
+CMP = /usr/bin/cmp
 COMPILATION_COMMENT = Source distribution
 COMPILE_PSTACK_FALSE = 
 COMPILE_PSTACK_TRUE = #
 CONF_COMMAND = ./configure '--with-debug' '--with-ndb-debug' '--with-plugin-innobase'
-CP = /bin/cp
+CP = /usr/bin/cp
 CPP = gcc -E
 CPPFLAGS = 
 CXX = g++
@@ -153,7 +153,7 @@ CXXCPP = g++ -E
 CXXDEPMODE = depmode=gcc3
 CXXFLAGS = -g -O0 -DDBUG_ON -DSAFE_MUTEX    -fno-implicit-templates -fno-exceptions -fno-rtti
 CXXLDFLAGS = 
-CXX_VERSION = g++ (SUSE Linux) 12.2.1 20221020 [revision 0aaef83351473e8f4eb774f8f999bbe87a4866d7]
+CXX_VERSION = g++ (GCC) 4.8.5 20150623 (Red Hat 4.8.5-44)
 CYGPATH_W = echo
 DARWIN_MWCC_FALSE = 
 DARWIN_MWCC_TRUE = #
@@ -170,7 +170,7 @@ EGREP = grep -E
 EXEEXT = 
 F77 = 
 FFLAGS = 
-FIND_PROC = /bin/ps p $$PID | grep -v grep | grep $$MYSQLD > /dev/null
+FIND_PROC = /usr/bin/ps p $$PID | grep -v grep | grep $$MYSQLD > /dev/null
 GETCONF = getconf
 GXX = yes
 HAVE_NDBCLUSTER_DB_FALSE = 
@@ -179,31 +179,31 @@ HAVE_NETWARE_FALSE =
 HAVE_NETWARE_TRUE = #
 HAVE_YASSL_FALSE = 
 HAVE_YASSL_TRUE = #
-HOSTNAME = /bin/hostname
+HOSTNAME = /usr/bin/hostname
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = ${SHELL} $(install_sh) -c -s
-KILL = /bin/kill
-LD = /usr/x86_64-suse-linux/bin/ld -m elf_x86_64
+KILL = /usr/bin/kill
+LD = /usr/bin/ld -m elf_x86_64
 LDFLAGS =  -rdynamic 
 LIBDL = -ldl 
 LIBEDIT_LOBJECTS =  unvis.o vis.o strlcpy.o strlcat.o fgetln.o
 LIBOBJS = 
-LIBS = -lpthread -lcrypt -lm  -lpthread 
+LIBS = -lpthread -lcrypt -lnsl -lm  -lpthread 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool --preserve-dup-deps
 LIB_EXTRA_CCFLAGS = 
 LM_CFLAGS = 
-LN = /bin/ln
-LN_CP_F = /bin/ln -s
+LN = /usr/bin/ln
+LN_CP_F = /usr/bin/ln -s
 LN_S = ln -s
 LTLIBOBJS = 
 MACHINE_TYPE = x86_64
 MAKEINDEX = no
-MAKEINFO = ${SHELL} /run/media/kevin/Data/work/code/mysql-5.0.15-dev/trunk/mysql-5.0.15/missing --run makeinfo
+MAKEINFO = ${SHELL} /root/work/mysql-5.0.15-dev/trunk/mysql-5.0.15/missing --run makeinfo
 MAKE_BINARY_DISTRIBUTION_OPTIONS = 
 MAKE_SHELL = /bin/sh
-MV = /bin/mv
+MV = /usr/bin/mv
 MYSQLD_DEFAULT_SWITCHES = --skip-locking
 MYSQLD_EXTRA_LDFLAGS = 
 MYSQLD_USER = mysql
@@ -228,7 +228,7 @@ NDB_VERSION_MAJOR = 5
 NDB_VERSION_MINOR = 0
 NDB_VERSION_STATUS = 
 NOINST_LDFLAGS = 
-NON_THREADED_LIBS = -lcrypt -lm 
+NON_THREADED_LIBS = -lcrypt -lnsl -lm 
 OBJEXT = o
 PACKAGE = mysql
 PACKAGE_BUGREPORT = 
@@ -239,25 +239,25 @@ PACKAGE_VERSION =
 PATH_SEPARATOR = :
 PDFLATEX = no
 PDFMANUAL = 
-PERL = /bin/perl
-PERL5 = /bin/perl
+PERL = /usr/bin/perl
+PERL5 = /usr/bin/perl
 PROTOCOL_VERSION = 10
-PS = /bin/ps
+PS = /usr/bin/ps
 RANLIB = ranlib
-RM = /bin/rm
+RM = /usr/bin/rm
 SAVE_ASFLAGS = 
 SAVE_CFLAGS = 
 SAVE_CXXFLAGS = 
 SAVE_CXXLDFLAGS = 
 SAVE_LDFLAGS = 
-SED = /bin/sed
+SED = /usr/bin/sed
 SET_MAKE = 
 SHARED_LIB_VERSION = 15:0:0
 SHELL = /bin/sh
 STATIC_NSS_FLAGS = 
 STRIP = strip
 SYSTEM_TYPE = unknown-linux-gnu
-TAR = tar
+TAR = gtar
 TARGET_LINUX = true
 TERMCAP_LIB = -lncurses
 THREAD_LOBJECTS = thr_alarm.o thr_lock.o thr_mutex.o thr_rwlock.o my_pthread.o my_thr_init.o mf_keycache.o
@@ -265,8 +265,8 @@ VERSION = 5.0.15
 WRAPLIBS = 
 YACC = bison -y
 ZLIB_DEPS = -lz
-ZLIB_INCLUDES = 
-ZLIB_LIBS = -lz
+ZLIB_INCLUDES = -I$(top_srcdir)/zlib
+ZLIB_LIBS = $(top_builddir)/zlib/libz.la
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = g++
@@ -304,8 +304,8 @@ infodir = ${prefix}/info
 innodb_includes = -I../innobase/include
 innodb_libs =  $(top_builddir)/innobase/usr/libusr.a $(top_builddir)/innobase/srv/libsrv.a $(top_builddir)/innobase/dict/libdict.a $(top_builddir)/innobase/que/libque.a $(top_builddir)/innobase/srv/libsrv.a $(top_builddir)/innobase/ibuf/libibuf.a $(top_builddir)/innobase/row/librow.a $(top_builddir)/innobase/pars/libpars.a $(top_builddir)/innobase/btr/libbtr.a $(top_builddir)/innobase/trx/libtrx.a $(top_builddir)/innobase/read/libread.a $(top_builddir)/innobase/usr/libusr.a $(top_builddir)/innobase/buf/libbuf.a $(top_builddir)/innobase/ibuf/libibuf.a $(top_builddir)/innobase/eval/libeval.a $(top_builddir)/innobase/log/liblog.a $(top_builddir)/innobase/fsp/libfsp.a $(top_builddir)/innobase/fut/libfut.a $(top_builddir)/innobase/fil/libfil.a $(top_builddir)/innobase/lock/liblock.a $(top_builddir)/innobase/mtr/libmtr.a $(top_builddir)/innobase/page/libpage.a $(top_builddir)/innobase/rem/librem.a $(top_builddir)/innobase/thr/libthr.a $(top_builddir)/innobase/sync/libsync.a $(top_builddir)/innobase/data/libdata.a $(top_builddir)/innobase/mach/libmach.a $(top_builddir)/innobase/ha/libha.a $(top_builddir)/innobase/dyn/libdyn.a $(top_builddir)/innobase/mem/libmem.a $(top_builddir)/innobase/sync/libsync.a $(top_builddir)/innobase/ut/libut.a $(top_builddir)/innobase/os/libos.a $(top_builddir)/innobase/ut/libut.a
 innodb_system_libs = -lrt
-install_sh = /run/media/kevin/Data/work/code/mysql-5.0.15-dev/trunk/mysql-5.0.15/install-sh
-libdir = ${exec_prefix}/lib64
+install_sh = /root/work/mysql-5.0.15-dev/trunk/mysql-5.0.15/install-sh
+libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 libmysqld_dirs = 
 linked_client_targets = linked_libmysql_sources
@@ -351,15 +351,15 @@ target_os = linux-gnu
 target_vendor = unknown
 thread_dirs = 
 tools_dirs =  server-tools
-uname_prog = /bin/uname
+uname_prog = /usr/bin/uname
 yassl_dir = 
 yassl_integer_extra_cxxflags = 
-zlib_dir = 
+zlib_dir = zlib
 AUTOMAKE_OPTIONS = foreign
 
 # These are built from source in the Docs directory
 EXTRA_DIST = INSTALL-SOURCE README COPYING EXCEPTIONS-CLIENT
-SUBDIRS = . include Docs   \
+SUBDIRS = . include Docs zlib  \
 			cmd-line-utils sql-common \
 			 pstack \
 			 strings mysys dbug extra regex innobase myisam myisammrg heap vio sql  libmysql  client  scripts man tests \
@@ -849,10 +849,10 @@ linked_netware_sources:
 #avoid recursive make calls in sql directory
 linked_server_sources:
 	cd sql; rm -f mini_client_errors.c;\
-		/bin/ln -s ../libmysql/errmsg.c mini_client_errors.c;\
-		rm -f pack.c;/bin/ln -s ../sql-common/pack.c pack.c;\
-		rm -f client.c;/bin/ln -s ../sql-common/client.c client.c;\
-		rm -f my_time.c;/bin/ln -s ../sql-common/my_time.c my_time.c
+		/usr/bin/ln -s ../libmysql/errmsg.c mini_client_errors.c;\
+		rm -f pack.c;/usr/bin/ln -s ../sql-common/pack.c pack.c;\
+		rm -f client.c;/usr/bin/ln -s ../sql-common/client.c client.c;\
+		rm -f my_time.c;/usr/bin/ln -s ../sql-common/my_time.c my_time.c
 	echo timestamp > linked_server_sources
 
 # Create permission databases

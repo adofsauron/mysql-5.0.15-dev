@@ -34,8 +34,8 @@
   but this is where the code is.
 
   Note: The standard itoa() returns a pointer to the argument, when int2str
-	returns the pointer to the end-null.
-	itoa assumes that 10 -base numbers are allways signed and other arn't.
+        returns the pointer to the end-null.
+        itoa assumes that 10 -base numbers are allways signed and other arn't.
 */
 
 #include <my_global.h>
@@ -47,7 +47,7 @@
   This assumes that longlong multiplication is faster than longlong division.
 */
 
-char *longlong2str(longlong val,char *dst,int radix)
+char *longlong2str(longlong val, char *dst, int radix)
 {
   char buffer[65];
   register char *p;
@@ -55,8 +55,10 @@ char *longlong2str(longlong val,char *dst,int radix)
 
   if (radix < 0)
   {
-    if (radix < -36 || radix > -2) return (char*) 0;
-    if (val < 0) {
+    if (radix < -36 || radix > -2)
+      return (char *)0;
+    if (val < 0)
+    {
       *dst++ = '-';
       val = -val;
     }
@@ -64,39 +66,41 @@ char *longlong2str(longlong val,char *dst,int radix)
   }
   else
   {
-    if (radix > 36 || radix < 2) return (char*) 0;
+    if (radix > 36 || radix < 2)
+      return (char *)0;
   }
   if (val == 0)
   {
-    *dst++='0';
-    *dst='\0';
+    *dst++ = '0';
+    *dst = '\0';
     return dst;
   }
-  p = &buffer[sizeof(buffer)-1];
+  p = &buffer[sizeof(buffer) - 1];
   *p = '\0';
 
-  while ((ulonglong) val > (ulonglong) LONG_MAX)
+  while ((ulonglong)val > (ulonglong)LONG_MAX)
   {
-    ulonglong quo=(ulonglong) val/(uint) radix;
-    uint rem= (uint) (val- quo* (uint) radix);
+    ulonglong quo = (ulonglong)val / (uint)radix;
+    uint rem = (uint)(val - quo * (uint)radix);
     *--p = _dig_vec_upper[rem];
-    val= quo;
+    val = quo;
   }
-  long_val= (long) val;
+  long_val = (long)val;
   while (long_val != 0)
   {
-    long quo= long_val/radix;
-    *--p = _dig_vec_upper[(uchar) (long_val - quo*radix)];
-    long_val= quo;
+    long quo = long_val / radix;
+    *--p = _dig_vec_upper[(uchar)(long_val - quo * radix)];
+    long_val = quo;
   }
-  while ((*dst++ = *p++) != 0) ;
-  return dst-1;
+  while ((*dst++ = *p++) != 0)
+    ;
+  return dst - 1;
 }
 
 #endif
 
 #ifndef longlong10_to_str
-char *longlong10_to_str(longlong val,char *dst,int radix)
+char *longlong10_to_str(longlong val, char *dst, int radix)
 {
   char buffer[65];
   register char *p;
@@ -113,28 +117,29 @@ char *longlong10_to_str(longlong val,char *dst,int radix)
 
   if (val == 0)
   {
-    *dst++='0';
-    *dst='\0';
+    *dst++ = '0';
+    *dst = '\0';
     return dst;
   }
-  p = &buffer[sizeof(buffer)-1];
+  p = &buffer[sizeof(buffer) - 1];
   *p = '\0';
 
-  while ((ulonglong) val > (ulonglong) LONG_MAX)
+  while ((ulonglong)val > (ulonglong)LONG_MAX)
   {
-    ulonglong quo=(ulonglong) val/(uint) 10;
-    uint rem= (uint) (val- quo* (uint) 10);
+    ulonglong quo = (ulonglong)val / (uint)10;
+    uint rem = (uint)(val - quo * (uint)10);
     *--p = _dig_vec_upper[rem];
-    val= quo;
+    val = quo;
   }
-  long_val= (long) val;
+  long_val = (long)val;
   while (long_val != 0)
   {
-    long quo= long_val/10;
-    *--p = _dig_vec_upper[(uchar) (long_val - quo*10)];
-    long_val= quo;
+    long quo = long_val / 10;
+    *--p = _dig_vec_upper[(uchar)(long_val - quo * 10)];
+    long_val = quo;
   }
-  while ((*dst++ = *p++) != 0) ;
-  return dst-1;
+  while ((*dst++ = *p++) != 0)
+    ;
+  return dst - 1;
 }
 #endif

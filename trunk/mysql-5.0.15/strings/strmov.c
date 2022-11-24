@@ -36,14 +36,15 @@
 
 char *strmov(register char *dst, register const char *src)
 {
-  while ((*dst++ = *src++)) ;
-  return dst-1;
+  while ((*dst++ = *src++))
+    ;
+  return dst - 1;
 }
 
 #else
 
 char *strmov(dst, src)
-     char *dst, *src;
+char *dst, *src;
 {
   asm("		movl	4(a7),a1	");
   asm("		movl	8(a7),a0	");

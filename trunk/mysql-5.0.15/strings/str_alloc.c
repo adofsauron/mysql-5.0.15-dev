@@ -19,16 +19,13 @@
 
 static void *my_str_malloc_default(size_t size)
 {
-  void *ret= malloc(size);
+  void *ret = malloc(size);
   if (!ret)
     exit(1);
   return ret;
 }
 
-static void my_str_free_default(void *ptr)
-{
-  free(ptr);
-}
+static void my_str_free_default(void *ptr) { free(ptr); }
 
-void *(*my_str_malloc)(size_t)= &my_str_malloc_default;
-void (*my_str_free)(void *)= &my_str_free_default;
+void *(*my_str_malloc)(size_t) = &my_str_malloc_default;
+void (*my_str_free)(void *) = &my_str_free_default;

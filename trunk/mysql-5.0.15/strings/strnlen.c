@@ -28,8 +28,8 @@
 
 uint strnlen(register const char *s, register uint maxlen)
 {
-  const char *end= (const char *)memchr(s, '\0', maxlen);
-  return end ? (uint) (end - s) : maxlen;
+  const char *end = (const char *)memchr(s, '\0', maxlen);
+  return end ? (uint)(end - s) : maxlen;
 }
 
 #endif

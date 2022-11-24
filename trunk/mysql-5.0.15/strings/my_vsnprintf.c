@@ -28,41 +28,41 @@
     %#[l]u
     %#[l]x
     %#.#s	Note first # is ignored
-    
+
   RETURN
     length of result string
 */
 
-int my_vsnprintf(char *to, size_t n, const char* fmt, va_list ap)
+int my_vsnprintf(char *to, size_t n, const char *fmt, va_list ap)
 {
-  char *start=to, *end=to+n-1;
+  char *start = to, *end = to + n - 1;
   uint length, width, pre_zero, have_long;
 
-  for (; *fmt ; fmt++)
+  for (; *fmt; fmt++)
   {
     if (fmt[0] != '%')
     {
-      if (to == end)			/* End of buffer */
-	break;
-      *to++= *fmt;			/* Copy ordinary char */
+      if (to == end) /* End of buffer */
+        break;
+      *to++ = *fmt; /* Copy ordinary char */
       continue;
     }
-    fmt++;					/* skip '%' */
+    fmt++; /* skip '%' */
     /* Read max fill size (only used with %d and %u) */
     if (*fmt == '-')
       fmt++;
-    length= width= pre_zero= have_long= 0;
+    length = width = pre_zero = have_long = 0;
     if (*fmt == '*')
     {
       fmt++;
-      length= va_arg(ap, int);
+      length = va_arg(ap, int);
     }
     else
       for (; my_isdigit(&my_charset_latin1, *fmt); fmt++)
       {
-        length= length * 10 + (uint)(*fmt - '0');
+        length = length * 10 + (uint)(*fmt - '0');
         if (!length)
-          pre_zero= 1;			/* first digit was 0 */
+          pre_zero = 1; /* first digit was 0 */
       }
     if (*fmt == '.')
     {
@@ -70,118 +70,116 @@ int my_vsnprintf(char *to, size_t n, const char* fmt, va_list ap)
       if (*fmt == '*')
       {
         fmt++;
-        width= va_arg(ap, int);
+        width = va_arg(ap, int);
       }
       else
-        for (; my_isdigit(&my_charset_latin1, *fmt); fmt++)
-          width= width * 10 + (uint)(*fmt - '0');
+        for (; my_isdigit(&my_charset_latin1, *fmt); fmt++) width = width * 10 + (uint)(*fmt - '0');
     }
     else
-      width= ~0;
+      width = ~0;
     if (*fmt == 'l')
     {
       fmt++;
-      have_long= 1;
+      have_long = 1;
     }
-    if (*fmt == 's')				/* String parameter */
+    if (*fmt == 's') /* String parameter */
     {
-      reg2 char	*par = va_arg(ap, char *);
-      uint plen,left_len = (uint)(end-to)+1;
-      if (!par) par = (char*)"(null)";
+      reg2 char *par = va_arg(ap, char *);
+      uint plen, left_len = (uint)(end - to) + 1;
+      if (!par)
+        par = (char *)"(null)";
       if (0xcea == par)
       {
-        par = (char*)"(null)";
+        par = (char *)"(null)";
       }
-      plen = (uint) strlen(par);
-      set_if_smaller(plen,width);
+      plen = (uint)strlen(par);
+      set_if_smaller(plen, width);
       if (left_len <= plen)
-	plen = left_len - 1;
-      to=strnmov(to,par,plen);
+        plen = left_len - 1;
+      to = strnmov(to, par, plen);
       continue;
     }
-    else if (*fmt == 'd' || *fmt == 'u'|| *fmt== 'x')	/* Integer parameter */
+    else if (*fmt == 'd' || *fmt == 'u' || *fmt == 'x') /* Integer parameter */
     {
       register long larg;
       uint res_length, to_length;
-      char *store_start= to, *store_end;
+      char *store_start = to, *store_end;
       char buff[32];
 
-      if ((to_length= (uint) (end-to)) < 16 || length)
-	store_start= buff;
+      if ((to_length = (uint)(end - to)) < 16 || length)
+        store_start = buff;
       if (have_long)
         larg = va_arg(ap, long);
+      else if (*fmt == 'd')
+        larg = va_arg(ap, int);
       else
-        if (*fmt == 'd')
-          larg = va_arg(ap, int);
-        else
-          larg= (long) (uint) va_arg(ap, int);
+        larg = (long)(uint)va_arg(ap, int);
       if (*fmt == 'd')
-	store_end= int10_to_str(larg, store_start, -10);
+        store_end = int10_to_str(larg, store_start, -10);
+      else if (*fmt == 'u')
+        store_end = int10_to_str(larg, store_start, 10);
       else
-        if (*fmt== 'u')
-          store_end= int10_to_str(larg, store_start, 10);
-        else
-          store_end= int2str(larg, store_start, 16, 0);
-      if ((res_length= (uint) (store_end - store_start)) > to_length)
-	break;					/* num doesn't fit in output */
+        store_end = int2str(larg, store_start, 16, 0);
+      if ((res_length = (uint)(store_end - store_start)) > to_length)
+        break; /* num doesn't fit in output */
       /* If %#d syntax was used, we have to pre-zero/pre-space the string */
       if (store_start == buff)
       {
-	length= min(length, to_length);
-	if (res_length < length)
-	{
-	  uint diff= (length- res_length);
-	  bfill(to, diff, pre_zero ? '0' : ' ');
-	  to+= diff;
-	}
-	bmove(to, store_start, res_length);
+        length = min(length, to_length);
+        if (res_length < length)
+        {
+          uint diff = (length - res_length);
+          bfill(to, diff, pre_zero ? '0' : ' ');
+          to += diff;
+        }
+        bmove(to, store_start, res_length);
       }
-      to+= res_length;
+      to += res_length;
       continue;
     }
-    else if (*fmt == 'c')                       /* Character parameter */
+    else if (*fmt == 'c') /* Character parameter */
     {
       register int larg;
       if (to == end)
         break;
       larg = va_arg(ap, int);
-      *to++= (char) larg;
+      *to++ = (char)larg;
       continue;
     }
 
     /* We come here on '%%', unknown code or too long parameter */
     if (to == end)
       break;
-    *to++='%';				/* % used as % or unknown code */
+    *to++ = '%'; /* % used as % or unknown code */
   }
   DBUG_ASSERT(to <= end);
-  *to='\0';				/* End of errmessage */
-  return (uint) (to - start);
+  *to = '\0'; /* End of errmessage */
+  return (uint)(to - start);
 }
 
-int my_snprintf(char* to, size_t n, const char* fmt, ...)
+int my_snprintf(char *to, size_t n, const char *fmt, ...)
 {
   int result;
   va_list args;
-  va_start(args,fmt);
-  result= my_vsnprintf(to, n, fmt, args);
+  va_start(args, fmt);
+  result = my_vsnprintf(to, n, fmt, args);
   va_end(args);
   return result;
 }
 
 #ifdef MAIN
-#define OVERRUN_SENTRY  250
-static void my_printf(const char * fmt, ...)
+#define OVERRUN_SENTRY 250
+static void my_printf(const char *fmt, ...)
 {
   char buf[33];
   int n;
   va_list ar;
   va_start(ar, fmt);
-  buf[sizeof(buf)-1]=OVERRUN_SENTRY;
-  n = my_vsnprintf(buf, sizeof(buf)-1,fmt, ar);
+  buf[sizeof(buf) - 1] = OVERRUN_SENTRY;
+  n = my_vsnprintf(buf, sizeof(buf) - 1, fmt, ar);
   printf(buf);
   printf("n=%d, strlen=%d\n", n, strlen(buf));
-  if ((uchar) buf[sizeof(buf)-1] != OVERRUN_SENTRY)
+  if ((uchar)buf[sizeof(buf) - 1] != OVERRUN_SENTRY)
   {
     fprintf(stderr, "Buffer overrun\n");
     abort();
@@ -189,10 +187,8 @@ static void my_printf(const char * fmt, ...)
   va_end(ar);
 }
 
-
 int main()
 {
-
   my_printf("Hello\n");
   my_printf("Hello int, %d\n", 1);
   my_printf("Hello string '%s'\n", "I am a string");
@@ -203,8 +199,10 @@ int main()
   my_printf("Hello hhhhhhhhhhhhhh %d sssssssssssssss\n", 1);
   my_printf("Hello  %u\n", 1);
   my_printf("Hex:   %lx  '%6lx'\n", 32, 65);
-  my_printf("conn %ld to: '%-.64s' user: '%-.32s' host:\
- `%-.64s' (%-.64s)", 1, 0,0,0,0);
+  my_printf(
+      "conn %ld to: '%-.64s' user: '%-.32s' host:\
+ `%-.64s' (%-.64s)",
+      1, 0, 0, 0, 0);
   return 0;
 }
 #endif

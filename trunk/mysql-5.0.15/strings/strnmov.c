@@ -26,9 +26,11 @@
 
 char *strnmov(register char *dst, register const char *src, uint n)
 {
-  while (n-- != 0) {
-    if (!(*dst++ = *src++)) {
-      return (char*) dst-1;
+  while (n-- != 0)
+  {
+    if (!(*dst++ = *src++))
+    {
+      return (char *)dst - 1;
     }
   }
   return dst;

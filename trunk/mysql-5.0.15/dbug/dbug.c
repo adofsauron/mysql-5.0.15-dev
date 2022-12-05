@@ -1184,7 +1184,7 @@ static void PushState ()
 static BOOLEAN DoTrace (CODE_STATE *state)
 {
 	// TODO:
-  return FALSE;
+  // return FALSE;
 
   reg2 BOOLEAN trace=TRUE;
 

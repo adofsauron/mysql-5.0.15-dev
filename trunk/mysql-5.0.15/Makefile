@@ -135,7 +135,7 @@ CCAS = gcc
 CCASFLAGS =   
 CCDEPMODE = depmode=gcc3
 CC_VERSION = gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-44)
-CFLAGS = -g -O -DDBUG_ON -DSAFE_MUTEX   
+CFLAGS = -g -O0 -DDBUG_ON -DSAFE_MUTEX   
 CHECK_PID = /usr/bin/kill -0 $$PID > /dev/null 2> /dev/null
 CHMOD = /usr/bin/chmod
 CLIENT_EXTRA_LDFLAGS = 

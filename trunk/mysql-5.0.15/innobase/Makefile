@@ -107,13 +107,13 @@ AUTOMAKE = ${SHELL} /root/work/mysql-5.0.15-dev/trunk/mysql-5.0.15/missing --run
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O -DDBUG_ON -DSAFE_MUTEX -g -O -DDBUG_ON -DSAFE_MUTEX   -DUNIV_LINUX
+CFLAGS = -g -O0 -DDBUG_ON -DSAFE_MUTEX -g -O0 -DDBUG_ON -DSAFE_MUTEX   -DUNIV_LINUX
 CPP = gcc -E
 CPPFLAGS = 
 CXX = g++
 CXXCPP = g++ -E
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -g -O0 -DSAFE_MUTEX -g -O -DDBUG_ON -DSAFE_MUTEX -fno-implicit-templates -fno-exceptions -fno-rtti 
+CXXFLAGS = -g -O0 -DSAFE_MUTEX -g -O0 -DDBUG_ON -DSAFE_MUTEX -fno-implicit-templates -fno-exceptions -fno-rtti 
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps

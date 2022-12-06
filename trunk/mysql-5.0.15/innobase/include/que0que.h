@@ -359,7 +359,7 @@ struct que_thr_struct{
 					the control came */
 	ulint		resource;	/* resource usage of the query thread
 					thus far */
-  	ulint   	lock_state;	/* lock state of thread (table or
+  ulint   lock_state;	/* lock state of thread (table or
 					row) */
 };
 

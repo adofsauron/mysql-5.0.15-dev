@@ -19,46 +19,40 @@ OS handle to the current thread, or its priority. */
 /********************************************************************
 Initializes the thread local storage module. */
 
-void
-thr_local_init(void);
+void thr_local_init(void);
 /*================*/
 /***********************************************************************
 Creates a local storage struct for the calling new thread. */
 
-void
-thr_local_create(void);
+void thr_local_create(void);
 /*==================*/
 /***********************************************************************
 Frees the local storage struct for the specified thread. */
 
-void
-thr_local_free(
-/*===========*/
-	os_thread_id_t	id);	/* in: thread id */
+void thr_local_free(
+    /*===========*/
+    os_thread_id_t id); /* in: thread id */
 /***********************************************************************
 Gets the slot number in the thread table of a thread. */
 
-ulint
-thr_local_get_slot_no(
-/*==================*/
-				/* out: slot number */
-	os_thread_id_t	id);	/* in: thread id of the thread */
+ulint thr_local_get_slot_no(
+    /*==================*/
+    /* out: slot number */
+    os_thread_id_t id); /* in: thread id of the thread */
 /***********************************************************************
 Sets in the local storage the slot number in the thread table of a thread. */
 
-void
-thr_local_set_slot_no(
-/*==================*/
-	os_thread_id_t	id,	/* in: thread id of the thread */
-	ulint		slot_no);/* in: slot number */
+void thr_local_set_slot_no(
+    /*==================*/
+    os_thread_id_t id, /* in: thread id of the thread */
+    ulint slot_no);    /* in: slot number */
 /***********************************************************************
 Returns pointer to the 'in_ibuf' field within the current thread local
 storage. */
 
-ibool*
-thr_local_get_in_ibuf_field(void);
+ibool *thr_local_get_in_ibuf_field(void);
 /*=============================*/
-			/* out: pointer to the in_ibuf field */
+/* out: pointer to the in_ibuf field */
 
 #ifndef UNIV_NONINL
 #include "thr0loc.ic"

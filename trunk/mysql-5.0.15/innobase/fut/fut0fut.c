@@ -11,4 +11,3 @@ Created 12/13/1995 Heikki Tuuri
 #ifdef UNIV_NONINL
 #include "fut0fut.ic"
 #endif
-

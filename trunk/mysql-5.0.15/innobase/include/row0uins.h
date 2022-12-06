@@ -16,21 +16,19 @@ Created 2/25/1997 Heikki Tuuri
 #include "que0types.h"
 #include "row0types.h"
 #include "mtr0mtr.h"
-	
+
 /***************************************************************
 Undoes a fresh insert of a row to a table. A fresh insert means that
 the same clustered index unique key did not have any record, even delete
 marked, at the time of the insert. */
 
-ulint
-row_undo_ins(
-/*=========*/
-				/* out: DB_SUCCESS */
-	undo_node_t*	node);	/* in: row undo node */
-
+ulint row_undo_ins(
+    /*=========*/
+    /* out: DB_SUCCESS */
+    undo_node_t *node); /* in: row undo node */
 
 #ifndef UNIV_NONINL
 #include "row0uins.ic"
 #endif
 
-#endif 
+#endif

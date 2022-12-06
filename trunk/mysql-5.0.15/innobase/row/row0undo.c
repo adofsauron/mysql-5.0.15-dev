@@ -105,31 +105,30 @@ or if the roll ptr is NULL, i.e., it was a fresh insert. */
 /************************************************************************
 Creates a row undo node to a query graph. */
 
-undo_node_t*
-row_undo_node_create(
-/*=================*/
-				/* out, own: undo node */
-	trx_t*		trx,	/* in: transaction */
-	que_thr_t*	parent,	/* in: parent node, i.e., a thr node */
-	mem_heap_t*	heap)	/* in: memory heap where created */
+undo_node_t *row_undo_node_create(
+    /*=================*/
+    /* out, own: undo node */
+    trx_t *trx,        /* in: transaction */
+    que_thr_t *parent, /* in: parent node, i.e., a thr node */
+    mem_heap_t *heap)  /* in: memory heap where created */
 {
-	undo_node_t*	undo;
+  undo_node_t *undo;
 
-	ut_ad(trx && parent && heap);
+  ut_ad(trx && parent && heap);
 
-	undo = mem_heap_alloc(heap, sizeof(undo_node_t));
+  undo = mem_heap_alloc(heap, sizeof(undo_node_t));
 
-	undo->common.type = QUE_NODE_UNDO;
-	undo->common.parent = parent;
+  undo->common.type = QUE_NODE_UNDO;
+  undo->common.parent = parent;
 
-	undo->state = UNDO_NODE_FETCH_NEXT;
-	undo->trx = trx;
+  undo->state = UNDO_NODE_FETCH_NEXT;
+  undo->trx = trx;
 
-	btr_pcur_init(&(undo->pcur));
+  btr_pcur_init(&(undo->pcur));
 
-	undo->heap = mem_heap_create(256);
+  undo->heap = mem_heap_create(256);
 
-	return(undo);
+  return (undo);
 }
 
 /***************************************************************
@@ -138,213 +137,212 @@ The pcur in node is used in the search. If found, stores the row to node,
 and stores the position of pcur, and detaches it. The pcur must be closed
 by the caller in any case. */
 
-ibool
-row_undo_search_clust_to_pcur(
-/*==========================*/
-				/* out: TRUE if found; NOTE the node->pcur
-				must be closed by the caller, regardless of
-				the return value */
-	undo_node_t*	node)	/* in: row undo node */
+ibool row_undo_search_clust_to_pcur(
+    /*==========================*/
+    /* out: TRUE if found; NOTE the node->pcur
+    must be closed by the caller, regardless of
+    the return value */
+    undo_node_t *node) /* in: row undo node */
 {
-	dict_index_t*	clust_index;
-	ibool		found;
-	mtr_t		mtr;
-	ibool		ret;
-	rec_t*		rec;
-	mem_heap_t*	heap		= NULL;
-	ulint		offsets_[REC_OFFS_NORMAL_SIZE];
-	ulint*		offsets		= offsets_;
-	*offsets_ = (sizeof offsets_) / sizeof *offsets_;
+  dict_index_t *clust_index;
+  ibool found;
+  mtr_t mtr;
+  ibool ret;
+  rec_t *rec;
+  mem_heap_t *heap = NULL;
+  ulint offsets_[REC_OFFS_NORMAL_SIZE];
+  ulint *offsets = offsets_;
+  *offsets_ = (sizeof offsets_) / sizeof *offsets_;
 
-	mtr_start(&mtr);
+  mtr_start(&mtr);
 
-	clust_index = dict_table_get_first_index(node->table);
-	
-	found = row_search_on_row_ref(&(node->pcur), BTR_MODIFY_LEAF,
-					node->table, node->ref, &mtr);
+  clust_index = dict_table_get_first_index(node->table);
 
-	rec = btr_pcur_get_rec(&(node->pcur));
+  found = row_search_on_row_ref(&(node->pcur), BTR_MODIFY_LEAF, node->table, node->ref, &mtr);
 
-	offsets = rec_get_offsets(rec, clust_index, offsets,
-						ULINT_UNDEFINED, &heap);
+  rec = btr_pcur_get_rec(&(node->pcur));
 
-	if (!found || 0 != ut_dulint_cmp(node->roll_ptr,
-			row_get_rec_roll_ptr(rec, clust_index, offsets))) {
+  offsets = rec_get_offsets(rec, clust_index, offsets, ULINT_UNDEFINED, &heap);
 
-		/* We must remove the reservation on the undo log record
-		BEFORE releasing the latch on the clustered index page: this
-		is to make sure that some thread will eventually undo the
-		modification corresponding to node->roll_ptr. */
-		
-		/* fputs("--------------------undoing a previous version\n",
-			stderr); */
-		   
-		ret = FALSE;
-	} else {
-		node->row = row_build(ROW_COPY_DATA, clust_index, rec,
-						offsets, node->heap);
-		btr_pcur_store_position(&(node->pcur), &mtr);
+  if (!found || 0 != ut_dulint_cmp(node->roll_ptr, row_get_rec_roll_ptr(rec, clust_index, offsets)))
+  {
+    /* We must remove the reservation on the undo log record
+    BEFORE releasing the latch on the clustered index page: this
+    is to make sure that some thread will eventually undo the
+    modification corresponding to node->roll_ptr. */
 
-		ret = TRUE;
-	}
+    /* fputs("--------------------undoing a previous version\n",
+            stderr); */
 
-	btr_pcur_commit_specify_mtr(&(node->pcur), &mtr);
+    ret = FALSE;
+  }
+  else
+  {
+    node->row = row_build(ROW_COPY_DATA, clust_index, rec, offsets, node->heap);
+    btr_pcur_store_position(&(node->pcur), &mtr);
 
-	if (UNIV_LIKELY_NULL(heap)) {
-		mem_heap_free(heap);
-	}
-	return(ret);
+    ret = TRUE;
+  }
+
+  btr_pcur_commit_specify_mtr(&(node->pcur), &mtr);
+
+  if (UNIV_LIKELY_NULL(heap))
+  {
+    mem_heap_free(heap);
+  }
+  return (ret);
 }
-	
+
 /***************************************************************
 Fetches an undo log record and does the undo for the recorded operation.
 If none left, or a partial rollback completed, returns control to the
 parent node, which is always a query thread node. */
-static
-ulint
-row_undo(
-/*=====*/
-				/* out: DB_SUCCESS if operation successfully
-				completed, else error code */
-	undo_node_t*	node,	/* in: row undo node */
-	que_thr_t*	thr)	/* in: query thread */
+static ulint row_undo(
+    /*=====*/
+    /* out: DB_SUCCESS if operation successfully
+    completed, else error code */
+    undo_node_t *node, /* in: row undo node */
+    que_thr_t *thr)    /* in: query thread */
 {
-	ulint	err;
-	trx_t*	trx;
-	dulint	roll_ptr;
-	ibool	froze_data_dict	= FALSE;
-	
-	ut_ad(node && thr);
-	
-	trx = node->trx;
+  ulint err;
+  trx_t *trx;
+  dulint roll_ptr;
+  ibool froze_data_dict = FALSE;
 
-	if (node->state == UNDO_NODE_FETCH_NEXT) {
+  ut_ad(node && thr);
 
-		node->undo_rec = trx_roll_pop_top_rec_of_trx(trx,
-							trx->roll_limit,
-							&roll_ptr,
-							node->heap);
-		if (!node->undo_rec) {
-			/* Rollback completed for this query thread */
+  trx = node->trx;
 
-			thr->run_node = que_node_get_parent(node);
+  if (node->state == UNDO_NODE_FETCH_NEXT)
+  {
+    node->undo_rec = trx_roll_pop_top_rec_of_trx(trx, trx->roll_limit, &roll_ptr, node->heap);
+    if (!node->undo_rec)
+    {
+      /* Rollback completed for this query thread */
 
-			return(DB_SUCCESS);
-		}
+      thr->run_node = que_node_get_parent(node);
 
-		node->roll_ptr = roll_ptr;
-		node->undo_no = trx_undo_rec_get_undo_no(node->undo_rec);
+      return (DB_SUCCESS);
+    }
 
-		if (trx_undo_roll_ptr_is_insert(roll_ptr)) {
+    node->roll_ptr = roll_ptr;
+    node->undo_no = trx_undo_rec_get_undo_no(node->undo_rec);
 
-			node->state = UNDO_NODE_INSERT;
-		} else {
-			node->state = UNDO_NODE_MODIFY;
-		}
+    if (trx_undo_roll_ptr_is_insert(roll_ptr))
+    {
+      node->state = UNDO_NODE_INSERT;
+    }
+    else
+    {
+      node->state = UNDO_NODE_MODIFY;
+    }
+  }
+  else if (node->state == UNDO_NODE_PREV_VERS)
+  {
+    /* Undo should be done to the same clustered index record
+    again in this same rollback, restoring the previous version */
 
-	} else if (node->state == UNDO_NODE_PREV_VERS) {
+    roll_ptr = node->new_roll_ptr;
 
-		/* Undo should be done to the same clustered index record
-		again in this same rollback, restoring the previous version */
+    node->undo_rec = trx_undo_get_undo_rec_low(roll_ptr, node->heap);
+    node->roll_ptr = roll_ptr;
+    node->undo_no = trx_undo_rec_get_undo_no(node->undo_rec);
 
-		roll_ptr = node->new_roll_ptr;
-		
-		node->undo_rec = trx_undo_get_undo_rec_low(roll_ptr,
-								node->heap);
-		node->roll_ptr = roll_ptr;
-		node->undo_no = trx_undo_rec_get_undo_no(node->undo_rec);
-		
-		if (trx_undo_roll_ptr_is_insert(roll_ptr)) {
+    if (trx_undo_roll_ptr_is_insert(roll_ptr))
+    {
+      node->state = UNDO_NODE_INSERT;
+    }
+    else
+    {
+      node->state = UNDO_NODE_MODIFY;
+    }
+  }
 
-			node->state = UNDO_NODE_INSERT;
-		} else {
-			node->state = UNDO_NODE_MODIFY;
-		}
-	}
+  /* Prevent DROP TABLE etc. while we are rolling back this row.
+  If we are doing a TABLE CREATE or some other dictionary operation,
+  then we already have dict_operation_lock locked in x-mode. Do not
+  try to lock again in s-mode, because that would cause a hang. */
 
-	/* Prevent DROP TABLE etc. while we are rolling back this row.
-        If we are doing a TABLE CREATE or some other dictionary operation,
-        then we already have dict_operation_lock locked in x-mode. Do not
-        try to lock again in s-mode, because that would cause a hang. */
+  if (trx->dict_operation_lock_mode == 0)
+  {
+    row_mysql_freeze_data_dictionary(trx);
 
-	if (trx->dict_operation_lock_mode == 0) {
-        
-	        row_mysql_freeze_data_dictionary(trx);
+    froze_data_dict = TRUE;
+  }
 
-	        froze_data_dict = TRUE;
-	}
+  if (node->state == UNDO_NODE_INSERT)
+  {
+    err = row_undo_ins(node);
 
-	if (node->state == UNDO_NODE_INSERT) {
+    node->state = UNDO_NODE_FETCH_NEXT;
+  }
+  else
+  {
+    ut_ad(node->state == UNDO_NODE_MODIFY);
+    err = row_undo_mod(node, thr);
+  }
 
-		err = row_undo_ins(node);
+  if (froze_data_dict)
+  {
+    row_mysql_unfreeze_data_dictionary(trx);
+  }
 
-		node->state = UNDO_NODE_FETCH_NEXT;
-	} else {
-		ut_ad(node->state == UNDO_NODE_MODIFY);
-		err = row_undo_mod(node, thr);
-	}
+  /* Do some cleanup */
+  btr_pcur_close(&(node->pcur));
 
-	if (froze_data_dict) {
+  mem_heap_empty(node->heap);
 
-	        row_mysql_unfreeze_data_dictionary(trx);
-	}
+  thr->run_node = node;
 
-	/* Do some cleanup */
-	btr_pcur_close(&(node->pcur));
-
-	mem_heap_empty(node->heap);
-	
-	thr->run_node = node;
-
-	return(err);
+  return (err);
 }
 
 /***************************************************************
 Undoes a row operation in a table. This is a high-level function used
 in SQL execution graphs. */
 
-que_thr_t*
-row_undo_step(
-/*==========*/
-				/* out: query thread to run next or NULL */
-	que_thr_t*	thr)	/* in: query thread */
+que_thr_t *row_undo_step(
+    /*==========*/
+    /* out: query thread to run next or NULL */
+    que_thr_t *thr) /* in: query thread */
 {
-	ulint		err;
-	undo_node_t*	node;
-	trx_t*		trx;
+  ulint err;
+  undo_node_t *node;
+  trx_t *trx;
 
-	ut_ad(thr);
+  ut_ad(thr);
 
-	srv_activity_count++;
-	
-	trx = thr_get_trx(thr);
-	
-	node = thr->run_node;
+  srv_activity_count++;
 
-	ut_ad(que_node_get_type(node) == QUE_NODE_UNDO);
+  trx = thr_get_trx(thr);
 
-	err = row_undo(node, thr);
+  node = thr->run_node;
 
-	trx->error_state = err;
+  ut_ad(que_node_get_type(node) == QUE_NODE_UNDO);
 
-	if (err != DB_SUCCESS) {
-		/* SQL error detected */
+  err = row_undo(node, thr);
 
-		fprintf(stderr, "InnoDB: Fatal error %lu in rollback.\n",
-			(ulong) err);
+  trx->error_state = err;
 
-		if (err == DB_OUT_OF_FILE_SPACE) {
-			fprintf(stderr,
-			"InnoDB: Error 13 means out of tablespace.\n"
-			"InnoDB: Consider increasing your tablespace.\n");
+  if (err != DB_SUCCESS)
+  {
+    /* SQL error detected */
 
-			exit(1);			
-		}
-		
-		ut_error;
+    fprintf(stderr, "InnoDB: Fatal error %lu in rollback.\n", (ulong)err);
 
-		return(NULL);
-	}
+    if (err == DB_OUT_OF_FILE_SPACE)
+    {
+      fprintf(stderr,
+              "InnoDB: Error 13 means out of tablespace.\n"
+              "InnoDB: Consider increasing your tablespace.\n");
 
-	return(thr);
-} 
+      exit(1);
+    }
+
+    ut_error;
+
+    return (NULL);
+  }
+
+  return (thr);
+}

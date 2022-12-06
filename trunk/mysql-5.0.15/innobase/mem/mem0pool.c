@@ -74,585 +74,582 @@ can occupy at most about the size of the buffer frame of memory in the common
 pool, and after that its locks will grow into the buffer pool. */
 
 /* Mask used to extract the free bit from area->size */
-#define MEM_AREA_FREE	1
+#define MEM_AREA_FREE 1
 
 /* The smallest memory area total size */
-#define MEM_AREA_MIN_SIZE	(2 * MEM_AREA_EXTRA_SIZE)
-
+#define MEM_AREA_MIN_SIZE (2 * MEM_AREA_EXTRA_SIZE)
 
 /* Data structure for a memory pool. The space is allocated using the buddy
 algorithm, where free list i contains areas of size 2 to power i. */
-struct mem_pool_struct{
-	byte*		buf;		/* memory pool */
-	ulint		size;		/* memory common pool size */
-	ulint		reserved;	/* amount of currently allocated
-					memory */
-	mutex_t		mutex;		/* mutex protecting this struct */
-	UT_LIST_BASE_NODE_T(mem_area_t)
-			free_list[64];	/* lists of free memory areas: an
-					area is put to the list whose number
-					is the 2-logarithm of the area size */
+struct mem_pool_struct
+{
+  byte *buf;      /* memory pool */
+  ulint size;     /* memory common pool size */
+  ulint reserved; /* amount of currently allocated
+                  memory */
+  mutex_t mutex;  /* mutex protecting this struct */
+  UT_LIST_BASE_NODE_T(mem_area_t)
+  free_list[64]; /* lists of free memory areas: an
+                 area is put to the list whose number
+                 is the 2-logarithm of the area size */
 };
 
 /* The common memory pool */
-mem_pool_t*	mem_comm_pool	= NULL;
+mem_pool_t *mem_comm_pool = NULL;
 
 /* We use this counter to check that the mem pool mutex does not leak;
 this is to track a strange assertion failure reported at
 mysql@lists.mysql.com */
 
-ulint		mem_n_threads_inside		= 0;
+ulint mem_n_threads_inside = 0;
 
 /************************************************************************
 Reserves the mem pool mutex. */
 
-void
-mem_pool_mutex_enter(void)
+void mem_pool_mutex_enter(void)
 /*======================*/
 {
-	mutex_enter(&(mem_comm_pool->mutex));
+  mutex_enter(&(mem_comm_pool->mutex));
 }
 
 /************************************************************************
 Releases the mem pool mutex. */
 
-void
-mem_pool_mutex_exit(void)
+void mem_pool_mutex_exit(void)
 /*=====================*/
 {
-	mutex_exit(&(mem_comm_pool->mutex));
+  mutex_exit(&(mem_comm_pool->mutex));
 }
 
 /************************************************************************
 Returns memory area size. */
 UNIV_INLINE
-ulint
-mem_area_get_size(
-/*==============*/
-				/* out: size */
-	mem_area_t*	area)	/* in: area */
+ulint mem_area_get_size(
+    /*==============*/
+    /* out: size */
+    mem_area_t *area) /* in: area */
 {
-	return(area->size_and_free & ~MEM_AREA_FREE);
+  return (area->size_and_free & ~MEM_AREA_FREE);
 }
 
 /************************************************************************
 Sets memory area size. */
 UNIV_INLINE
-void
-mem_area_set_size(
-/*==============*/
-	mem_area_t*	area,	/* in: area */
-	ulint		size)	/* in: size */
+void mem_area_set_size(
+    /*==============*/
+    mem_area_t *area, /* in: area */
+    ulint size)       /* in: size */
 {
-	area->size_and_free = (area->size_and_free & MEM_AREA_FREE)
-				| size;
+  area->size_and_free = (area->size_and_free & MEM_AREA_FREE) | size;
 }
 
 /************************************************************************
 Returns memory area free bit. */
 UNIV_INLINE
-ibool
-mem_area_get_free(
-/*==============*/
-				/* out: TRUE if free */
-	mem_area_t*	area)	/* in: area */
+ibool mem_area_get_free(
+    /*==============*/
+    /* out: TRUE if free */
+    mem_area_t *area) /* in: area */
 {
-	ut_ad(TRUE == MEM_AREA_FREE);
+  ut_ad(TRUE == MEM_AREA_FREE);
 
-	return(area->size_and_free & MEM_AREA_FREE);
+  return (area->size_and_free & MEM_AREA_FREE);
 }
 
 /************************************************************************
 Sets memory area free bit. */
 UNIV_INLINE
-void
-mem_area_set_free(
-/*==============*/
-	mem_area_t*	area,	/* in: area */
-	ibool		free)	/* in: free bit value */
+void mem_area_set_free(
+    /*==============*/
+    mem_area_t *area, /* in: area */
+    ibool free)       /* in: free bit value */
 {
-	ut_ad(TRUE == MEM_AREA_FREE);
-	
-	area->size_and_free = (area->size_and_free & ~MEM_AREA_FREE)
-				| free;
+  ut_ad(TRUE == MEM_AREA_FREE);
+
+  area->size_and_free = (area->size_and_free & ~MEM_AREA_FREE) | free;
 }
 
 /************************************************************************
 Creates a memory pool. */
 
-mem_pool_t*
-mem_pool_create(
-/*============*/
-			/* out: memory pool */
-	ulint	size)	/* in: pool size in bytes */
+mem_pool_t *mem_pool_create(
+    /*============*/
+    /* out: memory pool */
+    ulint size) /* in: pool size in bytes */
 {
-	mem_pool_t*	pool;
-	mem_area_t*	area;
-	ulint		i;
-	ulint		used;
+  mem_pool_t *pool;
+  mem_area_t *area;
+  ulint i;
+  ulint used;
 
-	ut_a(size > 10000);
-	
-	pool = ut_malloc(sizeof(mem_pool_t));
+  ut_a(size > 10000);
 
-	/* We do not set the memory to zero (FALSE) in the pool,
-	but only when allocated at a higher level in mem0mem.c.
-	This is to avoid masking useful Purify warnings. */
+  pool = ut_malloc(sizeof(mem_pool_t));
 
-	pool->buf = ut_malloc_low(size, FALSE, TRUE);
-	pool->size = size;
+  /* We do not set the memory to zero (FALSE) in the pool,
+  but only when allocated at a higher level in mem0mem.c.
+  This is to avoid masking useful Purify warnings. */
 
-	mutex_create(&(pool->mutex));
-	mutex_set_level(&(pool->mutex), SYNC_MEM_POOL);
+  pool->buf = ut_malloc_low(size, FALSE, TRUE);
+  pool->size = size;
 
-	/* Initialize the free lists */
+  mutex_create(&(pool->mutex));
+  mutex_set_level(&(pool->mutex), SYNC_MEM_POOL);
 
-	for (i = 0; i < 64; i++) {
+  /* Initialize the free lists */
 
-		UT_LIST_INIT(pool->free_list[i]);
-	}
+  for (i = 0; i < 64; i++)
+  {
+    UT_LIST_INIT(pool->free_list[i]);
+  }
 
-	used = 0;
+  used = 0;
 
-	while (size - used >= MEM_AREA_MIN_SIZE) {
+  while (size - used >= MEM_AREA_MIN_SIZE)
+  {
+    i = ut_2_log(size - used);
 
-		i = ut_2_log(size - used);
+    if (ut_2_exp(i) > size - used)
+    {
+      /* ut_2_log rounds upward */
 
-		if (ut_2_exp(i) > size - used) {
+      i--;
+    }
 
-			/* ut_2_log rounds upward */
-		
-			i--;
-		}
+    area = (mem_area_t *)(pool->buf + used);
 
-		area = (mem_area_t*)(pool->buf + used);
+    mem_area_set_size(area, ut_2_exp(i));
+    mem_area_set_free(area, TRUE);
 
-		mem_area_set_size(area, ut_2_exp(i));
-		mem_area_set_free(area, TRUE);
+    UT_LIST_ADD_FIRST(free_list, pool->free_list[i], area);
 
-		UT_LIST_ADD_FIRST(free_list, pool->free_list[i], area);
+    used = used + ut_2_exp(i);
+  }
 
-		used = used + ut_2_exp(i);
-	}
+  ut_ad(size >= used);
 
-	ut_ad(size >= used);
+  pool->reserved = 0;
 
-	pool->reserved = 0;
-	
-	return(pool);
+  return (pool);
 }
 
 /************************************************************************
 Fills the specified free list. */
-static
-ibool
-mem_pool_fill_free_list(
-/*====================*/
-				/* out: TRUE if we were able to insert a
-				block to the free list */
-	ulint		i,	/* in: free list index */
-	mem_pool_t*	pool)	/* in: memory pool */
+static ibool mem_pool_fill_free_list(
+    /*====================*/
+    /* out: TRUE if we were able to insert a
+    block to the free list */
+    ulint i,          /* in: free list index */
+    mem_pool_t *pool) /* in: memory pool */
 {
-	mem_area_t*	area;
-	mem_area_t*	area2;
-	ibool		ret;
+  mem_area_t *area;
+  mem_area_t *area2;
+  ibool ret;
 
 #ifdef UNIV_SYNC_DEBUG
-	ut_ad(mutex_own(&(pool->mutex)));
+  ut_ad(mutex_own(&(pool->mutex)));
 #endif /* UNIV_SYNC_DEBUG */
 
-	if (i >= 63) {
-		/* We come here when we have run out of space in the
-		memory pool: */
-     
-		return(FALSE);
-	}
+  if (i >= 63)
+  {
+    /* We come here when we have run out of space in the
+    memory pool: */
 
-	area = UT_LIST_GET_FIRST(pool->free_list[i + 1]);
+    return (FALSE);
+  }
 
-	if (area == NULL) {
-	        if (UT_LIST_GET_LEN(pool->free_list[i + 1]) > 0) {
-	    		ut_print_timestamp(stderr);
+  area = UT_LIST_GET_FIRST(pool->free_list[i + 1]);
 
-	                fprintf(stderr,
-"  InnoDB: Error: mem pool free list %lu length is %lu\n"
-"InnoDB: though the list is empty!\n",
-			(ulong) i + 1,
-			(ulong) UT_LIST_GET_LEN(pool->free_list[i + 1]));
-		}
+  if (area == NULL)
+  {
+    if (UT_LIST_GET_LEN(pool->free_list[i + 1]) > 0)
+    {
+      ut_print_timestamp(stderr);
 
-		ret = mem_pool_fill_free_list(i + 1, pool);
+      fprintf(stderr,
+              "  InnoDB: Error: mem pool free list %lu length is %lu\n"
+              "InnoDB: though the list is empty!\n",
+              (ulong)i + 1, (ulong)UT_LIST_GET_LEN(pool->free_list[i + 1]));
+    }
 
-		if (ret == FALSE) {
+    ret = mem_pool_fill_free_list(i + 1, pool);
 
-			return(FALSE);
-		}
+    if (ret == FALSE)
+    {
+      return (FALSE);
+    }
 
-		area = UT_LIST_GET_FIRST(pool->free_list[i + 1]);
-	}
+    area = UT_LIST_GET_FIRST(pool->free_list[i + 1]);
+  }
 
-	if (UT_LIST_GET_LEN(pool->free_list[i + 1]) == 0) {
-	        mem_analyze_corruption((byte*)area);
+  if (UT_LIST_GET_LEN(pool->free_list[i + 1]) == 0)
+  {
+    mem_analyze_corruption((byte *)area);
 
-		ut_error;
-	}
+    ut_error;
+  }
 
-	UT_LIST_REMOVE(free_list, pool->free_list[i + 1], area);
+  UT_LIST_REMOVE(free_list, pool->free_list[i + 1], area);
 
-	area2 = (mem_area_t*)(((byte*)area) + ut_2_exp(i));
+  area2 = (mem_area_t *)(((byte *)area) + ut_2_exp(i));
 
-	mem_area_set_size(area2, ut_2_exp(i));
-	mem_area_set_free(area2, TRUE);
+  mem_area_set_size(area2, ut_2_exp(i));
+  mem_area_set_free(area2, TRUE);
 
-	UT_LIST_ADD_FIRST(free_list, pool->free_list[i], area2);
-	
-	mem_area_set_size(area, ut_2_exp(i));
+  UT_LIST_ADD_FIRST(free_list, pool->free_list[i], area2);
 
-	UT_LIST_ADD_FIRST(free_list, pool->free_list[i], area);
+  mem_area_set_size(area, ut_2_exp(i));
 
-	return(TRUE);
+  UT_LIST_ADD_FIRST(free_list, pool->free_list[i], area);
+
+  return (TRUE);
 }
-	
+
 /************************************************************************
 Allocates memory from a pool. NOTE: This low-level function should only be
 used in mem0mem.*! */
 
-void*
-mem_area_alloc(
-/*===========*/
-				/* out, own: allocated memory buffer */
-	ulint		size,	/* in: allocated size in bytes; for optimum
-				space usage, the size should be a power of 2
-				minus MEM_AREA_EXTRA_SIZE */
-	mem_pool_t*	pool)	/* in: memory pool */
+void *mem_area_alloc(
+    /*===========*/
+    /* out, own: allocated memory buffer */
+    ulint size,       /* in: allocated size in bytes; for optimum
+                      space usage, the size should be a power of 2
+                      minus MEM_AREA_EXTRA_SIZE */
+    mem_pool_t *pool) /* in: memory pool */
 {
-	mem_area_t*	area;
-	ulint		n;
-	ibool		ret;
+  mem_area_t *area;
+  ulint n;
+  ibool ret;
 
-	n = ut_2_log(ut_max(size + MEM_AREA_EXTRA_SIZE, MEM_AREA_MIN_SIZE));
+  n = ut_2_log(ut_max(size + MEM_AREA_EXTRA_SIZE, MEM_AREA_MIN_SIZE));
 
-	mutex_enter(&(pool->mutex));
-	mem_n_threads_inside++;
+  mutex_enter(&(pool->mutex));
+  mem_n_threads_inside++;
 
-	ut_a(mem_n_threads_inside == 1);
+  ut_a(mem_n_threads_inside == 1);
 
-	area = UT_LIST_GET_FIRST(pool->free_list[n]);
+  area = UT_LIST_GET_FIRST(pool->free_list[n]);
 
-	if (area == NULL) {
-		ret = mem_pool_fill_free_list(n, pool);
+  if (area == NULL)
+  {
+    ret = mem_pool_fill_free_list(n, pool);
 
-		if (ret == FALSE) {
-			/* Out of memory in memory pool: we try to allocate
-			from the operating system with the regular malloc: */
+    if (ret == FALSE)
+    {
+      /* Out of memory in memory pool: we try to allocate
+      from the operating system with the regular malloc: */
 
-			mem_n_threads_inside--;
-			mutex_exit(&(pool->mutex));
+      mem_n_threads_inside--;
+      mutex_exit(&(pool->mutex));
 
-			return(ut_malloc(size));
-		}
+      return (ut_malloc(size));
+    }
 
-		area = UT_LIST_GET_FIRST(pool->free_list[n]);
-	}
+    area = UT_LIST_GET_FIRST(pool->free_list[n]);
+  }
 
-	if (!mem_area_get_free(area)) {
-	        fprintf(stderr,
-"InnoDB: Error: Removing element from mem pool free list %lu though the\n"
-"InnoDB: element is not marked free!\n",
-			(ulong) n);
+  if (!mem_area_get_free(area))
+  {
+    fprintf(stderr,
+            "InnoDB: Error: Removing element from mem pool free list %lu though the\n"
+            "InnoDB: element is not marked free!\n",
+            (ulong)n);
 
-		mem_analyze_corruption((byte*)area);
+    mem_analyze_corruption((byte *)area);
 
-		/* Try to analyze a strange assertion failure reported at
-		mysql@lists.mysql.com where the free bit IS 1 in the
-		hex dump above */
+    /* Try to analyze a strange assertion failure reported at
+    mysql@lists.mysql.com where the free bit IS 1 in the
+    hex dump above */
 
-		if (mem_area_get_free(area)) {
-		        fprintf(stderr,
-"InnoDB: Probably a race condition because now the area is marked free!\n");
-		}
+    if (mem_area_get_free(area))
+    {
+      fprintf(stderr, "InnoDB: Probably a race condition because now the area is marked free!\n");
+    }
 
-		ut_error;
-	}
+    ut_error;
+  }
 
-	if (UT_LIST_GET_LEN(pool->free_list[n]) == 0) {
-	        fprintf(stderr,
-"InnoDB: Error: Removing element from mem pool free list %lu\n"
-"InnoDB: though the list length is 0!\n",
-			(ulong) n);
-		mem_analyze_corruption((byte*)area);
+  if (UT_LIST_GET_LEN(pool->free_list[n]) == 0)
+  {
+    fprintf(stderr,
+            "InnoDB: Error: Removing element from mem pool free list %lu\n"
+            "InnoDB: though the list length is 0!\n",
+            (ulong)n);
+    mem_analyze_corruption((byte *)area);
 
-		ut_error;
-	}
+    ut_error;
+  }
 
-	ut_ad(mem_area_get_size(area) == ut_2_exp(n));	
+  ut_ad(mem_area_get_size(area) == ut_2_exp(n));
 
-	mem_area_set_free(area, FALSE);
-	
-	UT_LIST_REMOVE(free_list, pool->free_list[n], area);
+  mem_area_set_free(area, FALSE);
 
-	pool->reserved += mem_area_get_size(area);
-	
-	mem_n_threads_inside--;
-	mutex_exit(&(pool->mutex));
+  UT_LIST_REMOVE(free_list, pool->free_list[n], area);
 
-	ut_ad(mem_pool_validate(pool));
-	
-	return((void*)(MEM_AREA_EXTRA_SIZE + ((byte*)area))); 
+  pool->reserved += mem_area_get_size(area);
+
+  mem_n_threads_inside--;
+  mutex_exit(&(pool->mutex));
+
+  ut_ad(mem_pool_validate(pool));
+
+  return ((void *)(MEM_AREA_EXTRA_SIZE + ((byte *)area)));
 }
 
 /************************************************************************
 Gets the buddy of an area, if it exists in pool. */
 UNIV_INLINE
-mem_area_t*
-mem_area_get_buddy(
-/*===============*/
-				/* out: the buddy, NULL if no buddy in pool */
-	mem_area_t*	area,	/* in: memory area */
-	ulint		size,	/* in: memory area size */
-	mem_pool_t*	pool)	/* in: memory pool */
+mem_area_t *mem_area_get_buddy(
+    /*===============*/
+    /* out: the buddy, NULL if no buddy in pool */
+    mem_area_t *area, /* in: memory area */
+    ulint size,       /* in: memory area size */
+    mem_pool_t *pool) /* in: memory pool */
 {
-	mem_area_t*	buddy;
+  mem_area_t *buddy;
 
-	ut_ad(size != 0);
+  ut_ad(size != 0);
 
-	if (((((byte*)area) - pool->buf) % (2 * size)) == 0) {
-	
-		/* The buddy is in a higher address */
+  if (((((byte *)area) - pool->buf) % (2 * size)) == 0)
+  {
+    /* The buddy is in a higher address */
 
-		buddy = (mem_area_t*)(((byte*)area) + size);
+    buddy = (mem_area_t *)(((byte *)area) + size);
 
-		if ((((byte*)buddy) - pool->buf) + size > pool->size) {
+    if ((((byte *)buddy) - pool->buf) + size > pool->size)
+    {
+      /* The buddy is not wholly contained in the pool:
+      there is no buddy */
 
-			/* The buddy is not wholly contained in the pool:
-			there is no buddy */
+      buddy = NULL;
+    }
+  }
+  else
+  {
+    /* The buddy is in a lower address; NOTE that area cannot
+    be at the pool lower end, because then we would end up to
+    the upper branch in this if-clause: the remainder would be
+    0 */
 
-			buddy = NULL;
-		}
-	} else {
-		/* The buddy is in a lower address; NOTE that area cannot
-		be at the pool lower end, because then we would end up to
-		the upper branch in this if-clause: the remainder would be
-		0 */
+    buddy = (mem_area_t *)(((byte *)area) - size);
+  }
 
-		buddy = (mem_area_t*)(((byte*)area) - size);
-	}
-
-	return(buddy);
+  return (buddy);
 }
 
 /************************************************************************
 Frees memory to a pool. */
 
-void
-mem_area_free(
-/*==========*/
-	void*		ptr,	/* in, own: pointer to allocated memory
-				buffer */
-	mem_pool_t*	pool)	/* in: memory pool */
+void mem_area_free(
+    /*==========*/
+    void *ptr,        /* in, own: pointer to allocated memory
+                      buffer */
+    mem_pool_t *pool) /* in: memory pool */
 {
-	mem_area_t*	area;
-	mem_area_t*	buddy;
-	void*		new_ptr;
-	ulint		size;
-	ulint		n;
-	
-	/* It may be that the area was really allocated from the OS with
-	regular malloc: check if ptr points within our memory pool */
+  mem_area_t *area;
+  mem_area_t *buddy;
+  void *new_ptr;
+  ulint size;
+  ulint n;
 
-	if ((byte*)ptr < pool->buf || (byte*)ptr >= pool->buf + pool->size) {
-		ut_free(ptr);
+  /* It may be that the area was really allocated from the OS with
+  regular malloc: check if ptr points within our memory pool */
 
-		return;
-	}
+  if ((byte *)ptr < pool->buf || (byte *)ptr >= pool->buf + pool->size)
+  {
+    ut_free(ptr);
 
-	area = (mem_area_t*) (((byte*)ptr) - MEM_AREA_EXTRA_SIZE);
+    return;
+  }
 
-        if (mem_area_get_free(area)) {
-	        fprintf(stderr,
-"InnoDB: Error: Freeing element to mem pool free list though the\n"
-"InnoDB: element is marked free!\n");
+  area = (mem_area_t *)(((byte *)ptr) - MEM_AREA_EXTRA_SIZE);
 
-		mem_analyze_corruption((byte*)area);
-		ut_error;
-	}
+  if (mem_area_get_free(area))
+  {
+    fprintf(stderr,
+            "InnoDB: Error: Freeing element to mem pool free list though the\n"
+            "InnoDB: element is marked free!\n");
 
-	size = mem_area_get_size(area);
-	
-        if (size == 0) {
-	        fprintf(stderr,
-"InnoDB: Error: Mem area size is 0. Possibly a memory overrun of the\n"
-"InnoDB: previous allocated area!\n");
+    mem_analyze_corruption((byte *)area);
+    ut_error;
+  }
 
-		mem_analyze_corruption((byte*)area);
-		ut_error;
-	}
+  size = mem_area_get_size(area);
 
-#ifdef UNIV_LIGHT_MEM_DEBUG	
-	if (((byte*)area) + size < pool->buf + pool->size) {
+  if (size == 0)
+  {
+    fprintf(stderr,
+            "InnoDB: Error: Mem area size is 0. Possibly a memory overrun of the\n"
+            "InnoDB: previous allocated area!\n");
 
-		ulint	next_size;
+    mem_analyze_corruption((byte *)area);
+    ut_error;
+  }
 
-		next_size = mem_area_get_size(
-					(mem_area_t*)(((byte*)area) + size));
-		if (ut_2_power_up(next_size) != next_size) {
-		        fprintf(stderr,
-"InnoDB: Error: Memory area size %lu, next area size %lu not a power of 2!\n"
-"InnoDB: Possibly a memory overrun of the buffer being freed here.\n",
-			  (ulong) size, (ulong) next_size);
-			mem_analyze_corruption((byte*)area);
+#ifdef UNIV_LIGHT_MEM_DEBUG
+  if (((byte *)area) + size < pool->buf + pool->size)
+  {
+    ulint next_size;
 
-			ut_error;
-		}
-	}
+    next_size = mem_area_get_size((mem_area_t *)(((byte *)area) + size));
+    if (ut_2_power_up(next_size) != next_size)
+    {
+      fprintf(stderr,
+              "InnoDB: Error: Memory area size %lu, next area size %lu not a power of 2!\n"
+              "InnoDB: Possibly a memory overrun of the buffer being freed here.\n",
+              (ulong)size, (ulong)next_size);
+      mem_analyze_corruption((byte *)area);
+
+      ut_error;
+    }
+  }
 #endif
-	buddy = mem_area_get_buddy(area, size, pool);
-	
-	n = ut_2_log(size);
-	
-	mutex_enter(&(pool->mutex));
-	mem_n_threads_inside++;
+  buddy = mem_area_get_buddy(area, size, pool);
 
-	ut_a(mem_n_threads_inside == 1);
+  n = ut_2_log(size);
 
-	if (buddy && mem_area_get_free(buddy)
-				&& (size == mem_area_get_size(buddy))) {
+  mutex_enter(&(pool->mutex));
+  mem_n_threads_inside++;
 
-		/* The buddy is in a free list */
+  ut_a(mem_n_threads_inside == 1);
 
-		if ((byte*)buddy < (byte*)area) {
-			new_ptr = ((byte*)buddy) + MEM_AREA_EXTRA_SIZE;
+  if (buddy && mem_area_get_free(buddy) && (size == mem_area_get_size(buddy)))
+  {
+    /* The buddy is in a free list */
 
-			mem_area_set_size(buddy, 2 * size);
-			mem_area_set_free(buddy, FALSE);
-		} else {
-			new_ptr = ptr;
+    if ((byte *)buddy < (byte *)area)
+    {
+      new_ptr = ((byte *)buddy) + MEM_AREA_EXTRA_SIZE;
 
-			mem_area_set_size(area, 2 * size);
-		}
+      mem_area_set_size(buddy, 2 * size);
+      mem_area_set_free(buddy, FALSE);
+    }
+    else
+    {
+      new_ptr = ptr;
 
-		/* Remove the buddy from its free list and merge it to area */
-		
-		UT_LIST_REMOVE(free_list, pool->free_list[n], buddy);
+      mem_area_set_size(area, 2 * size);
+    }
 
-		pool->reserved += ut_2_exp(n);
+    /* Remove the buddy from its free list and merge it to area */
 
-		mem_n_threads_inside--;
-		mutex_exit(&(pool->mutex));
+    UT_LIST_REMOVE(free_list, pool->free_list[n], buddy);
 
-		mem_area_free(new_ptr, pool);
+    pool->reserved += ut_2_exp(n);
 
-		return;
-	} else {
-		UT_LIST_ADD_FIRST(free_list, pool->free_list[n], area);
+    mem_n_threads_inside--;
+    mutex_exit(&(pool->mutex));
 
-		mem_area_set_free(area, TRUE);
+    mem_area_free(new_ptr, pool);
 
-		ut_ad(pool->reserved >= size);
+    return;
+  }
+  else
+  {
+    UT_LIST_ADD_FIRST(free_list, pool->free_list[n], area);
 
-		pool->reserved -= size;
-	}
-	
-	mem_n_threads_inside--;
-	mutex_exit(&(pool->mutex));
+    mem_area_set_free(area, TRUE);
 
-	ut_ad(mem_pool_validate(pool));
+    ut_ad(pool->reserved >= size);
+
+    pool->reserved -= size;
+  }
+
+  mem_n_threads_inside--;
+  mutex_exit(&(pool->mutex));
+
+  ut_ad(mem_pool_validate(pool));
 }
 
 /************************************************************************
 Validates a memory pool. */
 
-ibool
-mem_pool_validate(
-/*==============*/
-				/* out: TRUE if ok */
-	mem_pool_t*	pool)	/* in: memory pool */
+ibool mem_pool_validate(
+    /*==============*/
+    /* out: TRUE if ok */
+    mem_pool_t *pool) /* in: memory pool */
 {
-	mem_area_t*	area;
-	mem_area_t*	buddy;
-	ulint		free;
-	ulint		i;
+  mem_area_t *area;
+  mem_area_t *buddy;
+  ulint free;
+  ulint i;
 
-	mutex_enter(&(pool->mutex));
+  mutex_enter(&(pool->mutex));
 
-	free = 0;
-	
-	for (i = 0; i < 64; i++) {
-	
-		UT_LIST_VALIDATE(free_list, mem_area_t, pool->free_list[i]);
+  free = 0;
 
-		area = UT_LIST_GET_FIRST(pool->free_list[i]);
+  for (i = 0; i < 64; i++)
+  {
+    UT_LIST_VALIDATE(free_list, mem_area_t, pool->free_list[i]);
 
-		while (area != NULL) {
-			ut_a(mem_area_get_free(area));
-			ut_a(mem_area_get_size(area) == ut_2_exp(i));
+    area = UT_LIST_GET_FIRST(pool->free_list[i]);
 
-			buddy = mem_area_get_buddy(area, ut_2_exp(i), pool);
+    while (area != NULL)
+    {
+      ut_a(mem_area_get_free(area));
+      ut_a(mem_area_get_size(area) == ut_2_exp(i));
 
-			ut_a(!buddy || !mem_area_get_free(buddy)
-	    		     || (ut_2_exp(i) != mem_area_get_size(buddy)));
+      buddy = mem_area_get_buddy(area, ut_2_exp(i), pool);
 
-			area = UT_LIST_GET_NEXT(free_list, area);
+      ut_a(!buddy || !mem_area_get_free(buddy) || (ut_2_exp(i) != mem_area_get_size(buddy)));
 
-			free += ut_2_exp(i);
-		}
-	}
+      area = UT_LIST_GET_NEXT(free_list, area);
 
-	ut_a(free + pool->reserved == pool->size);
+      free += ut_2_exp(i);
+    }
+  }
 
-	mutex_exit(&(pool->mutex));
+  ut_a(free + pool->reserved == pool->size);
 
-	return(TRUE);
+  mutex_exit(&(pool->mutex));
+
+  return (TRUE);
 }
 
 /************************************************************************
 Prints info of a memory pool. */
 
-void
-mem_pool_print_info(
-/*================*/
-	FILE*	        outfile,/* in: output file to write to */
-	mem_pool_t*	pool)	/* in: memory pool */
+void mem_pool_print_info(
+    /*================*/
+    FILE *outfile,    /* in: output file to write to */
+    mem_pool_t *pool) /* in: memory pool */
 {
-	ulint		i;
+  ulint i;
 
-	mem_pool_validate(pool);
+  mem_pool_validate(pool);
 
-	fprintf(outfile, "INFO OF A MEMORY POOL\n");
+  fprintf(outfile, "INFO OF A MEMORY POOL\n");
 
-	mutex_enter(&(pool->mutex));
+  mutex_enter(&(pool->mutex));
 
-	for (i = 0; i < 64; i++) {
-		if (UT_LIST_GET_LEN(pool->free_list[i]) > 0) {
+  for (i = 0; i < 64; i++)
+  {
+    if (UT_LIST_GET_LEN(pool->free_list[i]) > 0)
+    {
+      fprintf(outfile, "Free list length %lu for blocks of size %lu\n", (ulong)UT_LIST_GET_LEN(pool->free_list[i]),
+              (ulong)ut_2_exp(i));
+    }
+  }
 
-			fprintf(outfile,
-			  "Free list length %lu for blocks of size %lu\n",
-			  (ulong) UT_LIST_GET_LEN(pool->free_list[i]),
-			  (ulong) ut_2_exp(i));
-		}	
-	}
-
-	fprintf(outfile, "Pool size %lu, reserved %lu.\n", (ulong) pool->size,
-						       (ulong) pool->reserved);
-	mutex_exit(&(pool->mutex));
+  fprintf(outfile, "Pool size %lu, reserved %lu.\n", (ulong)pool->size, (ulong)pool->reserved);
+  mutex_exit(&(pool->mutex));
 }
 
 /************************************************************************
 Returns the amount of reserved memory. */
 
-ulint
-mem_pool_get_reserved(
-/*==================*/
-				/* out: reserved memory in bytes */
-	mem_pool_t*	pool)	/* in: memory pool */
+ulint mem_pool_get_reserved(
+    /*==================*/
+    /* out: reserved memory in bytes */
+    mem_pool_t *pool) /* in: memory pool */
 {
-	ulint	reserved;
+  ulint reserved;
 
-	mutex_enter(&(pool->mutex));
+  mutex_enter(&(pool->mutex));
 
-	reserved = pool->reserved;
-	
-	mutex_exit(&(pool->mutex));
+  reserved = pool->reserved;
 
-	return(reserved);
+  mutex_exit(&(pool->mutex));
+
+  return (reserved);
 }

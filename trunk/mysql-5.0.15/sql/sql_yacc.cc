@@ -1213,7 +1213,7 @@ inline Item *is_truth_value(Item *A, bool v1, bool v2)
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
-#define YYDEBUG 0
+#define YYDEBUG 1
 #endif
 
 /* Enabling verbose error messages.  */

@@ -16,25 +16,22 @@
 
 #include "heapdef.h"
 
-	/* Read first record with the current key */
-
+/* Read first record with the current key */
 
 int heap_rlast(HP_INFO *info, byte *record, int inx)
 {
-  HP_SHARE *share=    info->s;
-  HP_KEYDEF *keyinfo= share->keydef + inx;
+  HP_SHARE *share = info->s;
+  HP_KEYDEF *keyinfo = share->keydef + inx;
 
   DBUG_ENTER("heap_rlast");
-  info->lastinx= inx;
+  info->lastinx = inx;
   if (keyinfo->algorithm == HA_KEY_ALG_BTREE)
   {
     byte *pos;
 
-    if ((pos = tree_search_edge(&keyinfo->rb_tree, info->parents,
-                                &info->last_pos, offsetof(TREE_ELEMENT, right))))
+    if ((pos = tree_search_edge(&keyinfo->rb_tree, info->parents, &info->last_pos, offsetof(TREE_ELEMENT, right))))
     {
-      memcpy(&pos, pos + (*keyinfo->get_key_length)(keyinfo, pos), 
-	     sizeof(byte*));
+      memcpy(&pos, pos + (*keyinfo->get_key_length)(keyinfo, pos), sizeof(byte *));
       info->current_ptr = pos;
       memcpy(record, pos, (size_t)share->reclength);
       info->update = HA_STATE_AKTIV;
@@ -48,9 +45,9 @@ int heap_rlast(HP_INFO *info, byte *record, int inx)
   }
   else
   {
-    info->current_ptr=0;
-    info->current_hash_ptr=0;
-    info->update=HA_STATE_NEXT_FOUND;
-    DBUG_RETURN(heap_rprev(info,record));
+    info->current_ptr = 0;
+    info->current_hash_ptr = 0;
+    info->update = HA_STATE_NEXT_FOUND;
+    DBUG_RETURN(heap_rprev(info, record));
   }
 }

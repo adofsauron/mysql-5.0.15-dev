@@ -18,34 +18,33 @@
 
 #include "heapdef.h"
 
-	/* Close a database open by hp_open() */
-	/* Data is normally not deallocated */
+/* Close a database open by hp_open() */
+/* Data is normally not deallocated */
 
 int heap_close(HP_INFO *info)
 {
   int tmp;
   DBUG_ENTER("heap_close");
   pthread_mutex_lock(&THR_LOCK_heap);
-  tmp= hp_close(info);
+  tmp = hp_close(info);
   pthread_mutex_unlock(&THR_LOCK_heap);
   DBUG_RETURN(tmp);
 }
 
-
 int hp_close(register HP_INFO *info)
 {
-  int error=0;
+  int error = 0;
   DBUG_ENTER("hp_close");
 #ifndef DBUG_OFF
-  if (info->s->changed && heap_check_heap(info,0))
+  if (info->s->changed && heap_check_heap(info, 0))
   {
-    error=my_errno=HA_ERR_CRASHED;
+    error = my_errno = HA_ERR_CRASHED;
   }
 #endif
-  info->s->changed=0;
-  heap_open_list=list_delete(heap_open_list,&info->open_list);
+  info->s->changed = 0;
+  heap_open_list = list_delete(heap_open_list, &info->open_list);
   if (!--info->s->open_count && info->s->delete_on_close)
-    hp_free(info->s);				/* Table was deleted */
-  my_free((gptr) info,MYF(0));
+    hp_free(info->s); /* Table was deleted */
+  my_free((gptr)info, MYF(0));
   DBUG_RETURN(error);
 }

@@ -23,9 +23,9 @@ int hp_rectest(register HP_INFO *info, register const byte *old)
 {
   DBUG_ENTER("hp_rectest");
 
-  if (memcmp(info->current_ptr,old,(size_t) info->s->reclength))
+  if (memcmp(info->current_ptr, old, (size_t)info->s->reclength))
   {
-    DBUG_RETURN((my_errno=HA_ERR_RECORD_CHANGED)); /* Record have changed */
+    DBUG_RETURN((my_errno = HA_ERR_RECORD_CHANGED)); /* Record have changed */
   }
   DBUG_RETURN(0);
 } /* _heap_rectest */

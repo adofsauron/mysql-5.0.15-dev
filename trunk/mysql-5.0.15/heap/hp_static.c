@@ -23,4 +23,4 @@
 #include "heapdef.h"
 #endif
 
-LIST *heap_open_list=0,*heap_share_list=0;
+LIST *heap_open_list = 0, *heap_share_list = 0;

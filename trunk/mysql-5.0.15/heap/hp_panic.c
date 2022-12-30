@@ -16,40 +16,42 @@
 
 #include "heapdef.h"
 
-	/* if flag == HA_PANIC_CLOSE then all files are removed for more
-	   memory */
+/* if flag == HA_PANIC_CLOSE then all files are removed for more
+   memory */
 
 int heap_panic(enum ha_panic_function flag)
 {
-  LIST *element,*next_open;
+  LIST *element, *next_open;
   DBUG_ENTER("heap_panic");
 
   pthread_mutex_lock(&THR_LOCK_heap);
-  for (element=heap_open_list ; element ; element=next_open)
+  for (element = heap_open_list; element; element = next_open)
   {
-    HP_INFO *info=(HP_INFO*) element->data;
-    next_open=element->next;	/* Save if close */
-    switch (flag) {
-    case HA_PANIC_CLOSE:
-      hp_close(info);
-      break;
-    default:
-      break;
+    HP_INFO *info = (HP_INFO *)element->data;
+    next_open = element->next; /* Save if close */
+    switch (flag)
+    {
+      case HA_PANIC_CLOSE:
+        hp_close(info);
+        break;
+      default:
+        break;
     }
   }
-  for (element=heap_share_list ; element ; element=next_open)
+  for (element = heap_share_list; element; element = next_open)
   {
-    HP_SHARE *share=(HP_SHARE*) element->data;
-    next_open=element->next;	/* Save if close */
-    switch (flag) {
-    case HA_PANIC_CLOSE:
+    HP_SHARE *share = (HP_SHARE *)element->data;
+    next_open = element->next; /* Save if close */
+    switch (flag)
     {
-      if (!share->open_count)
-	hp_free(share);
-      break;
-    }
-    default:
-      break;
+      case HA_PANIC_CLOSE:
+      {
+        if (!share->open_count)
+          hp_free(share);
+        break;
+      }
+      default:
+        break;
     }
   }
   pthread_mutex_unlock(&THR_LOCK_heap);

@@ -19,87 +19,85 @@
 #include "heapdef.h"
 
 /*
-	   Returns one of following values:
-	   0 = Ok.
-	   HA_ERR_RECORD_DELETED = Record is deleted.
-	   HA_ERR_END_OF_FILE = EOF.
+           Returns one of following values:
+           0 = Ok.
+           HA_ERR_RECORD_DELETED = Record is deleted.
+           HA_ERR_END_OF_FILE = EOF.
 */
 
 int heap_rrnd(register HP_INFO *info, byte *record, byte *pos)
 {
-  HP_SHARE *share=info->s;
+  HP_SHARE *share = info->s;
   DBUG_ENTER("heap_rrnd");
-  DBUG_PRINT("enter",("info: 0x%lx  pos: %lx",info,pos));
+  DBUG_PRINT("enter", ("info: 0x%lx  pos: %lx", info, pos));
 
-  info->lastinx= -1;
-  if (!(info->current_ptr= pos))
+  info->lastinx = -1;
+  if (!(info->current_ptr = pos))
   {
-    info->update= 0;
-    DBUG_RETURN(my_errno= HA_ERR_END_OF_FILE);
+    info->update = 0;
+    DBUG_RETURN(my_errno = HA_ERR_END_OF_FILE);
   }
   if (!info->current_ptr[share->reclength])
   {
-    info->update= HA_STATE_PREV_FOUND | HA_STATE_NEXT_FOUND;
-    DBUG_RETURN(my_errno=HA_ERR_RECORD_DELETED);
+    info->update = HA_STATE_PREV_FOUND | HA_STATE_NEXT_FOUND;
+    DBUG_RETURN(my_errno = HA_ERR_RECORD_DELETED);
   }
-  info->update=HA_STATE_PREV_FOUND | HA_STATE_NEXT_FOUND | HA_STATE_AKTIV;
-  memcpy(record,info->current_ptr,(size_t) share->reclength);
-  DBUG_PRINT("exit",("found record at 0x%lx",info->current_ptr));
-  info->current_hash_ptr=0;			/* Can't use rnext */
+  info->update = HA_STATE_PREV_FOUND | HA_STATE_NEXT_FOUND | HA_STATE_AKTIV;
+  memcpy(record, info->current_ptr, (size_t)share->reclength);
+  DBUG_PRINT("exit", ("found record at 0x%lx", info->current_ptr));
+  info->current_hash_ptr = 0; /* Can't use rnext */
   DBUG_RETURN(0);
 } /* heap_rrnd */
-
 
 #ifdef WANT_OLD_HEAP_VERSION
 
 /*
-	   If pos == -1 then read next record
-	   Returns one of following values:
-	   0 = Ok.
-	   HA_ERR_RECORD_DELETED = Record is deleted.
-	   HA_ERR_END_OF_FILE = EOF.
+           If pos == -1 then read next record
+           Returns one of following values:
+           0 = Ok.
+           HA_ERR_RECORD_DELETED = Record is deleted.
+           HA_ERR_END_OF_FILE = EOF.
 */
 
 int heap_rrnd_old(register HP_INFO *info, byte *record, ulong pos)
 {
-  HP_SHARE *share=info->s;
+  HP_SHARE *share = info->s;
   DBUG_ENTER("heap_rrnd");
-  DBUG_PRINT("enter",("info: 0x%lx  pos: %ld",info,pos));
+  DBUG_PRINT("enter", ("info: 0x%lx  pos: %ld", info, pos));
 
-  info->lastinx= -1;
-  if (pos == (ulong) -1)
+  info->lastinx = -1;
+  if (pos == (ulong)-1)
   {
-    pos= ++info->current_record;
-    if (pos % share->block.records_in_block &&	/* Quick next record */
-	pos < share->records+share->deleted &&
-	(info->update & HA_STATE_PREV_FOUND))
+    pos = ++info->current_record;
+    if (pos % share->block.records_in_block && /* Quick next record */
+        pos < share->records + share->deleted && (info->update & HA_STATE_PREV_FOUND))
     {
-      info->current_ptr+=share->block.recbuffer;
+      info->current_ptr += share->block.recbuffer;
       goto end;
     }
   }
   else
-    info->current_record=pos;
+    info->current_record = pos;
 
-  if (pos >= share->records+share->deleted)
+  if (pos >= share->records + share->deleted)
   {
-    info->update= 0;
-    DBUG_RETURN(my_errno= HA_ERR_END_OF_FILE);
+    info->update = 0;
+    DBUG_RETURN(my_errno = HA_ERR_END_OF_FILE);
   }
 
-	/* Find record number pos */
+  /* Find record number pos */
   hp_find_record(info, pos);
 
 end:
   if (!info->current_ptr[share->reclength])
   {
-    info->update= HA_STATE_PREV_FOUND | HA_STATE_NEXT_FOUND;
-    DBUG_RETURN(my_errno=HA_ERR_RECORD_DELETED);
+    info->update = HA_STATE_PREV_FOUND | HA_STATE_NEXT_FOUND;
+    DBUG_RETURN(my_errno = HA_ERR_RECORD_DELETED);
   }
-  info->update=HA_STATE_PREV_FOUND | HA_STATE_NEXT_FOUND | HA_STATE_AKTIV;
-  memcpy(record,info->current_ptr,(size_t) share->reclength);
-  DBUG_PRINT("exit",("found record at 0x%lx",info->current_ptr));
-  info->current_hash_ptr=0;			/* Can't use rnext */
+  info->update = HA_STATE_PREV_FOUND | HA_STATE_NEXT_FOUND | HA_STATE_AKTIV;
+  memcpy(record, info->current_ptr, (size_t)share->reclength);
+  DBUG_PRINT("exit", ("found record at 0x%lx", info->current_ptr));
+  info->current_hash_ptr = 0; /* Can't use rnext */
   DBUG_RETURN(0);
 } /* heap_rrnd */
 

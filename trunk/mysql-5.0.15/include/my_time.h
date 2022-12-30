@@ -38,39 +38,33 @@ typedef long my_time_t;
 #define MY_TIME_T_MAX LONG_MAX
 #define MY_TIME_T_MIN LONG_MIN
 
-#define YY_PART_YEAR	   70
+#define YY_PART_YEAR 70
 
 /* Flags to str_to_datetime */
-#define TIME_FUZZY_DATE		1
-#define TIME_DATETIME_ONLY	2
+#define TIME_FUZZY_DATE 1
+#define TIME_DATETIME_ONLY 2
 /* Must be same as MODE_NO_ZERO_IN_DATE */
-#define TIME_NO_ZERO_IN_DATE    (65536L*2*2*2*2*2*2*2)
+#define TIME_NO_ZERO_IN_DATE (65536L * 2 * 2 * 2 * 2 * 2 * 2 * 2)
 /* Must be same as MODE_NO_ZERO_DATE */
-#define TIME_NO_ZERO_DATE	(TIME_NO_ZERO_IN_DATE*2)
-#define TIME_INVALID_DATES	(TIME_NO_ZERO_DATE*2)
+#define TIME_NO_ZERO_DATE (TIME_NO_ZERO_IN_DATE * 2)
+#define TIME_INVALID_DATES (TIME_NO_ZERO_DATE * 2)
 
-enum enum_mysql_timestamp_type
-str_to_datetime(const char *str, uint length, MYSQL_TIME *l_time,
-                uint flags, int *was_cut);
-longlong number_to_datetime(longlong nr, MYSQL_TIME *time_res,
-                            uint flags, int *was_cut);
+enum enum_mysql_timestamp_type str_to_datetime(const char *str, uint length, MYSQL_TIME *l_time, uint flags,
+                                               int *was_cut);
+longlong number_to_datetime(longlong nr, MYSQL_TIME *time_res, uint flags, int *was_cut);
 ulonglong TIME_to_ulonglong_datetime(const MYSQL_TIME *time);
 ulonglong TIME_to_ulonglong_date(const MYSQL_TIME *time);
 ulonglong TIME_to_ulonglong_time(const MYSQL_TIME *time);
 ulonglong TIME_to_ulonglong(const MYSQL_TIME *time);
 
+my_bool str_to_time(const char *str, uint length, MYSQL_TIME *l_time, int *was_cut);
 
-my_bool str_to_time(const char *str,uint length, MYSQL_TIME *l_time,
-                    int *was_cut);
-
-long calc_daynr(uint year,uint month,uint day);
+long calc_daynr(uint year, uint month, uint day);
 uint calc_days_in_year(uint year);
 
 void init_time(void);
 
-my_time_t 
-my_system_gmt_sec(const MYSQL_TIME *t, long *my_timezone,
-                  my_bool *in_dst_time_gap);
+my_time_t my_system_gmt_sec(const MYSQL_TIME *t, long *my_timezone, my_bool *in_dst_time_gap);
 
 void set_zero_time(MYSQL_TIME *tm, enum enum_mysql_timestamp_type time_type);
 

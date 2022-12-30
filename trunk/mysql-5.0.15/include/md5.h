@@ -14,7 +14,6 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-
 /* MD5.H - header file for MD5C.C
  */
 
@@ -52,17 +51,17 @@ The following makes PROTOTYPES default to 0 if it has not already
 /* egcs 1.1.2 under linux didn't defined it.... :( */
 
 #ifndef PROTOTYPES
-#define PROTOTYPES 1				/* Assume prototypes */
+#define PROTOTYPES 1 /* Assume prototypes */
 #endif
 
 /* POINTER defines a generic pointer type */
 typedef unsigned char *POINTER;
 
 /* UINT2 defines a two byte word */
-typedef uint16 UINT2;				/* Fix for MySQL / Alpha */
+typedef uint16 UINT2; /* Fix for MySQL / Alpha */
 
 /* UINT4 defines a four byte word */
-typedef uint32 UINT4;				/* Fix for MySQL / Alpha */
+typedef uint32 UINT4; /* Fix for MySQL / Alpha */
 
 /* PROTO_LIST is defined depending on how PROTOTYPES is defined above.
 If using PROTOTYPES, then PROTO_LIST returns the list, otherwise it
@@ -74,19 +73,20 @@ If using PROTOTYPES, then PROTO_LIST returns the list, otherwise it
 #define PROTO_LIST(list) ()
 #endif
 /* MD5 context. */
-typedef struct {
-  UINT4 state[4];                                   /* state (ABCD) */
-  UINT4 count[2];        /* number of bits, modulo 2^64 (lsb first) */
-  unsigned char buffer[64];                         /* input buffer */
+typedef struct
+{
+  UINT4 state[4];           /* state (ABCD) */
+  UINT4 count[2];           /* number of bits, modulo 2^64 (lsb first) */
+  unsigned char buffer[64]; /* input buffer */
 } my_MD5_CTX;
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
-       void my_MD5Init PROTO_LIST ((my_MD5_CTX *));
-       void my_MD5Update PROTO_LIST
-         ((my_MD5_CTX *, unsigned char *, unsigned int));
-       void my_MD5Final PROTO_LIST ((unsigned char [16], my_MD5_CTX *));
+  void my_MD5Init PROTO_LIST((my_MD5_CTX *));
+  void my_MD5Update PROTO_LIST((my_MD5_CTX *, unsigned char *, unsigned int));
+  void my_MD5Final PROTO_LIST((unsigned char[16], my_MD5_CTX *));
 
 #ifdef __cplusplus
 }

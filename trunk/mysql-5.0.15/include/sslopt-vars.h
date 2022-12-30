@@ -15,10 +15,10 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
 #ifdef HAVE_OPENSSL
-static my_bool opt_use_ssl  = 0;
-static char *opt_ssl_key    = 0;
-static char *opt_ssl_cert   = 0;
-static char *opt_ssl_ca     = 0;
+static my_bool opt_use_ssl = 0;
+static char *opt_ssl_key = 0;
+static char *opt_ssl_cert = 0;
+static char *opt_ssl_ca = 0;
 static char *opt_ssl_capath = 0;
 static char *opt_ssl_cipher = 0;
 #endif

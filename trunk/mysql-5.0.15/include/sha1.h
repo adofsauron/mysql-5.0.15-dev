@@ -28,13 +28,12 @@
  Modified 2002 by Peter Zaitsev to better follow MySQL standards
 */
 
-
 enum sha_result_codes
 {
   SHA_SUCCESS = 0,
-  SHA_NULL,		/* Null pointer parameter */
-  SHA_INPUT_TOO_LONG,	/* input data too long */
-  SHA_STATE_ERROR	/* called Input after Result */
+  SHA_NULL,           /* Null pointer parameter */
+  SHA_INPUT_TOO_LONG, /* input data too long */
+  SHA_STATE_ERROR     /* called Input after Result */
 };
 
 #define SHA1_HASH_SIZE 20 /* Hash size in bytes */
@@ -46,12 +45,12 @@ enum sha_result_codes
 
 typedef struct SHA1_CONTEXT
 {
-  ulonglong  Length;		/* Message length in bits      */
-  uint32 Intermediate_Hash[SHA1_HASH_SIZE/4]; /* Message Digest  */
-  int Computed;			/* Is the digest computed?	   */
-  int Corrupted;		/* Is the message digest corrupted? */
-  int16 Message_Block_Index;	/* Index into message block array   */
-  uint8 Message_Block[64];	/* 512-bit message blocks      */
+  ulonglong Length;                             /* Message length in bits      */
+  uint32 Intermediate_Hash[SHA1_HASH_SIZE / 4]; /* Message Digest  */
+  int Computed;                                 /* Is the digest computed?	   */
+  int Corrupted;                                /* Is the message digest corrupted? */
+  int16 Message_Block_Index;                    /* Index into message block array   */
+  uint8 Message_Block[64];                      /* 512-bit message blocks      */
 } SHA1_CONTEXT;
 
 /*
@@ -60,8 +59,8 @@ typedef struct SHA1_CONTEXT
 
 C_MODE_START
 
-int sha1_reset( SHA1_CONTEXT* );
-int sha1_input( SHA1_CONTEXT*, const uint8 *, unsigned int );
-int sha1_result( SHA1_CONTEXT* , uint8 Message_Digest[SHA1_HASH_SIZE] );
+int sha1_reset(SHA1_CONTEXT *);
+int sha1_input(SHA1_CONTEXT *, const uint8 *, unsigned int);
+int sha1_result(SHA1_CONTEXT *, uint8 Message_Digest[SHA1_HASH_SIZE]);
 
 C_MODE_END

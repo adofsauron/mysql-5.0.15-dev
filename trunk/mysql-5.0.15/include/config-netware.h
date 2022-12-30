@@ -36,7 +36,8 @@
 #include <termios.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /* required adjustments */
@@ -67,9 +68,9 @@ extern "C" {
 
 /* no libc crypt() function */
 #ifdef HAVE_OPENSSL
-  #define HAVE_CRYPT 1
+#define HAVE_CRYPT 1
 #else
-  #undef HAVE_CRYPT
+#undef HAVE_CRYPT
 #endif /* HAVE_OPENSSL */
 
 /* Configure can't detect this because it uses AC_TRY_RUN */
@@ -98,32 +99,36 @@ extern "C" {
 #define CANT_DELETE_OPEN_FILES 1
 
 /* default directory information */
-#define	DEFAULT_MYSQL_HOME    "sys:/mysql"
-#define PACKAGE               "mysql"
-#define DEFAULT_BASEDIR       "sys:/"
-#define SHAREDIR              "share/"
-#define DEFAULT_CHARSET_HOME  "sys:/mysql/"
-#define DATADIR               "data/"
+#define DEFAULT_MYSQL_HOME "sys:/mysql"
+#define PACKAGE "mysql"
+#define DEFAULT_BASEDIR "sys:/"
+#define SHAREDIR "share/"
+#define DEFAULT_CHARSET_HOME "sys:/mysql/"
+#define DATADIR "data/"
 
 /* 64-bit file system calls */
-#define SIZEOF_OFF_T          8
-#define off_t                 off64_t
-#define chsize                chsize64
-#define ftruncate             ftruncate64
-#define lseek                 lseek64
-#define pread                 pread64
-#define pwrite                pwrite64
-#define tell                  tell64
+#define SIZEOF_OFF_T 8
+#define off_t off64_t
+#define chsize chsize64
+#define ftruncate ftruncate64
+#define lseek lseek64
+#define pread pread64
+#define pwrite pwrite64
+#define tell tell64
 
 /* do not use the extended time in LibC sys\stat.h */
 #define _POSIX_SOURCE
 
-/* Kernel call on NetWare that will only yield if our time slice is up */
-void kYieldIfTimeSliceUp(void);
+  /* Kernel call on NetWare that will only yield if our time slice is up */
+  void kYieldIfTimeSliceUp(void);
 
-/* Some macros for portability */
+  /* Some macros for portability */
 
-#define set_timespec(ABSTIME,SEC) { (ABSTIME).tv_sec=time(NULL)+(SEC); (ABSTIME).tv_nsec=0; }
+#define set_timespec(ABSTIME, SEC)         \
+  {                                        \
+    (ABSTIME).tv_sec = time(NULL) + (SEC); \
+    (ABSTIME).tv_nsec = 0;                 \
+  }
 
 /* extra protection against CPU Hogs on NetWare */
 #define NETWARE_YIELD kYieldIfTimeSliceUp()

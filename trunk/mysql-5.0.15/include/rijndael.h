@@ -14,7 +14,6 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-
 /*
   rijndael-alg-fst.h
 
@@ -28,15 +27,11 @@
   Modified by Peter Zaitsev to fit MySQL coding style.
  */
 
-#define AES_MAXKC	(256/32)
-#define AES_MAXKB	(256/8)
-#define AES_MAXNR	14
+#define AES_MAXKC (256 / 32)
+#define AES_MAXKB (256 / 8)
+#define AES_MAXNR 14
 
-int rijndaelKeySetupEnc(uint32 rk[/*4*(Nr + 1)*/], const uint8 cipherKey[],
-			int keyBits);
-int rijndaelKeySetupDec(uint32 rk[/*4*(Nr + 1)*/], const uint8 cipherKey[],
-			int keyBits);
-void rijndaelEncrypt(const uint32 rk[/*4*(Nr + 1)*/], int Nr,
-		     const uint8 pt[16], uint8 ct[16]);
-void rijndaelDecrypt(const uint32 rk[/*4*(Nr + 1)*/], int Nr,
-		     const uint8 ct[16], uint8 pt[16]);
+int rijndaelKeySetupEnc(uint32 rk[/*4*(Nr + 1)*/], const uint8 cipherKey[], int keyBits);
+int rijndaelKeySetupDec(uint32 rk[/*4*(Nr + 1)*/], const uint8 cipherKey[], int keyBits);
+void rijndaelEncrypt(const uint32 rk[/*4*(Nr + 1)*/], int Nr, const uint8 pt[16], uint8 ct[16]);
+void rijndaelDecrypt(const uint32 rk[/*4*(Nr + 1)*/], int Nr, const uint8 ct[16], uint8 pt[16]);

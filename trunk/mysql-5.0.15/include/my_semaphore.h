@@ -40,20 +40,21 @@ C_MODE_START
 #ifdef __WIN__
 typedef HANDLE sem_t;
 #else
-typedef struct {
+typedef struct
+{
   pthread_mutex_t mutex;
-  pthread_cond_t  cond;
-  uint            count;
+  pthread_cond_t cond;
+  uint count;
 } sem_t;
 #endif /* __WIN__ */
 
-int sem_init(sem_t * sem, int pshared, unsigned int value);
-int sem_destroy(sem_t * sem);
-int sem_trywait(sem_t * sem);
-int sem_wait(sem_t * sem);
-int sem_post(sem_t * sem);
-int sem_post_multiple(sem_t * sem, unsigned int count);
-int sem_getvalue(sem_t * sem, unsigned int * sval);
+int sem_init(sem_t *sem, int pshared, unsigned int value);
+int sem_destroy(sem_t *sem);
+int sem_trywait(sem_t *sem);
+int sem_wait(sem_t *sem);
+int sem_post(sem_t *sem);
+int sem_post_multiple(sem_t *sem, unsigned int count);
+int sem_getvalue(sem_t *sem, unsigned int *sval);
 
 #endif /* !__bsdi__ */
 

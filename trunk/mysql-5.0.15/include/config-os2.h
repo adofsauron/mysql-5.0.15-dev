@@ -39,78 +39,78 @@
 /* Default socket */
 #define MYSQL_UNIX_ADDR "\\socket\\MySQL"
 
-#define FN_LIBCHAR		 '\\'
-#define FN_ROOTDIR		 "\\"
-#define MY_NFILE		1024  /* This is only used to save filenames */
+#define FN_LIBCHAR '\\'
+#define FN_ROOTDIR "\\"
+#define MY_NFILE 1024 /* This is only used to save filenames */
 
 #define HAVE_ACCESS
 
-#define DEFAULT_MYSQL_HOME	"c:\\mysql"
-#define DEFAULT_BASEDIR		"C:\\"
-#define SHAREDIR		"share"
-#define DEFAULT_CHARSET_HOME	"C:/mysql/"
-#define _POSIX_PATH_MAX		255
-#define DWORD			ULONG
+#define DEFAULT_MYSQL_HOME "c:\\mysql"
+#define DEFAULT_BASEDIR "C:\\"
+#define SHAREDIR "share"
+#define DEFAULT_CHARSET_HOME "C:/mysql/"
+#define _POSIX_PATH_MAX 255
+#define DWORD ULONG
 
-#define O_SHARE		0x1000		/* Open file in sharing mode */
-#define FILE_BINARY	O_BINARY	/* my_fopen in binary mode */
-#define S_IROTH		S_IREAD		/* for my_lib */
+#define O_SHARE 0x1000       /* Open file in sharing mode */
+#define FILE_BINARY O_BINARY /* my_fopen in binary mode */
+#define S_IROTH S_IREAD      /* for my_lib */
 
-#define CANT_DELETE_OPEN_FILES		/* saves open files in a list, for delayed delete */
+#define CANT_DELETE_OPEN_FILES /* saves open files in a list, for delayed delete */
 
-#define O_NONBLOCK	0x10
+#define O_NONBLOCK 0x10
 
-#define NO_OPEN_3			/* For my_create() */
-#define SIGQUIT		SIGTERM		/* No SIGQUIT */
-#define SIGALRM		14		/* Alarm */
+#define NO_OPEN_3       /* For my_create() */
+#define SIGQUIT SIGTERM /* No SIGQUIT */
+#define SIGALRM 14      /* Alarm */
 
 #define NO_FCNTL_NONBLOCK
 
-#define EFBIG			   E2BIG
+#define EFBIG E2BIG
 /*#define ENFILE		  EMFILE    */
 /*#define ENAMETOOLONG		(EOS2ERR+2) */
 /*#define ETIMEDOUT		  145       */
 /*#define EPIPE			  146       */
-#define EROFS			147
+#define EROFS 147
 
-#define sleep(A)	DosSleep((A)*1000)
-#define closesocket(A)	soclose(A)
+#define sleep(A) DosSleep((A)*1000)
+#define closesocket(A) soclose(A)
 
-#define F_OK		0
-#define W_OK		2
+#define F_OK 0
+#define W_OK 2
 
-#define bzero(x,y)	memset((x),'\0',(y))
-#define bcopy(x,y,z)	memcpy((y),(x),(z))
-#define bcmp(x,y,z)	memcmp((y),(x),(z))
+#define bzero(x, y) memset((x), '\0', (y))
+#define bcopy(x, y, z) memcpy((y), (x), (z))
+#define bcmp(x, y, z) memcmp((y), (x), (z))
 
-#define F_RDLCK		4	    /* Read lock.  */
-#define F_WRLCK		2	    /* Write lock.  */
-#define F_UNLCK		0	    /* Remove lock.  */
+#define F_RDLCK 4 /* Read lock.  */
+#define F_WRLCK 2 /* Write lock.  */
+#define F_UNLCK 0 /* Remove lock.  */
 
-#define S_IFMT		0x17000	    /* Mask for file type */
-#define F_TO_EOF	0L	    /* Param to lockf() to lock rest of file */
+#define S_IFMT 0x17000 /* Mask for file type */
+#define F_TO_EOF 0L    /* Param to lockf() to lock rest of file */
 
 #define HUGE_PTR
 
 #ifdef __cplusplus
 extern "C"
 #endif
-double _cdecl rint( double nr);
+    double _cdecl rint(double nr);
 
-DWORD	 TlsAlloc( void);
-BOOL	 TlsFree( DWORD);
-PVOID	 TlsGetValue( DWORD);
-BOOL	 TlsSetValue( DWORD, PVOID);
+DWORD TlsAlloc(void);
+BOOL TlsFree(DWORD);
+PVOID TlsGetValue(DWORD);
+BOOL TlsSetValue(DWORD, PVOID);
 
 /* support for > 2GB file size */
-#define SIZEOF_OFF_T	8
-#define lseek(A,B,C)	_lseek64( A, B, C)
-#define tell(A)		_lseek64( A, 0, SEEK_CUR)
+#define SIZEOF_OFF_T 8
+#define lseek(A, B, C) _lseek64(A, B, C)
+#define tell(A) _lseek64(A, 0, SEEK_CUR)
 
-void* dlopen( char* path, int flag);
-char* dlerror( void);
-void* dlsym( void* hmod, char* fn);
-void  dlclose( void* hmod);
+void *dlopen(char *path, int flag);
+char *dlerror(void);
+void *dlsym(void *hmod, char *fn);
+void dlclose(void *hmod);
 
 /* Some typedefs */
 typedef unsigned long long os_off_t;

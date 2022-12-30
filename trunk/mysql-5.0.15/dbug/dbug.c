@@ -27,7 +27,6 @@
  ******************************************************************************
  */
 
-
 /*
  *  FILE
  *
@@ -76,25 +75,25 @@
 #include <process.h>
 #endif
 
-#ifdef	_DBUG_CONDITION_
-#define _DBUG_START_CONDITION_	"d:t"
+#ifdef _DBUG_CONDITION_
+#define _DBUG_START_CONDITION_ "d:t"
 #else
-#define _DBUG_START_CONDITION_	""
+#define _DBUG_START_CONDITION_ ""
 #endif
 
 /*
  *	      Manifest constants that should not require any changes.
  */
 
-#define EOS		      '\000'  /* End Of String marker */
+#define EOS '\000' /* End Of String marker */
 
 /*
  *	      Manifest constants which may be "tuned" if desired.
  */
 
-#define PRINTBUF	      1024    /* Print buffer size */
-#define INDENT		      2       /* Indentation per trace level */
-#define MAXDEPTH	      200     /* Maximum trace depth default */
+#define PRINTBUF 1024 /* Print buffer size */
+#define INDENT 2      /* Indentation per trace level */
+#define MAXDEPTH 200  /* Maximum trace depth default */
 
 /*
  *	The following flags are used to determine which
@@ -102,22 +101,22 @@
  *	push macro.
  */
 
-#define TRACE_ON	000001	/* Trace enabled */
-#define DEBUG_ON	000002	/* Debug enabled */
-#define FILE_ON		000004	/* File name print enabled */
-#define LINE_ON		000010	/* Line number print enabled */
-#define DEPTH_ON	000020	/* Function nest level print enabled */
-#define PROCESS_ON	000040	/* Process name print enabled */
-#define NUMBER_ON	000100	/* Number each line of output */
-#define PROFILE_ON	000200	/* Print out profiling code */
-#define PID_ON		000400	/* Identify each line with process id */
-#define SANITY_CHECK_ON 001000	/* Check safemalloc on DBUG_ENTER */
-#define FLUSH_ON_WRITE	002000	/* Flush on every write */
+#define TRACE_ON 000001        /* Trace enabled */
+#define DEBUG_ON 000002        /* Debug enabled */
+#define FILE_ON 000004         /* File name print enabled */
+#define LINE_ON 000010         /* Line number print enabled */
+#define DEPTH_ON 000020        /* Function nest level print enabled */
+#define PROCESS_ON 000040      /* Process name print enabled */
+#define NUMBER_ON 000100       /* Number each line of output */
+#define PROFILE_ON 000200      /* Print out profiling code */
+#define PID_ON 000400          /* Identify each line with process id */
+#define SANITY_CHECK_ON 001000 /* Check safemalloc on DBUG_ENTER */
+#define FLUSH_ON_WRITE 002000  /* Flush on every write */
 
-#define TRACING (stack -> flags & TRACE_ON)
-#define DEBUGGING (stack -> flags & DEBUG_ON)
-#define PROFILING (stack -> flags & PROFILE_ON)
-#define STREQ(a,b) (strcmp(a,b) == 0)
+#define TRACING (stack->flags & TRACE_ON)
+#define DEBUGGING (stack->flags & DEBUG_ON)
+#define PROFILING (stack->flags & PROFILE_ON)
+#define STREQ(a, b) (strcmp(a, b) == 0)
 
 /*
  *	Typedefs to make things more obvious.
@@ -133,10 +132,10 @@ typedef int BOOLEAN;
  *	Make it easy to change storage classes if necessary.
  */
 
-#define IMPORT extern		/* Names defined externally */
-#define EXPORT			/* Allocated here, available globally */
-#define AUTO auto		/* Names to be allocated on stack */
-#define REGISTER register	/* Names to be placed in registers */
+#define IMPORT extern     /* Names defined externally */
+#define EXPORT            /* Allocated here, available globally */
+#define AUTO auto         /* Names to be allocated on stack */
+#define REGISTER register /* Names to be placed in registers */
 
 /*
  * The default file for profiling.  Could also add another flag
@@ -151,12 +150,12 @@ typedef int BOOLEAN;
  *
  */
 
-#define PROF_FILE	"dbugmon.out"
-#define PROF_EFMT	"E\t%ld\t%s\n"
-#define PROF_SFMT	"S\t%lx\t%lx\t%s\n"
-#define PROF_XFMT	"X\t%ld\t%s\n"
+#define PROF_FILE "dbugmon.out"
+#define PROF_EFMT "E\t%ld\t%s\n"
+#define PROF_SFMT "S\t%lx\t%lx\t%s\n"
+#define PROF_XFMT "X\t%ld\t%s\n"
 
-#ifdef M_I386		/* predefined by xenix 386 compiler */
+#ifdef M_I386 /* predefined by xenix 386 compiler */
 #define AUTOS_REVERSE 1
 #endif
 
@@ -165,22 +164,22 @@ typedef int BOOLEAN;
  *	be accessed via the macro package facilities.
  */
 
-EXPORT FILE *_db_fp_ = (FILE *) 0;	/* Output stream, default stderr */
-EXPORT char *_db_process_ = (char*) "dbug"; /* Pointer to process name; argv[0] */
-EXPORT FILE *_db_pfp_ = (FILE *)0;	/* Profile stream, 'dbugmon.out' */
-EXPORT BOOLEAN _db_on_ = FALSE;		/* TRUE if debugging currently on */
-EXPORT BOOLEAN _db_pon_ = FALSE;	/* TRUE if profile currently on */
-EXPORT BOOLEAN _no_db_ = FALSE;		/* TRUE if no debugging at all */
+EXPORT FILE *_db_fp_ = (FILE *)0;           /* Output stream, default stderr */
+EXPORT char *_db_process_ = (char *)"dbug"; /* Pointer to process name; argv[0] */
+EXPORT FILE *_db_pfp_ = (FILE *)0;          /* Profile stream, 'dbugmon.out' */
+EXPORT BOOLEAN _db_on_ = FALSE;             /* TRUE if debugging currently on */
+EXPORT BOOLEAN _db_pon_ = FALSE;            /* TRUE if profile currently on */
+EXPORT BOOLEAN _no_db_ = FALSE;             /* TRUE if no debugging at all */
 
 /*
  *	Externally supplied functions.
  */
 
 #ifndef HAVE_PERROR
-static void perror ();		/* Fake system/library error print routine */
+static void perror(); /* Fake system/library error print routine */
 #endif
 
-IMPORT int _sanity(const char *file,uint line);
+IMPORT int _sanity(const char *file, uint line);
 
 /*
  *	The user may specify a list of functions to trace or
@@ -188,9 +187,10 @@ IMPORT int _sanity(const char *file,uint line);
  *	a very simple implementation.
  */
 
-struct link {
-    char *str;	      /* Pointer to link's contents */
-    struct link *next_link;   /* Pointer to the next link */
+struct link
+{
+  char *str;              /* Pointer to link's contents */
+  struct link *next_link; /* Pointer to the next link */
 };
 
 /*
@@ -201,98 +201,98 @@ struct link {
  *	list or popped by removing the first link.
  */
 
-struct state {
-  int flags;			/* Current state flags */
-  int maxdepth;			/* Current maximum trace depth */
-  uint delay;			/* Delay after each output line */
-  int sub_level;		/* Sub this from code_state->level */
-  FILE *out_file;		/* Current output stream */
-  FILE *prof_file;		/* Current profiling stream */
-  char name[FN_REFLEN];		/* Name of output file */
-  struct link *functions;	/* List of functions */
-  struct link *p_functions;	/* List of profiled functions */
-  struct link *keywords;	/* List of debug keywords */
-  struct link *processes;	/* List of process names */
-  struct state *next_state;	/* Next state in the list */
+struct state
+{
+  int flags;                /* Current state flags */
+  int maxdepth;             /* Current maximum trace depth */
+  uint delay;               /* Delay after each output line */
+  int sub_level;            /* Sub this from code_state->level */
+  FILE *out_file;           /* Current output stream */
+  FILE *prof_file;          /* Current profiling stream */
+  char name[FN_REFLEN];     /* Name of output file */
+  struct link *functions;   /* List of functions */
+  struct link *p_functions; /* List of profiled functions */
+  struct link *keywords;    /* List of debug keywords */
+  struct link *processes;   /* List of process names */
+  struct state *next_state; /* Next state in the list */
 };
-
 
 /*
  *	Local variables not seen by user.
  */
 
-
 static my_bool init_done = FALSE; /* Set to TRUE when initialization done */
-static struct state *stack=0;
+static struct state *stack = 0;
 
-typedef struct st_code_state {
-  const char *func;		/* Name of current user function */
-  const char *file;		/* Name of current user file */
-  char **framep;		/* Pointer to current frame */
-  const char *jmpfunc;		/* Remember current function for setjmp */
-  const char *jmpfile;		/* Remember current file for setjmp */
-  int lineno;			/* Current debugger output line number */
-  int level;			/* Current function nesting level */
-  int disable_output;		/* Set to it if output is disabled */
-  int jmplevel;			/* Remember nesting level at setjmp () */
+typedef struct st_code_state
+{
+  const char *func;    /* Name of current user function */
+  const char *file;    /* Name of current user file */
+  char **framep;       /* Pointer to current frame */
+  const char *jmpfunc; /* Remember current function for setjmp */
+  const char *jmpfile; /* Remember current file for setjmp */
+  int lineno;          /* Current debugger output line number */
+  int level;           /* Current function nesting level */
+  int disable_output;  /* Set to it if output is disabled */
+  int jmplevel;        /* Remember nesting level at setjmp () */
 
-/*
- *	The following variables are used to hold the state information
- *	between the call to _db_pargs_() and _db_doprnt_(), during
- *	expansion of the DBUG_PRINT macro.  This is the only macro
- *	that currently uses these variables.
- *
- *	These variables are currently used only by _db_pargs_() and
- *	_db_doprnt_().
- */
+  /*
+   *	The following variables are used to hold the state information
+   *	between the call to _db_pargs_() and _db_doprnt_(), during
+   *	expansion of the DBUG_PRINT macro.  This is the only macro
+   *	that currently uses these variables.
+   *
+   *	These variables are currently used only by _db_pargs_() and
+   *	_db_doprnt_().
+   */
 
-  uint u_line;			/* User source code line number */
-  int  locked;			/* If locked with _db_lock_file */
-  const char *u_keyword;	/* Keyword for current macro */
+  uint u_line;           /* User source code line number */
+  int locked;            /* If locked with _db_lock_file */
+  const char *u_keyword; /* Keyword for current macro */
 } CODE_STATE;
 
-	/* Parse a debug command string */
+/* Parse a debug command string */
 static struct link *ListParse(char *ctlp);
-	/* Make a fresh copy of a string */
+/* Make a fresh copy of a string */
 static char *StrDup(const char *str);
-	/* Open debug output stream */
+/* Open debug output stream */
 static void DBUGOpenFile(const char *name, int append);
 #ifndef THREAD
-	/* Open profile output stream */
+/* Open profile output stream */
 static FILE *OpenProfile(const char *name);
-	/* Profile if asked for it */
+/* Profile if asked for it */
 static BOOLEAN DoProfile(void);
 #endif
-	/* Return current user time (ms) */
+/* Return current user time (ms) */
 #ifndef THREAD
-static unsigned long Clock (void);
+static unsigned long Clock(void);
 #endif
-	/* Close debug output stream */
+/* Close debug output stream */
 static void CloseFile(FILE *fp);
-	/* Push current debug state */
+/* Push current debug state */
 static void PushState(void);
-	/* Test for tracing enabled */
+/* Test for tracing enabled */
 static BOOLEAN DoTrace(CODE_STATE *state);
-	/* Test to see if file is writable */
+/* Test to see if file is writable */
 #if !(!defined(HAVE_ACCESS) || defined(MSDOS))
 static BOOLEAN Writable(char *pathname);
-	/* Change file owner and group */
+/* Change file owner and group */
 static void ChangeOwner(char *pathname);
-	/* Allocate memory for runtime support */
+/* Allocate memory for runtime support */
 #endif
 static char *DbugMalloc(size_t size);
-	/* Remove leading pathname components */
+/* Remove leading pathname components */
 static char *BaseName(const char *pathname);
 static void DoPrefix(uint line);
 static void FreeList(struct link *linkp);
 static void Indent(int indent);
-static BOOLEAN InList(struct link *linkp,const char *cp);
+static BOOLEAN InList(struct link *linkp, const char *cp);
 static void dbug_flush(CODE_STATE *);
 static void DbugExit(const char *why);
 static int DelayArg(int value);
-	/* Supplied in Sys V runtime environ */
-	/* Break string into tokens */
-static char *static_strtok(char *s1,pchar chr);
+/* Supplied in Sys V runtime environ */
+/* Break string into tokens */
+static char *static_strtok(char *s1, pchar chr);
 
 /*
  *	Miscellaneous printf format strings.
@@ -310,11 +310,11 @@ static char *static_strtok(char *s1,pchar chr);
 
 #undef EXISTS
 #if !defined(HAVE_ACCESS) || defined(MSDOS)
-#define EXISTS(pathname) (FALSE)	/* Assume no existance */
+#define EXISTS(pathname) (FALSE) /* Assume no existance */
 #define Writable(name) (TRUE)
 #else
-#define EXISTS(pathname)	 (access (pathname, F_OK) == 0)
-#define WRITABLE(pathname)	 (access (pathname, W_OK) == 0)
+#define EXISTS(pathname) (access(pathname, F_OK) == 0)
+#define WRITABLE(pathname) (access(pathname, W_OK) == 0)
 #endif
 #ifndef MSDOS
 #define ChangeOwner(name)
@@ -325,13 +325,12 @@ static char *static_strtok(char *s1,pchar chr);
  */
 
 #if defined(unix) || defined(xenix) || defined(VMS) || defined(__NetBSD__)
-# define Delay(A) sleep((uint) A)
+#define Delay(A) sleep((uint)A)
 #elif defined(AMIGA)
-IMPORT int Delay ();			/* Pause for given number of ticks */
+IMPORT int Delay(); /* Pause for given number of ticks */
 #else
 static int Delay(int ticks);
 #endif
-
 
 /*
 ** Macros to allow dbugging with threads
@@ -341,24 +340,21 @@ static int Delay(int ticks);
 #include <my_pthread.h>
 pthread_mutex_t THR_LOCK_dbug;
 
-static void init_dbug_state(void)
-{
-  pthread_mutex_init(&THR_LOCK_dbug,MY_MUTEX_INIT_FAST);
-}
+static void init_dbug_state(void) { pthread_mutex_init(&THR_LOCK_dbug, MY_MUTEX_INIT_FAST); }
 
 static CODE_STATE *code_state(void)
 {
-  CODE_STATE *state=0;
-  struct st_my_thread_var *tmp=my_thread_var;
+  CODE_STATE *state = 0;
+  struct st_my_thread_var *tmp = my_thread_var;
   if (tmp)
   {
-    if (!(state=(CODE_STATE *) tmp->dbug))
+    if (!(state = (CODE_STATE *)tmp->dbug))
     {
-      state=(CODE_STATE*) DbugMalloc(sizeof(*state));
-      bzero((char*) state,sizeof(*state));
-      state->func="?func";
-      state->file="?file";
-      tmp->dbug=(gptr) state;
+      state = (CODE_STATE *)DbugMalloc(sizeof(*state));
+      bzero((char *)state, sizeof(*state));
+      state->func = "?func";
+      state->file = "?file";
+      tmp->dbug = (gptr)state;
     }
   }
   return state;
@@ -368,14 +364,14 @@ static CODE_STATE *code_state(void)
 
 #define init_dbug_state()
 #define code_state() (&static_code_state)
-#define pthread_mutex_lock(A) {}
-#define pthread_mutex_unlock(A) {}
-static CODE_STATE static_code_state=
-{
-  "?func", "?file", NULL, NullS, NullS, 0,0,0,0,0,0, NullS
-};
+#define pthread_mutex_lock(A) \
+  {                           \
+  }
+#define pthread_mutex_unlock(A) \
+  {                             \
+  }
+static CODE_STATE static_code_state = {"?func", "?file", NULL, NullS, NullS, 0, 0, 0, 0, 0, 0, NullS};
 #endif
-
 
 /*
  *  FUNCTION
@@ -493,15 +489,15 @@ static CODE_STATE static_code_state=
  *
  */
 
-void _db_push_ (const char *control)
+void _db_push_(const char *control)
 {
   reg1 char *scan;
   reg2 struct link *temp;
   CODE_STATE *state;
   char *new_str;
 
-  if (! _db_fp_)
-    _db_fp_= stderr;		/* Output stream, default stderr */
+  if (!_db_fp_)
+    _db_fp_ = stderr; /* Output stream, default stderr */
 
   if (*control == '-')
   {
@@ -509,101 +505,110 @@ void _db_push_ (const char *control)
       control++;
   }
   if (*control)
-    _no_db_=0;			/* We are using dbug after all */
+    _no_db_ = 0; /* We are using dbug after all */
 
-  new_str = StrDup (control);
-  PushState ();
-  state=code_state();
+  new_str = StrDup(control);
+  PushState();
+  state = code_state();
 
-  scan = static_strtok (new_str, ':');
-  for (; scan != NULL; scan = static_strtok ((char *)NULL, ':')) {
-    switch (*scan++) {
-    case 'd':
-      _db_on_ = TRUE;
-      stack -> flags |= DEBUG_ON;
-      if (*scan++ == ',') {
-	stack -> keywords = ListParse (scan);
-      }
-      break;
-    case 'D':
-      stack -> delay = 0;
-      if (*scan++ == ',') {
-	temp = ListParse (scan);
-	stack -> delay = DelayArg (atoi (temp -> str));
-	FreeList (temp);
-      }
-      break;
-    case 'f':
-      if (*scan++ == ',') {
-	stack -> functions = ListParse (scan);
-      }
-      break;
-    case 'F':
-      stack -> flags |= FILE_ON;
-      break;
-    case 'i':
-      stack -> flags |= PID_ON;
-      break;
+  scan = static_strtok(new_str, ':');
+  for (; scan != NULL; scan = static_strtok((char *)NULL, ':'))
+  {
+    switch (*scan++)
+    {
+      case 'd':
+        _db_on_ = TRUE;
+        stack->flags |= DEBUG_ON;
+        if (*scan++ == ',')
+        {
+          stack->keywords = ListParse(scan);
+        }
+        break;
+      case 'D':
+        stack->delay = 0;
+        if (*scan++ == ',')
+        {
+          temp = ListParse(scan);
+          stack->delay = DelayArg(atoi(temp->str));
+          FreeList(temp);
+        }
+        break;
+      case 'f':
+        if (*scan++ == ',')
+        {
+          stack->functions = ListParse(scan);
+        }
+        break;
+      case 'F':
+        stack->flags |= FILE_ON;
+        break;
+      case 'i':
+        stack->flags |= PID_ON;
+        break;
 #ifndef THREAD
-    case 'g':
-      _db_pon_ = TRUE;
-      if (OpenProfile(PROF_FILE))
-      {
-	stack -> flags |= PROFILE_ON;
-	if (*scan++ == ',')
-	  stack -> p_functions = ListParse (scan);
-      }
-      break;
+      case 'g':
+        _db_pon_ = TRUE;
+        if (OpenProfile(PROF_FILE))
+        {
+          stack->flags |= PROFILE_ON;
+          if (*scan++ == ',')
+            stack->p_functions = ListParse(scan);
+        }
+        break;
 #endif
-    case 'L':
-      stack -> flags |= LINE_ON;
-      break;
-    case 'n':
-      stack -> flags |= DEPTH_ON;
-      break;
-    case 'N':
-      stack -> flags |= NUMBER_ON;
-      break;
-    case 'A':
-    case 'O':
-      stack -> flags |= FLUSH_ON_WRITE;
-    case 'a':
-    case 'o':
-      if (*scan++ == ',') {
-	temp = ListParse (scan);
-	DBUGOpenFile(temp -> str, (int) (scan[-2] == 'A' || scan[-2] == 'a'));
-	FreeList (temp);
-      } else {
-	DBUGOpenFile ("-",0);
-      }
-      break;
-    case 'p':
-      if (*scan++ == ',') {
-	stack -> processes = ListParse (scan);
-      }
-      break;
-    case 'P':
-      stack -> flags |= PROCESS_ON;
-      break;
-    case 'r':
-      stack->sub_level= state->level;
-      break;
-    case 't':
-      stack -> flags |= TRACE_ON;
-      if (*scan++ == ',') {
-	temp = ListParse (scan);
-	stack -> maxdepth = atoi (temp -> str);
-	FreeList (temp);
-      }
-      break;
-    case 'S':
-      stack -> flags |= SANITY_CHECK_ON;
-      break;
+      case 'L':
+        stack->flags |= LINE_ON;
+        break;
+      case 'n':
+        stack->flags |= DEPTH_ON;
+        break;
+      case 'N':
+        stack->flags |= NUMBER_ON;
+        break;
+      case 'A':
+      case 'O':
+        stack->flags |= FLUSH_ON_WRITE;
+      case 'a':
+      case 'o':
+        if (*scan++ == ',')
+        {
+          temp = ListParse(scan);
+          DBUGOpenFile(temp->str, (int)(scan[-2] == 'A' || scan[-2] == 'a'));
+          FreeList(temp);
+        }
+        else
+        {
+          DBUGOpenFile("-", 0);
+        }
+        break;
+      case 'p':
+        if (*scan++ == ',')
+        {
+          stack->processes = ListParse(scan);
+        }
+        break;
+      case 'P':
+        stack->flags |= PROCESS_ON;
+        break;
+      case 'r':
+        stack->sub_level = state->level;
+        break;
+      case 't':
+        stack->flags |= TRACE_ON;
+        if (*scan++ == ',')
+        {
+          temp = ListParse(scan);
+          stack->maxdepth = atoi(temp->str);
+          FreeList(temp);
+        }
+        break;
+      case 'S':
+        stack->flags |= SANITY_CHECK_ON;
+        break;
     }
   }
-  free (new_str);
+  free(new_str);
 }
-
 
 /*
  *  FUNCTION
@@ -622,39 +627,43 @@ void _db_push_ (const char *control)
  *
  */
 
-void _db_pop_ ()
+void _db_pop_()
 {
   reg1 struct state *discard;
   discard = stack;
-  if (discard != NULL && discard -> next_state != NULL) {
-    stack = discard -> next_state;
-    _db_fp_ = stack -> out_file;
-    _db_pfp_ = stack -> prof_file;
-    if (discard -> keywords != NULL) {
-      FreeList (discard -> keywords);
+  if (discard != NULL && discard->next_state != NULL)
+  {
+    stack = discard->next_state;
+    _db_fp_ = stack->out_file;
+    _db_pfp_ = stack->prof_file;
+    if (discard->keywords != NULL)
+    {
+      FreeList(discard->keywords);
     }
-    if (discard -> functions != NULL) {
-      FreeList (discard -> functions);
+    if (discard->functions != NULL)
+    {
+      FreeList(discard->functions);
     }
-    if (discard -> processes != NULL) {
-      FreeList (discard -> processes);
+    if (discard->processes != NULL)
+    {
+      FreeList(discard->processes);
     }
-    if (discard -> p_functions != NULL) {
-      FreeList (discard -> p_functions);
+    if (discard->p_functions != NULL)
+    {
+      FreeList(discard->p_functions);
     }
-    CloseFile (discard -> out_file);
-    if (discard -> prof_file)
-      CloseFile (discard -> prof_file);
-    free ((char *) discard);
+    CloseFile(discard->out_file);
+    if (discard->prof_file)
+      CloseFile(discard->prof_file);
+    free((char *)discard);
     if (!(stack->flags & DEBUG_ON))
-      _db_on_=0;
+      _db_on_ = 0;
   }
   else
   {
-    _db_on_=0;
+    _db_on_ = 0;
   }
 }
-
 
 /*
  *  FUNCTION
@@ -694,77 +703,70 @@ void _db_pop_ ()
  *
  */
 
-void _db_enter_(
-const char *_func_,
-const char *_file_,
-uint _line_,
-const char **_sfunc_,
-const char **_sfile_,
-uint *_slevel_,
-char ***_sframep_ __attribute__((unused)))
+void _db_enter_(const char *_func_, const char *_file_, uint _line_, const char **_sfunc_, const char **_sfile_,
+                uint *_slevel_, char ***_sframep_ __attribute__((unused)))
 {
   reg1 CODE_STATE *state;
 
   if (!_no_db_)
   {
-    int save_errno=errno;
+    int save_errno = errno;
     /*
       Sasha: the test below is so we could call functions with DBUG_ENTER
       before my_thread_init(). I needed this because I suspected corruption
       of a block allocated by my_thread_init() itself, so I wanted to use
       my_malloc()/my_free() in my_thread_init()/my_thread_end()
     */
-    if (!(state=code_state()))
+    if (!(state = code_state()))
       return;
     if (!init_done)
-      _db_push_ (_DBUG_START_CONDITION_);
+      _db_push_(_DBUG_START_CONDITION_);
 
     *_sfunc_ = state->func;
     *_sfile_ = state->file;
-    state->func =(char*)  _func_;
-	state->file = (char*)_file_;		/* BaseName takes time !! */
-	state->lineno = (int)_line_;		/* BaseName takes time !! */
-    *_slevel_ =  ++state->level;
+    state->func = (char *)_func_;
+    state->file = (char *)_file_; /* BaseName takes time !! */
+    state->lineno = (int)_line_;  /* BaseName takes time !! */
+    *_slevel_ = ++state->level;
 #ifndef THREAD
     *_sframep_ = state->framep;
-    state->framep = (char **) _sframep_;
-    if (DoProfile ())
+    state->framep = (char **)_sframep_;
+    if (DoProfile())
     {
       long stackused;
       if (*state->framep == NULL)
       {
-	stackused = 0;
+        stackused = 0;
       }
       else
       {
-	stackused = ((long)(*state->framep)) - ((long)(state->framep));
-	stackused = stackused > 0 ? stackused : -stackused;
+        stackused = ((long)(*state->framep)) - ((long)(state->framep));
+        stackused = stackused > 0 ? stackused : -stackused;
       }
-      (void) fprintf (_db_pfp_, PROF_EFMT , Clock (), state->func);
+      (void)fprintf(_db_pfp_, PROF_EFMT, Clock(), state->func);
 #ifdef AUTOS_REVERSE
-      (void) fprintf (_db_pfp_, PROF_SFMT, state->framep, stackused, *_sfunc_);
+      (void)fprintf(_db_pfp_, PROF_SFMT, state->framep, stackused, *_sfunc_);
 #else
-      (void) fprintf (_db_pfp_, PROF_SFMT, (ulong) state->framep, stackused,
-		      state->func);
+      (void)fprintf(_db_pfp_, PROF_SFMT, (ulong)state->framep, stackused, state->func);
 #endif
-      (void) fflush (_db_pfp_);
+      (void)fflush(_db_pfp_);
     }
 #endif
     if (DoTrace(state))
     {
       if (!state->locked)
-	    pthread_mutex_lock(&THR_LOCK_dbug);
-      DoPrefix (_line_);
-      Indent (state -> level);
-      (void) fprintf (_db_fp_, ">%s [%s:%d]\n", state->func, state->file,state->lineno);
-      dbug_flush (state);			/* This does a unlock */
+        pthread_mutex_lock(&THR_LOCK_dbug);
+      DoPrefix(_line_);
+      Indent(state->level);
+      (void)fprintf(_db_fp_, ">%s [%s:%d]\n", state->func, state->file, state->lineno);
+      dbug_flush(state); /* This does a unlock */
     }
 #ifdef SAFEMALLOC
     if (stack->flags & SANITY_CHECK_ON && !state->disable_output)
-      if (_sanity(_file_,_line_))		/* Check of safemalloc */
-	stack -> flags &= ~SANITY_CHECK_ON;
+      if (_sanity(_file_, _line_)) /* Check of safemalloc */
+        stack->flags &= ~SANITY_CHECK_ON;
 #endif
-    errno=save_errno;
+    errno = save_errno;
   }
 }
 
@@ -790,61 +792,55 @@ char ***_sframep_ __attribute__((unused)))
  *
  */
 
-void _db_return_ (
-uint _line_,
-const char **_sfunc_,
-const char **_sfile_,
-uint *_slevel_)
+void _db_return_(uint _line_, const char **_sfunc_, const char **_sfile_, uint *_slevel_)
 {
   CODE_STATE *state;
 
   if (!_no_db_)
   {
-    int save_errno=errno;
-    if (!(state=code_state()))
-      return;				
+    int save_errno = errno;
+    if (!(state = code_state()))
+      return;
     if (!init_done)
-      _db_push_ ("");
+      _db_push_("");
     if (stack->flags & (TRACE_ON | DEBUG_ON | PROFILE_ON))
     {
       if (!state->locked)
-	pthread_mutex_lock(&THR_LOCK_dbug);
-      if (state->level != (int) *_slevel_)
-	(void) fprintf (_db_fp_, ERR_MISSING_RETURN, _db_process_,
-			state->func);
+        pthread_mutex_lock(&THR_LOCK_dbug);
+      if (state->level != (int)*_slevel_)
+        (void)fprintf(_db_fp_, ERR_MISSING_RETURN, _db_process_, state->func);
       else
       {
 #ifdef SAFEMALLOC
-	if (stack->flags & SANITY_CHECK_ON && !state->disable_output)
+        if (stack->flags & SANITY_CHECK_ON && !state->disable_output)
         {
-	  if (_sanity(*_sfile_,_line_))
-	    stack->flags &= ~SANITY_CHECK_ON;
+          if (_sanity(*_sfile_, _line_))
+            stack->flags &= ~SANITY_CHECK_ON;
         }
 #endif
 #ifndef THREAD
-	if (DoProfile ())
-	  (void) fprintf (_db_pfp_, PROF_XFMT, Clock(), state->func);
+        if (DoProfile())
+          (void)fprintf(_db_pfp_, PROF_XFMT, Clock(), state->func);
 #endif
-	if (DoTrace (state))
-	{
-	  DoPrefix (_line_);
-	  Indent (state->level);
-	  (void) fprintf (_db_fp_, "<%s\n", state->func);
-	}
+        if (DoTrace(state))
+        {
+          DoPrefix(_line_);
+          Indent(state->level);
+          (void)fprintf(_db_fp_, "<%s\n", state->func);
+        }
       }
       dbug_flush(state);
     }
-    state->level = *_slevel_-1;
+    state->level = *_slevel_ - 1;
     state->func = *_sfunc_;
     state->file = *_sfile_;
 #ifndef THREAD
     if (state->framep != NULL)
-      state->framep = (char **) *state->framep;
+      state->framep = (char **)*state->framep;
 #endif
-    errno=save_errno;
+    errno = save_errno;
   }
 }
-
 
 /*
  *  FUNCTION
@@ -866,18 +862,15 @@ uint *_slevel_)
  *
  */
 
-void _db_pargs_ (
-uint _line_,
-const char *keyword)
+void _db_pargs_(uint _line_, const char *keyword)
 {
-  CODE_STATE *state=code_state();
+  CODE_STATE *state = code_state();
   /* Sasha: pre-my_thread_init() safety */
   if (!state)
     return;
   state->u_line = _line_;
-  state->u_keyword = (char*) keyword;
+  state->u_keyword = (char *)keyword;
 }
-
 
 /*
  *  FUNCTION
@@ -905,35 +898,38 @@ const char *keyword)
 
 #include <stdarg.h>
 
-void _db_doprnt_ (const char *format,...)
+void _db_doprnt_(const char *format, ...)
 {
   va_list args;
   CODE_STATE *state;
   /* Sasha: pre-my_thread_init() safety */
-  if (!(state=code_state()))
+  if (!(state = code_state()))
     return;
 
-  va_start(args,format);
+  va_start(args, format);
 
-  if (_db_keyword_ (state->u_keyword)) {
-    int save_errno=errno;
+  if (_db_keyword_(state->u_keyword))
+  {
+    int save_errno = errno;
     if (!state->locked)
       pthread_mutex_lock(&THR_LOCK_dbug);
-    DoPrefix (state->u_line);
-    if (TRACING) {
-      Indent (state->level + 1);
-    } else {
-      (void) fprintf (_db_fp_, "%s: ", state->func);
+    DoPrefix(state->u_line);
+    if (TRACING)
+    {
+      Indent(state->level + 1);
     }
-    (void) fprintf (_db_fp_, "%s: ", state->u_keyword);
-    (void) vfprintf (_db_fp_, format, args);
-    (void) fputc('\n',_db_fp_);
+    else
+    {
+      (void)fprintf(_db_fp_, "%s: ", state->func);
+    }
+    (void)fprintf(_db_fp_, "%s: ", state->u_keyword);
+    (void)vfprintf(_db_fp_, format, args);
+    (void)fputc('\n', _db_fp_);
     dbug_flush(state);
-    errno=save_errno;
+    errno = save_errno;
   }
   va_end(args);
 }
-
 
 /*
  *  FUNCTION
@@ -953,54 +949,48 @@ void _db_doprnt_ (const char *format,...)
  *  Is used to examine corrputed memory or arrays.
  */
 
-void _db_dump_(
-uint _line_,
-const char *keyword,
-const char *memory,
-uint length)
+void _db_dump_(uint _line_, const char *keyword, const char *memory, uint length)
 {
   int pos;
   char dbuff[90];
   CODE_STATE *state;
-  if (!(state=code_state()))
+  if (!(state = code_state()))
     return;
 
-  if (_db_keyword_ ((char*) keyword))
+  if (_db_keyword_((char *)keyword))
   {
     if (!state->locked)
       pthread_mutex_lock(&THR_LOCK_dbug);
-    DoPrefix (_line_);
+    DoPrefix(_line_);
     if (TRACING)
     {
-      Indent (state->level + 1);
-      pos= min(max(state->level-stack->sub_level,0)*INDENT,80);
+      Indent(state->level + 1);
+      pos = min(max(state->level - stack->sub_level, 0) * INDENT, 80);
     }
     else
     {
       fprintf(_db_fp_, "%s: ", state->func);
     }
-    sprintf(dbuff,"%s: Memory: 0x%lx  Bytes: (%d)\n",
-	    keyword,(ulong) memory, length);
-    (void) fputs(dbuff,_db_fp_);
+    sprintf(dbuff, "%s: Memory: 0x%lx  Bytes: (%d)\n", keyword, (ulong)memory, length);
+    (void)fputs(dbuff, _db_fp_);
 
-    pos=0;
+    pos = 0;
     while (length-- > 0)
     {
-      uint tmp= *((unsigned char*) memory++);
-      if ((pos+=3) >= 80)
+      uint tmp = *((unsigned char *)memory++);
+      if ((pos += 3) >= 80)
       {
-	fputc('\n',_db_fp_);
-	pos=3;
+        fputc('\n', _db_fp_);
+        pos = 3;
       }
       fputc(_dig_vec_upper[((tmp >> 4) & 15)], _db_fp_);
       fputc(_dig_vec_upper[tmp & 15], _db_fp_);
-      fputc(' ',_db_fp_);
+      fputc(' ', _db_fp_);
     }
-    (void) fputc('\n',_db_fp_);
+    (void)fputc('\n', _db_fp_);
     dbug_flush(state);
   }
 }
-
 
 /*
   Enable/Disable output for this thread
@@ -1014,11 +1004,10 @@ uint length)
 void _db_output_(uint flag)
 {
   CODE_STATE *state;
-  if (!(state=code_state()))
+  if (!(state = code_state()))
     return;
-  state->disable_output= !flag;
+  state->disable_output = !flag;
 }
-
 
 /*
  *  FUNCTION
@@ -1044,25 +1033,27 @@ void _db_output_(uint flag)
  *
  */
 
-static struct link *ListParse (
-char *ctlp)
+static struct link *ListParse(char *ctlp)
 {
   REGISTER char *start;
   REGISTER struct link *new_malloc;
   REGISTER struct link *head;
 
   head = NULL;
-  while (*ctlp != EOS) {
+  while (*ctlp != EOS)
+  {
     start = ctlp;
-    while (*ctlp != EOS && *ctlp != ',') {
+    while (*ctlp != EOS && *ctlp != ',')
+    {
       ctlp++;
     }
-    if (*ctlp == ',') {
+    if (*ctlp == ',')
+    {
       *ctlp++ = EOS;
     }
-    new_malloc = (struct link *) DbugMalloc (sizeof (struct link));
-    new_malloc -> str = StrDup (start);
-    new_malloc -> next_link = head;
+    new_malloc = (struct link *)DbugMalloc(sizeof(struct link));
+    new_malloc->str = StrDup(start);
+    new_malloc->next_link = head;
     head = new_malloc;
   }
   return (head);
@@ -1092,27 +1083,29 @@ char *ctlp)
  *
  */
 
-static BOOLEAN InList (
-struct link *linkp,
-const char *cp)
+static BOOLEAN InList(struct link *linkp, const char *cp)
 {
   REGISTER struct link *scan;
   REGISTER BOOLEAN result;
 
-  if (linkp == NULL) {
+  if (linkp == NULL)
+  {
     result = TRUE;
-  } else {
+  }
+  else
+  {
     result = FALSE;
-    for (scan = linkp; scan != NULL; scan = scan -> next_link) {
-      if (STREQ (scan -> str, cp)) {
-	result = TRUE;
-	break;
+    for (scan = linkp; scan != NULL; scan = scan->next_link)
+    {
+      if (STREQ(scan->str, cp))
+      {
+        result = TRUE;
+        break;
       }
     }
   }
   return (result);
 }
-
 
 /*
  *  FUNCTION
@@ -1136,31 +1129,30 @@ const char *cp)
  *
  */
 
-static void PushState ()
+static void PushState()
 {
   REGISTER struct state *new_malloc;
 
   if (!init_done)
   {
     init_dbug_state();
-    init_done=TRUE;
+    init_done = TRUE;
   }
-  (void) code_state();				/* Alloc memory */
-  new_malloc = (struct state *) DbugMalloc(sizeof (struct state));
-  new_malloc -> flags = 0;
-  new_malloc -> delay = 0;
-  new_malloc -> maxdepth = MAXDEPTH;
-  new_malloc -> sub_level=0;
-  new_malloc -> out_file = stderr;
-  new_malloc -> prof_file = (FILE*) 0;
-  new_malloc -> functions = NULL;
-  new_malloc -> p_functions = NULL;
-  new_malloc -> keywords = NULL;
-  new_malloc -> processes = NULL;
-  new_malloc -> next_state = stack;
-  stack=new_malloc;
+  (void)code_state(); /* Alloc memory */
+  new_malloc = (struct state *)DbugMalloc(sizeof(struct state));
+  new_malloc->flags = 0;
+  new_malloc->delay = 0;
+  new_malloc->maxdepth = MAXDEPTH;
+  new_malloc->sub_level = 0;
+  new_malloc->out_file = stderr;
+  new_malloc->prof_file = (FILE *)0;
+  new_malloc->functions = NULL;
+  new_malloc->p_functions = NULL;
+  new_malloc->keywords = NULL;
+  new_malloc->processes = NULL;
+  new_malloc->next_state = stack;
+  stack = new_malloc;
 }
-
 
 /*
  *  FUNCTION
@@ -1181,46 +1173,43 @@ static void PushState ()
  *
  */
 
-static BOOLEAN DoTrace (CODE_STATE *state)
+static BOOLEAN DoTrace(CODE_STATE *state)
 {
-	// TODO:
+  // TODO:
   // return FALSE;
 
-  reg2 BOOLEAN trace=TRUE;
+  reg2 BOOLEAN trace = TRUE;
 
-  if (0==strcmp("alloc_root", state->func))
+  if (0 == strcmp("alloc_root", state->func))
   {
-      trace = FALSE;
+    trace = FALSE;
   }
 
   if (0 == strcmp("free_root", state->func))
   {
-	  trace = FALSE;
+    trace = FALSE;
   }
 
   if (0 == strcmp("my_malloc", state->func))
   {
-	  trace = FALSE;
+    trace = FALSE;
   }
 
   if (0 == strcmp("my_free", state->func))
   {
-	  trace = FALSE;
+    trace = FALSE;
   }
 
   if (0 == strcmp("mysql_fetch_row", state->func))
   {
-	  trace = FALSE;
+    trace = FALSE;
   }
 
-  if (TRACING && !state->disable_output &&
-      state->level <= stack -> maxdepth &&
-      InList (stack -> functions, state->func) &&
-      InList (stack -> processes, _db_process_))
-      trace = TRUE;
+  if (TRACING && !state->disable_output && state->level <= stack->maxdepth && InList(stack->functions, state->func) &&
+      InList(stack->processes, _db_process_))
+    trace = TRUE;
   return (trace);
 }
-
 
 /*
  *  FUNCTION
@@ -1242,17 +1231,15 @@ static BOOLEAN DoTrace (CODE_STATE *state)
  */
 
 #ifndef THREAD
-static BOOLEAN DoProfile ()
+static BOOLEAN DoProfile()
 {
   REGISTER BOOLEAN profile;
   CODE_STATE *state;
-  state=code_state();
+  state = code_state();
 
   profile = FALSE;
-  if (PROFILING && !state->disable_output &&
-      state->level <= stack -> maxdepth &&
-      InList (stack -> p_functions, state->func) &&
-      InList (stack -> processes, _db_process_))
+  if (PROFILING && !state->disable_output && state->level <= stack->maxdepth &&
+      InList(stack->p_functions, state->func) && InList(stack->processes, _db_process_))
     profile = TRUE;
   return (profile);
 }
@@ -1278,12 +1265,11 @@ static BOOLEAN DoProfile ()
  *
  */
 
-BOOLEAN _db_strict_keyword_ (
-const char *keyword)
+BOOLEAN _db_strict_keyword_(const char *keyword)
 {
-  if (stack -> keywords == NULL)
+  if (stack->keywords == NULL)
     return FALSE;
-  return _db_keyword_ (keyword);
+  return _db_keyword_(keyword);
 }
 
 /*
@@ -1311,23 +1297,19 @@ const char *keyword)
  *
  */
 
-BOOLEAN _db_keyword_ (
-const char *keyword)
+BOOLEAN _db_keyword_(const char *keyword)
 {
   REGISTER BOOLEAN result;
   CODE_STATE *state;
 
   if (!init_done)
-    _db_push_ ("");
+    _db_push_("");
   /* Sasha: pre-my_thread_init() safety */
-  if (!(state=code_state()))
+  if (!(state = code_state()))
     return FALSE;
   result = FALSE;
-  if (DEBUGGING && !state->disable_output &&
-      state->level <= stack -> maxdepth &&
-      InList (stack -> functions, state->func) &&
-      InList (stack -> keywords, keyword) &&
-      InList (stack -> processes, _db_process_))
+  if (DEBUGGING && !state->disable_output && state->level <= stack->maxdepth && InList(stack->functions, state->func) &&
+      InList(stack->keywords, keyword) && InList(stack->processes, _db_process_))
     result = TRUE;
   return (result);
 }
@@ -1353,21 +1335,19 @@ const char *keyword)
  *
  */
 
-static void Indent (
-int indent)
+static void Indent(int indent)
 {
   REGISTER int count;
 
-  indent= max(indent-1-stack->sub_level,0)*INDENT;
-  for (count = 0; count < indent ; count++)
+  indent = max(indent - 1 - stack->sub_level, 0) * INDENT;
+  for (count = 0; count < indent; count++)
   {
     if ((count % INDENT) == 0)
-      fputc('|',_db_fp_);
+      fputc('|', _db_fp_);
     else
-      fputc(' ',_db_fp_);
+      fputc(' ', _db_fp_);
   }
 }
-
 
 /*
  *  FUNCTION
@@ -1386,21 +1366,21 @@ int indent)
  *
  */
 
-static void FreeList (
-struct link *linkp)
+static void FreeList(struct link *linkp)
 {
   REGISTER struct link *old;
 
-  while (linkp != NULL) {
+  while (linkp != NULL)
+  {
     old = linkp;
-    linkp = linkp -> next_link;
-    if (old -> str != NULL) {
-      free (old -> str);
+    linkp = linkp->next_link;
+    if (old->str != NULL)
+    {
+      free(old->str);
     }
-    free ((char *) old);
+    free((char *)old);
   }
 }
-
 
 /*
  *  FUNCTION
@@ -1421,15 +1401,13 @@ struct link *linkp)
  *
  */
 
-
-static char *StrDup (const char *str)
+static char *StrDup(const char *str)
 {
-    reg1 char *new_malloc;
-    new_malloc = DbugMalloc((size_t) strlen (str) + 1);
-    (void) strcpy (new_malloc, str);
-    return (new_malloc);
+  reg1 char *new_malloc;
+  new_malloc = DbugMalloc((size_t)strlen(str) + 1);
+  (void)strcpy(new_malloc, str);
+  return (new_malloc);
 }
-
 
 /*
  *  FUNCTION
@@ -1450,37 +1428,41 @@ static char *StrDup (const char *str)
  *
  */
 
-static void DoPrefix (
-uint _line_)
+static void DoPrefix(uint _line_)
 {
   CODE_STATE *state;
-  state=code_state();
+  state = code_state();
 
   state->lineno++;
-  if (stack -> flags & PID_ON) {
+  if (stack->flags & PID_ON)
+  {
 #ifdef THREAD
-    (void) fprintf (_db_fp_, "%-7s: ", my_thread_name());
+    (void)fprintf(_db_fp_, "%-7s: ", my_thread_name());
 #else
-    (void) fprintf (_db_fp_, "%5d: ", (int) getpid ());
+    (void)fprintf(_db_fp_, "%5d: ", (int)getpid());
 #endif
   }
-  if (stack -> flags & NUMBER_ON) {
-    (void) fprintf (_db_fp_, "%5d: ", state->lineno);
+  if (stack->flags & NUMBER_ON)
+  {
+    (void)fprintf(_db_fp_, "%5d: ", state->lineno);
   }
-  if (stack -> flags & PROCESS_ON) {
-    (void) fprintf (_db_fp_, "%s: ", _db_process_);
+  if (stack->flags & PROCESS_ON)
+  {
+    (void)fprintf(_db_fp_, "%s: ", _db_process_);
   }
-  if (stack -> flags & FILE_ON) {
-    (void) fprintf (_db_fp_, "%14s: ", BaseName(state->file));
+  if (stack->flags & FILE_ON)
+  {
+    (void)fprintf(_db_fp_, "%14s: ", BaseName(state->file));
   }
-  if (stack -> flags & LINE_ON) {
-    (void) fprintf (_db_fp_, "%5d: ", _line_);
+  if (stack->flags & LINE_ON)
+  {
+    (void)fprintf(_db_fp_, "%5d: ", _line_);
   }
-  if (stack -> flags & DEPTH_ON) {
-    (void) fprintf (_db_fp_, "%4d: ", state->level);
+  if (stack->flags & DEPTH_ON)
+  {
+    (void)fprintf(_db_fp_, "%4d: ", state->level);
   }
 }
-
 
 /*
  *  FUNCTION
@@ -1499,50 +1481,50 @@ uint _line_)
  *
  */
 
-static void DBUGOpenFile (const char *name,int append)
+static void DBUGOpenFile(const char *name, int append)
 {
   REGISTER FILE *fp;
   REGISTER BOOLEAN newfile;
 
   if (name != NULL)
   {
-    strmov(stack->name,name);
-    if (strcmp (name, "-") == 0)
+    strmov(stack->name, name);
+    if (strcmp(name, "-") == 0)
     {
       _db_fp_ = stdout;
-      stack -> out_file = _db_fp_;
-      stack -> flags |= FLUSH_ON_WRITE;
+      stack->out_file = _db_fp_;
+      stack->flags |= FLUSH_ON_WRITE;
     }
     else
     {
-      if (!Writable((char*)name))
+      if (!Writable((char *)name))
       {
-	(void) fprintf (stderr, ERR_OPEN, _db_process_, name);
-	perror ("");
-	fflush(stderr);
+        (void)fprintf(stderr, ERR_OPEN, _db_process_, name);
+        perror("");
+        fflush(stderr);
       }
       else
       {
-	newfile= !EXISTS (name);
-	if (!(fp = fopen(name, append ? "a+" : "w")))
-	{
-	  (void) fprintf (stderr, ERR_OPEN, _db_process_, name);
-	  perror ("");
-	  fflush(stderr);
-	}
-	else
-	{
-	  _db_fp_ = fp;
-	  stack -> out_file = fp;
-	  if (newfile) {
-	    ChangeOwner (name);
-	  }
-	}
+        newfile = !EXISTS(name);
+        if (!(fp = fopen(name, append ? "a+" : "w")))
+        {
+          (void)fprintf(stderr, ERR_OPEN, _db_process_, name);
+          perror("");
+          fflush(stderr);
+        }
+        else
+        {
+          _db_fp_ = fp;
+          stack->out_file = fp;
+          if (newfile)
+          {
+            ChangeOwner(name);
+          }
+        }
       }
     }
   }
 }
-
 
 /*
  *  FUNCTION
@@ -1571,35 +1553,35 @@ static void DBUGOpenFile (const char *name,int append)
  */
 
 #ifndef THREAD
-static FILE *OpenProfile (const char *name)
+static FILE *OpenProfile(const char *name)
 {
   REGISTER FILE *fp;
   REGISTER BOOLEAN newfile;
 
-  fp=0;
-  if (!Writable (name))
+  fp = 0;
+  if (!Writable(name))
   {
-    (void) fprintf (_db_fp_, ERR_OPEN, _db_process_, name);
-    perror ("");
+    (void)fprintf(_db_fp_, ERR_OPEN, _db_process_, name);
+    perror("");
     dbug_flush(0);
-    (void) Delay (stack -> delay);
+    (void)Delay(stack->delay);
   }
   else
   {
-    newfile= !EXISTS (name);
-    if (!(fp = fopen (name, "w")))
+    newfile = !EXISTS(name);
+    if (!(fp = fopen(name, "w")))
     {
-      (void) fprintf (_db_fp_, ERR_OPEN, _db_process_, name);
-      perror ("");
+      (void)fprintf(_db_fp_, ERR_OPEN, _db_process_, name);
+      perror("");
       dbug_flush(0);
     }
     else
     {
       _db_pfp_ = fp;
-      stack -> prof_file = fp;
+      stack->prof_file = fp;
       if (newfile)
       {
-	ChangeOwner (name);
+        ChangeOwner(name);
       }
     }
   }
@@ -1624,19 +1606,19 @@ static FILE *OpenProfile (const char *name)
  *
  */
 
-static void CloseFile (
-FILE *fp)
+static void CloseFile(FILE *fp)
 {
-  if (fp != stderr && fp != stdout) {
-    if (fclose (fp) == EOF) {
+  if (fp != stderr && fp != stdout)
+  {
+    if (fclose(fp) == EOF)
+    {
       pthread_mutex_lock(&THR_LOCK_dbug);
-      (void) fprintf (_db_fp_, ERR_CLOSE, _db_process_);
-      perror ("");
+      (void)fprintf(_db_fp_, ERR_CLOSE, _db_process_);
+      perror("");
       dbug_flush(0);
     }
   }
 }
-
 
 /*
  *  FUNCTION
@@ -1657,13 +1639,12 @@ FILE *fp)
  *
  */
 
-static void DbugExit (const char *why)
+static void DbugExit(const char *why)
 {
-  (void) fprintf (stderr, ERR_ABORT, _db_process_, why);
-  (void) fflush (stderr);
-  exit (1);
+  (void)fprintf(stderr, ERR_ABORT, _db_process_, why);
+  (void)fflush(stderr);
+  exit(1);
 }
-
 
 /*
  *  FUNCTION
@@ -1686,49 +1667,47 @@ static void DbugExit (const char *why)
  *
  */
 
-static char *DbugMalloc (size_t size)
+static char *DbugMalloc(size_t size)
 {
   register char *new_malloc;
 
-  if (!(new_malloc = (char*) malloc((size_t) size)))
-    DbugExit ("out of memory");
+  if (!(new_malloc = (char *)malloc((size_t)size)))
+    DbugExit("out of memory");
   return (new_malloc);
 }
-
 
 /*
  *		As strtok but two separators in a row are changed to one
  *		separator (to allow directory-paths in dos).
  */
 
-static char *static_strtok (char *s1, pchar separator)
+static char *static_strtok(char *s1, pchar separator)
 {
   static char *end = NULL;
-  reg1 char *rtnval,*cpy;
+  reg1 char *rtnval, *cpy;
 
   rtnval = NULL;
   if (s1 != NULL)
     end = s1;
   if (end != NULL && *end != EOS)
   {
-    rtnval=cpy=end;
+    rtnval = cpy = end;
     do
     {
       if ((*cpy++ = *end++) == separator)
       {
-	if (*end != separator)
-	{
-	  cpy--;		/* Point at separator */
-	  break;
-	}
-	end++;			/* Two separators in a row, skip one */
+        if (*end != separator)
+        {
+          cpy--; /* Point at separator */
+          break;
+        }
+        end++; /* Two separators in a row, skip one */
       }
     } while (*end != EOS);
-    *cpy=EOS;			/* Replace last separator */
+    *cpy = EOS; /* Replace last separator */
   }
   return (rtnval);
 }
-
 
 /*
  *  FUNCTION
@@ -1748,16 +1727,15 @@ static char *static_strtok (char *s1, pchar separator)
  *
  */
 
-static char *BaseName (const char *pathname)
+static char *BaseName(const char *pathname)
 {
   register const char *base;
 
-  base = strrchr (pathname, FN_LIBCHAR);
+  base = strrchr(pathname, FN_LIBCHAR);
   if (base++ == NullS)
     base = pathname;
-  return ((char*) base);
+  return ((char *)base);
 }
-
 
 /*
  *  FUNCTION
@@ -1782,38 +1760,44 @@ static char *BaseName (const char *pathname)
  *
  */
 
-
 #ifndef Writable
 
-static BOOLEAN Writable (
-char *pathname)
+static BOOLEAN Writable(char *pathname)
 {
   REGISTER BOOLEAN granted;
   REGISTER char *lastslash;
 
   granted = FALSE;
-  if (EXISTS (pathname)) {
-    if (WRITABLE (pathname)) {
+  if (EXISTS(pathname))
+  {
+    if (WRITABLE(pathname))
+    {
       granted = TRUE;
     }
-  } else {
-    lastslash = strrchr (pathname, '/');
-    if (lastslash != NULL) {
+  }
+  else
+  {
+    lastslash = strrchr(pathname, '/');
+    if (lastslash != NULL)
+    {
       *lastslash = EOS;
-    } else {
+    }
+    else
+    {
       pathname = ".";
     }
-    if (WRITABLE (pathname)) {
+    if (WRITABLE(pathname))
+    {
       granted = TRUE;
     }
-    if (lastslash != NULL) {
+    if (lastslash != NULL)
+    {
       *lastslash = '/';
     }
   }
   return (granted);
 }
 #endif
-
 
 /*
  *  FUNCTION
@@ -1839,18 +1823,16 @@ char *pathname)
  */
 
 #ifndef ChangeOwner
-static void ChangeOwner (
-char *pathname)
+static void ChangeOwner(char *pathname)
 {
-  if (chown (pathname, getuid (), getgid ()) == -1)
+  if (chown(pathname, getuid(), getgid()) == -1)
   {
-    (void) fprintf (stderr, ERR_CHOWN, _db_process_, pathname);
-    perror ("");
-    (void) fflush (stderr);
+    (void)fprintf(stderr, ERR_CHOWN, _db_process_, pathname);
+    perror("");
+    (void)fflush(stderr);
   }
 }
 #endif
-
 
 /*
  *  FUNCTION
@@ -1871,10 +1853,10 @@ char *pathname)
 
 #ifdef HAVE_LONGJMP
 
-EXPORT void _db_setjmp_ ()
+EXPORT void _db_setjmp_()
 {
   CODE_STATE *state;
-  state=code_state();
+  state = code_state();
 
   state->jmplevel = state->level;
   state->jmpfunc = state->func;
@@ -1898,16 +1880,18 @@ EXPORT void _db_setjmp_ ()
  *
  */
 
-EXPORT void _db_longjmp_ ()
+EXPORT void _db_longjmp_()
 {
   CODE_STATE *state;
-  state=code_state();
+  state = code_state();
 
   state->level = state->jmplevel;
-  if (state->jmpfunc) {
+  if (state->jmpfunc)
+  {
     state->func = state->jmpfunc;
   }
-  if (state->jmpfile) {
+  if (state->jmpfile)
+  {
     state->file = state->jmpfile;
   }
 }
@@ -1937,16 +1921,15 @@ EXPORT void _db_longjmp_ ()
  */
 
 #ifdef AMIGA
-#define HZ (50)			      /* Probably in some header somewhere */
+#define HZ (50) /* Probably in some header somewhere */
 #endif
 
-static int DelayArg (
-int value)
+static int DelayArg(int value)
 {
   uint delayarg = 0;
 
 #if (unix || xenix)
-  delayarg = value / 10;	/* Delay is in seconds for sleep () */
+  delayarg = value / 10; /* Delay is in seconds for sleep () */
 #endif
 #ifdef AMIGA
   delayarg = (HZ * value) / 10; /* Delay in ticks for Delay () */
@@ -1954,20 +1937,14 @@ int value)
   return (delayarg);
 }
 
-
 /*
  *	A dummy delay stub for systems that do not support delays.
  *	With a little work, this can be turned into a timing loop.
  */
 
-#if ! defined(Delay) && ! defined(AMIGA)
-static int Delay (
-int ticks)
-{
-  return ticks;
-}
+#if !defined(Delay) && !defined(AMIGA)
+static int Delay(int ticks) { return ticks; }
 #endif
-
 
 /*
  *  FUNCTION
@@ -1995,20 +1972,19 @@ int ticks)
  */
 
 #ifndef HAVE_PERROR
-static void perror (s)
-char *s;
+static void perror(s) char *s;
 {
-  if (s && *s != EOS) {
-    (void) fprintf (stderr, "%s: ", s);
+  if (s && *s != EOS)
+  {
+    (void)fprintf(stderr, "%s: ", s);
   }
-  (void) fprintf (stderr, "<unknown system error>\n");
+  (void)fprintf(stderr, "<unknown system error>\n");
 }
 #endif /* HAVE_PERROR */
 
-
-	/* flush dbug-stream, free mutex lock & wait delay */
-	/* This is because some systems (MSDOS!!) dosn't flush fileheader */
-	/* and dbug-file isn't readable after a system crash !! */
+/* flush dbug-stream, free mutex lock & wait delay */
+/* This is because some systems (MSDOS!!) dosn't flush fileheader */
+/* and dbug-file isn't readable after a system crash !! */
 
 static void dbug_flush(CODE_STATE *state)
 {
@@ -2019,41 +1995,40 @@ static void dbug_flush(CODE_STATE *state)
 #if defined(MSDOS) || defined(__WIN__)
     if (_db_fp_ != stdout && _db_fp_ != stderr)
     {
-      if (!(freopen(stack->name,"a",_db_fp_)))
+      if (!(freopen(stack->name, "a", _db_fp_)))
       {
-	(void) fprintf(stderr, ERR_OPEN, _db_process_, stack->name);
-	fflush(stderr);
-	_db_fp_ = stdout;
-	stack -> out_file = _db_fp_;
-	stack -> flags|=FLUSH_ON_WRITE;
+        (void)fprintf(stderr, ERR_OPEN, _db_process_, stack->name);
+        fflush(stderr);
+        _db_fp_ = stdout;
+        stack->out_file = _db_fp_;
+        stack->flags |= FLUSH_ON_WRITE;
       }
     }
     else
 #endif
     {
-      (void) fflush (_db_fp_);
+      (void)fflush(_db_fp_);
       if (stack->delay)
-	(void) Delay (stack->delay);
+        (void)Delay(stack->delay);
     }
   }
   if (!state || !state->locked)
     pthread_mutex_unlock(&THR_LOCK_dbug);
 } /* dbug_flush */
 
-
 void _db_lock_file()
 {
   CODE_STATE *state;
-  state=code_state();
+  state = code_state();
   pthread_mutex_lock(&THR_LOCK_dbug);
-  state->locked=1;
+  state->locked = 1;
 }
 
 void _db_unlock_file()
 {
   CODE_STATE *state;
-  state=code_state();
-  state->locked=0;
+  state = code_state();
+  state->locked = 0;
   pthread_mutex_unlock(&THR_LOCK_dbug);
 }
 
@@ -2075,58 +2050,55 @@ void _db_unlock_file()
  * far.
  */
 
-static unsigned long Clock ()
+static unsigned long Clock()
 {
-    struct rusage ru;
+  struct rusage ru;
 
-    (void) getrusage (RUSAGE_SELF, &ru);
-    return ((ru.ru_utime.tv_sec * 1000) + (ru.ru_utime.tv_usec / 1000));
+  (void)getrusage(RUSAGE_SELF, &ru);
+  return ((ru.ru_utime.tv_sec * 1000) + (ru.ru_utime.tv_usec / 1000));
 }
 
 #elif defined(MSDOS) || defined(__WIN__) || defined(OS2)
 
-static ulong Clock()
-{
-  return clock()*(1000/CLOCKS_PER_SEC);
-}
-#elif defined (amiga)
+static ulong Clock() { return clock() * (1000 / CLOCKS_PER_SEC); }
+#elif defined(amiga)
 
-struct DateStamp {		/* Yes, this is a hack, but doing it right */
-	long ds_Days;		/* is incredibly ugly without splitting this */
-	long ds_Minute;		/* off into a separate file */
-	long ds_Tick;
+struct DateStamp
+{                 /* Yes, this is a hack, but doing it right */
+  long ds_Days;   /* is incredibly ugly without splitting this */
+  long ds_Minute; /* off into a separate file */
+  long ds_Tick;
 };
 
 static int first_clock = TRUE;
 static struct DateStamp begin;
 static struct DateStamp elapsed;
 
-static unsigned long Clock ()
+static unsigned long Clock()
 {
-    register struct DateStamp *now;
-    register unsigned long millisec = 0;
-    extern VOID *AllocMem ();
+  register struct DateStamp *now;
+  register unsigned long millisec = 0;
+  extern VOID *AllocMem();
 
-    now = (struct DateStamp *) AllocMem ((long) sizeof (struct DateStamp), 0L);
-    if (now != NULL) {
-	if (first_clock == TRUE) {
-	    first_clock = FALSE;
-	    (void) DateStamp (now);
-	    begin = *now;
-	}
-	(void) DateStamp (now);
-	millisec = 24 * 3600 * (1000 / HZ) * (now -> ds_Days - begin.ds_Days);
-	millisec += 60 * (1000 / HZ) * (now -> ds_Minute - begin.ds_Minute);
-	millisec += (1000 / HZ) * (now -> ds_Tick - begin.ds_Tick);
-	(void) FreeMem (now, (long) sizeof (struct DateStamp));
+  now = (struct DateStamp *)AllocMem((long)sizeof(struct DateStamp), 0L);
+  if (now != NULL)
+  {
+    if (first_clock == TRUE)
+    {
+      first_clock = FALSE;
+      (void)DateStamp(now);
+      begin = *now;
     }
-    return (millisec);
+    (void)DateStamp(now);
+    millisec = 24 * 3600 * (1000 / HZ) * (now->ds_Days - begin.ds_Days);
+    millisec += 60 * (1000 / HZ) * (now->ds_Minute - begin.ds_Minute);
+    millisec += (1000 / HZ) * (now->ds_Tick - begin.ds_Tick);
+    (void)FreeMem(now, (long)sizeof(struct DateStamp));
+  }
+  return (millisec);
 }
 #else
-static unsigned long Clock ()
-{
-    return (0);
-}
+static unsigned long Clock() { return (0); }
 #endif /* RUSAGE */
 #endif /* THREADS */
 
@@ -2137,26 +2109,26 @@ static unsigned long Clock ()
  *	doesn't work, you are probably SOL...
  */
 
-static int vfprintf (stream, format, ap)
+static int vfprintf(stream, format, ap)
 FILE *stream;
 char *format;
 va_list ap;
 {
-    int rtnval;
-    ARGS_DCL;
+  int rtnval;
+  ARGS_DCL;
 
-    ARG0 =  va_arg (ap, ARGS_TYPE);
-    ARG1 =  va_arg (ap, ARGS_TYPE);
-    ARG2 =  va_arg (ap, ARGS_TYPE);
-    ARG3 =  va_arg (ap, ARGS_TYPE);
-    ARG4 =  va_arg (ap, ARGS_TYPE);
-    ARG5 =  va_arg (ap, ARGS_TYPE);
-    ARG6 =  va_arg (ap, ARGS_TYPE);
-    ARG7 =  va_arg (ap, ARGS_TYPE);
-    ARG8 =  va_arg (ap, ARGS_TYPE);
-    ARG9 =  va_arg (ap, ARGS_TYPE);
-    rtnval = fprintf (stream, format, ARGS_LIST);
-    return (rtnval);
+  ARG0 = va_arg(ap, ARGS_TYPE);
+  ARG1 = va_arg(ap, ARGS_TYPE);
+  ARG2 = va_arg(ap, ARGS_TYPE);
+  ARG3 = va_arg(ap, ARGS_TYPE);
+  ARG4 = va_arg(ap, ARGS_TYPE);
+  ARG5 = va_arg(ap, ARGS_TYPE);
+  ARG6 = va_arg(ap, ARGS_TYPE);
+  ARG7 = va_arg(ap, ARGS_TYPE);
+  ARG8 = va_arg(ap, ARGS_TYPE);
+  ARG9 = va_arg(ap, ARGS_TYPE);
+  rtnval = fprintf(stream, format, ARGS_LIST);
+  return (rtnval);
 }
 
-#endif	/* NO_VARARGS */
+#endif /* NO_VARARGS */

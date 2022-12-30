@@ -44,7 +44,8 @@ C_MODE_START
 #include <sys/ioctl.h>
 #endif
 
-#if !defined(MSDOS) && !defined(__WIN__) && !defined(HAVE_BROKEN_NETINET_INCLUDES) && !defined(__BEOS__) && !defined(__NETWARE__)
+#if !defined(MSDOS) && !defined(__WIN__) && !defined(HAVE_BROKEN_NETINET_INCLUDES) && !defined(__BEOS__) && \
+    !defined(__NETWARE__)
 #include <netinet/in_systm.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
@@ -55,12 +56,12 @@ C_MODE_START
 
 #if defined(__EMX__)
 #include <sys/ioctl.h>
-#define ioctlsocket(A,B,C) ioctl((A),(B),(void *)(C),sizeof(*(C)))
+#define ioctlsocket(A, B, C) ioctl((A), (B), (void *)(C), sizeof(*(C)))
 #undef HAVE_FCNTL
-#endif	/* defined(__EMX__) */
+#endif /* defined(__EMX__) */
 
 #if defined(MSDOS) || defined(__WIN__)
-#define O_NONBLOCK 1    /* For emulation of fcntl() */
+#define O_NONBLOCK 1 /* For emulation of fcntl() */
 #endif
 
 /*
@@ -74,7 +75,7 @@ C_MODE_START
 
 /* On some operating systems (e.g. Solaris) INADDR_NONE is not defined */
 #ifndef INADDR_NONE
-#define INADDR_NONE -1                          /* Error value from inet_addr */
+#define INADDR_NONE -1 /* Error value from inet_addr */
 #endif
 
 /* Thread safe or portable version of some functions */
@@ -89,14 +90,10 @@ void my_inet_ntoa(struct in_addr in, char *buf);
 struct hostent;
 #endif /* HPUX */
 #if !defined(HAVE_GETHOSTBYNAME_R)
-struct hostent *my_gethostbyname_r(const char *name,
-				   struct hostent *result, char *buffer,
-				   int buflen, int *h_errnop);
+struct hostent *my_gethostbyname_r(const char *name, struct hostent *result, char *buffer, int buflen, int *h_errnop);
 void my_gethostbyname_r_free();
 #elif defined(HAVE_PTHREAD_ATTR_CREATE) || defined(_AIX) || defined(HAVE_GETHOSTBYNAME_R_GLIBC2_STYLE)
-struct hostent *my_gethostbyname_r(const char *name,
-				   struct hostent *result, char *buffer,
-				   int buflen, int *h_errnop);
+struct hostent *my_gethostbyname_r(const char *name, struct hostent *result, char *buffer, int buflen, int *h_errnop);
 #define my_gethostbyname_r_free()
 #if !defined(HAVE_GETHOSTBYNAME_R_GLIBC2_STYLE) && !defined(HPUX10)
 #define GETHOSTBYNAME_BUFF_SIZE sizeof(struct hostent_data)
@@ -104,12 +101,10 @@ struct hostent *my_gethostbyname_r(const char *name,
 
 #elif defined(HAVE_GETHOSTBYNAME_R_RETURN_INT)
 #define GETHOSTBYNAME_BUFF_SIZE sizeof(struct hostent_data)
-struct hostent *my_gethostbyname_r(const char *name,
-				   struct hostent *result, char *buffer,
-				   int buflen, int *h_errnop);
+struct hostent *my_gethostbyname_r(const char *name, struct hostent *result, char *buffer, int buflen, int *h_errnop);
 #define my_gethostbyname_r_free()
 #else
-#define my_gethostbyname_r(A,B,C,D,E) gethostbyname_r((A),(B),(C),(D),(E))
+#define my_gethostbyname_r(A, B, C, D, E) gethostbyname_r((A), (B), (C), (D), (E))
 #define my_gethostbyname_r_free()
 #endif /* !defined(HAVE_GETHOSTBYNAME_R) */
 

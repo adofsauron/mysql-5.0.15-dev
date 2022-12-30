@@ -23,11 +23,11 @@
 #if !defined(_my_no_pthread_h) && !defined(THREAD)
 #define _my_no_pthread_h
 
-#define pthread_mutex_init(A,B)
+#define pthread_mutex_init(A, B)
 #define pthread_mutex_lock(A)
 #define pthread_mutex_unlock(A)
 #define pthread_mutex_destroy(A)
-#define my_rwlock_init(A,B)
+#define my_rwlock_init(A, B)
 #define rw_rdlock(A)
 #define rw_wrlock(A)
 #define rw_unlock(A)

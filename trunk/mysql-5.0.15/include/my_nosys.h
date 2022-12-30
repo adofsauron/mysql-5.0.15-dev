@@ -20,36 +20,37 @@
 */
 #ifndef _my_nosys_h
 #define _my_nosys_h
-#ifdef	__cplusplus
-extern "C" {
+#ifdef __cplusplus
+extern "C"
+{
 #endif
 
 #ifndef __MY_NOSYS__
 #define __MY_NOSYS__
 
 #ifdef MSDOS
-#include <io.h>			/* Get prototypes for read()... */
+#include <io.h> /* Get prototypes for read()... */
 #endif
 #ifndef HAVE_STDLIB_H
 #include <malloc.h>
 #endif
 
-#undef my_read			/* Can be predefined in raid.h */
+#undef my_read /* Can be predefined in raid.h */
 #undef my_write
 #undef my_seek
-#define my_read(a,b,c,d) my_quick_read(a,b,c,d)
-#define my_write(a,b,c,d) my_quick_write(a,b,c)
-extern uint my_quick_read(File Filedes,byte *Buffer,uint Count,myf myFlags);
-extern uint my_quick_write(File Filedes,const byte *Buffer,uint Count);
+#define my_read(a, b, c, d) my_quick_read(a, b, c, d)
+#define my_write(a, b, c, d) my_quick_write(a, b, c)
+  extern uint my_quick_read(File Filedes, byte *Buffer, uint Count, myf myFlags);
+  extern uint my_quick_write(File Filedes, const byte *Buffer, uint Count);
 
 #if !defined(SAFEMALLOC) && defined(USE_HALLOC)
-#define my_malloc(a,b) halloc(a,1)
+#define my_malloc(a, b) halloc(a, 1)
 #define my_no_flags_free(a) hfree(a)
 #endif
 
 #endif /* __MY_NOSYS__ */
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 #endif

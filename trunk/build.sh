@@ -13,7 +13,7 @@ chmod +x ./bdb/dist/configure
 
 ./configure --with-debug --with-ndb-debug --with-plugin-innobase
 
-make clean
+# make clean
 
 make -j2
 

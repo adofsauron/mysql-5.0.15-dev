@@ -12,5 +12,5 @@ git commit -m "fix mysql 5.0.15"
 
 git push -u origin main
 
-REM pause
+pause
 

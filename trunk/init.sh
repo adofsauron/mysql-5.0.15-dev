@@ -1,5 +1,8 @@
 #!/bin/bash
 
+groupadd mysql
+useradd -g mysql mysql
+
 rm /usr/local/share/mysql/data -rf
 
 mkdir -p /usr/local/share/mysql/data 

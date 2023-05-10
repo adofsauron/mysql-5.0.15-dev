@@ -11,11 +11,11 @@ chmod +x ./innobase/configure
 dos2unix ./bdb/dist/configure
 chmod +x ./bdb/dist/configure
 
-./configure --with-debug --with-ndb-debug --with-plugin-innobase
+# ./configure --with-debug --with-ndb-debug --with-plugin-innobase
 
 # make clean
 
-make -j2
+make -j`nproc`
 
 make install
 

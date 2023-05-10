@@ -104,7 +104,7 @@ const char *client_errors[]=
   "%-.100s via 'TCP/IP'",
   "Erro na negociação de acesso ao servidor",
   "Conexão perdida com servidor MySQL durante 'query'",
-  "Comandos fora de sincronismo; você não pode executar este comando agora",
+  "Comandos fora de sincronismo; voc?não pode executar este comando agora",
   "Named pipe: %-.32s",
   "Não pode esperar pelo 'named pipe' para o 'host' %-.64s - 'pipe' %-.32s (%lu)",
   "Não pode abrir 'named pipe' para o 'host' %-.64s - 'pipe' %-.32s (%lu)",

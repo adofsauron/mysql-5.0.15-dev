@@ -709,8 +709,8 @@ void _db_enter_(const char *_func_, const char *_file_, uint _line_, const char 
   reg1 CODE_STATE *state;
 
 	// TODO:
-	_no_db_ = 0;
-	_db_on_ = 1;
+	// _no_db_ = 0;
+	// _db_on_ = 1;
 
   if (!_no_db_)
   {

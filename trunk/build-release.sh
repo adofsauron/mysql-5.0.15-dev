@@ -1,0 +1,22 @@
+#!/bin/bash
+
+cd mysql-5.0.15
+
+dos2unix ./configure
+chmod +x ./configure
+
+dos2unix ./innobase/configure
+chmod +x ./innobase/configure
+ 
+dos2unix ./bdb/dist/configure
+chmod +x ./bdb/dist/configure
+
+./configure --with-plugin-innobase
+
+make clean
+
+make -j`nproc`
+
+make install
+
+cd -

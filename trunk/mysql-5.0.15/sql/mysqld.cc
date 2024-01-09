@@ -51,6 +51,8 @@
 #define OPT_NDBCLUSTER_DEFAULT 0
 #endif
 
+#pragma GCC diagnostic ignored "-Wnarrowing"
+
 #include <thr_alarm.h>
 #include <ft_global.h>
 #include <errmsg.h>

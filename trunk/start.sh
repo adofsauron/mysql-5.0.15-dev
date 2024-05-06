@@ -1,8 +1,8 @@
 #!/bin/bash
 
-pkill mysqld
+# pkill mysqld
 
-sleep 1s
+# sleep 3s
 
 /usr/local/libexec/mysqld --defaults-file=./my.cnf --user=mysql --datadir=/usr/local/share/mysql/data &
 

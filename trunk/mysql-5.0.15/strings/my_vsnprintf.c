@@ -87,8 +87,10 @@ int my_vsnprintf(char *to, size_t n, const char *fmt, va_list ap)
       reg2 char *par = va_arg(ap, char *);
       uint plen, left_len = (uint)(end - to) + 1;
       if (!par)
+      {
         par = (char *)"(null)";
-      if (0xcea == par)
+      }
+      else if (0xcea == par)
       {
         par = (char *)"(null)";
       }
